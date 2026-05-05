@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dean Dashboard | CEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#020617; --sidebar-w:260px;
+      --gold:#f59e0b; --gold-dark:#d97706;
+      --badge-bg:rgba(245,158,11,0.12); --badge-border:rgba(245,158,11,0.35); --badge-color:#fde68a;
+      --glass:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.1);
+      --text:rgba(255,255,255,0.85);
+      --muted:rgba(255,255,255,0.45);
+    }
+    body { font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; font-size:14px; }
+    
+    /* SIDEBAR */
+    .sidebar { width:var(--sidebar-w); min-height:100vh; position:fixed; left:0; top:0; background:rgba(10,18,40,0.97); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+    .sidebar-profile { padding:24px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; }
+    .sidebar-avatar { width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#0a2540; box-shadow:0 4px 14px rgba(245,158,11,0.3); }
+    .sidebar-name { font-weight:700; color:white; font-size:15px; margin-bottom:2px; }
+    .sidebar-role { font-size:11px; color:var(--badge-color); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+    
+    .sidebar-menu { flex:1; padding:16px 0; }
+    .menu-item { padding:14px 24px; display:flex; align-items:center; gap:12px; cursor:pointer; color:var(--muted); font-weight:500; border-left:3px solid transparent; transition:all 0.2s; }
+    .menu-item:hover, .menu-item.active { color:white; background:rgba(255,255,255,0.05); border-left-color:var(--gold); }
+    .menu-item.active { font-weight:600; background:rgba(245,158,11,0.08); }
+    
+    .sidebar-footer { padding:16px 24px; border-top:1px solid var(--border); }
+    .logout-btn { width:100%; padding:12px; border-radius:10px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.08); color:#f87171; font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.2s; }
+    .logout-btn:hover { background:rgba(239,68,68,0.18); }
+
+    /* MAIN */
+    .main-content { margin-left:var(--sidebar-w); flex:1; padding:32px; }
+    .top-bar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(2,6,23,0)); border:1px solid rgba(245,158,11,0.25); border-radius:18px; padding:24px 32px; margin-bottom:32px; }
+    .top-bar-title { font-size:28px; font-weight:800; color:white; display:flex; align-items:center; gap:12px; }
+    
+    .card { background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:32px; text-align:center; }
+    .card h2 { font-size:22px; color:white; margin-bottom:12px; }
+    .card p { color:var(--muted); line-height:1.6; }
+    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px; text-align:left; }
+    .info-item { background:rgba(255,255,255,0.04); padding:16px; border-radius:12px; border:1px solid var(--border); }
+    .info-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+    .info-val { font-size:15px; font-weight:600; color:white; }
+  </style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-profile">
+    <div class="sidebar-avatar">D</div>
+    <div>
+      <div class="sidebar-name" id="profileName">Dean Name</div>
+      <div class="sidebar-role">Dean Portal</div>
+    </div>
+  </div>
+  <div class="sidebar-menu">
+    <div class="menu-item active"><span>🏠</span><span>Dashboard</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="top-bar">
+    <div class="top-bar-title"><span>👔</span> Welcome, <span id="welcomeName">Dean</span></div>
+    <div style="color:var(--badge-color);font-weight:600;background:var(--badge-bg);border:1px solid var(--badge-border);padding:6px 14px;border-radius:20px;font-size:12px;">Dean Dashboard</div>
+  </div>
+
+  <div class="card">
+    <h2>Dean Information</h2>
+    <p>Welcome to the Dean administrative portal.<br>Below are your current assigned details.</p>
+    <div class="info-grid">
+      <div class="info-item"><div class="info-label">Full Name</div><div class="info-val" id="iName">—</div></div>
+      <div class="info-item"><div class="info-label">Faculty / Division</div><div class="info-val" id="iFac">—</div></div>
+      <div class="info-item"><div class="info-label">Year Allocated</div><div class="info-val" id="iYear">—</div></div>
+      <div class="info-item"><div class="info-label">Email</div><div class="info-val" id="iEmail">—</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const dean = JSON.parse(localStorage.getItem('deanData'));
+    if (!dean) { window.location.href = 'index.html'; return; }
+    
+    document.getElementById('profileName').textContent = dean.fullName || dean.username;
+    document.getElementById('welcomeName').textContent = dean.fullName || dean.username;
+    
+    document.getElementById('iName').textContent = dean.fullName || '—';
+    document.getElementById('iFac').textContent = dean.faculty || '—';
+    document.getElementById('iYear').textContent = dean.year || '—';
+    document.getElementById('iEmail').textContent = dean.email || '—';
+  });
+
+  function logout() {
+    localStorage.removeItem('deanData');
+    localStorage.removeItem('role');
+    window.location.href = 'index.html';
+  }
+</script>
+
+</body>
+</html>

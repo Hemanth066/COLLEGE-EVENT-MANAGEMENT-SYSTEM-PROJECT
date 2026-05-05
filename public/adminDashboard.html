@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | CEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#020617; --sidebar-w:260px;
+      --red:#ef4444; --red-dark:#dc2626;
+      --blue:#3b82f6; --blue-dark:#2563eb;
+      --green:#22c55e; --green-dark:#16a34a;
+      --gold:#fbbf24;
+      --glass:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.1);
+      --text:rgba(255,255,255,0.85);
+      --muted:rgba(255,255,255,0.45);
+    }
+    body { font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);
+           min-height:100vh; display:flex; overflow-x:hidden; overflow-y:auto;
+           align-items:flex-start; justify-content:flex-start; }
+    body::before, body::after { display:none; }
+
+    /* SIDEBAR */
+    .sidebar { width:var(--sidebar-w); min-height:100vh; position:fixed; left:0; top:0; z-index:200;
+               background:rgba(10,18,40,0.97); border-right:1px solid var(--border);
+               display:flex; flex-direction:column; }
+    .sidebar-admin-card { display:flex; align-items:center; gap:12px; padding:20px 20px 18px;
+                          border-bottom:1px solid var(--border); }
+    .sidebar-admin-avatar { width:46px; height:46px; border-radius:14px; flex-shrink:0;
+                            background:linear-gradient(135deg,var(--red),var(--red-dark));
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:22px; font-weight:700; color:white;
+                            border:2px solid rgba(239,68,68,0.35);
+                            box-shadow:0 4px 14px rgba(239,68,68,0.3); }
+    .sidebar-admin-label { font-size:10px; color:var(--red); font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:3px; }
+    .sidebar-admin-name  { font-size:14px; font-weight:700; color:white; }
+    .sidebar-menu { flex:1; padding:12px 0; overflow-y:auto; }
+    .menu-item { display:flex; align-items:center; gap:12px; padding:12px 24px; cursor:pointer;
+                 transition:all 0.25s; color:var(--muted); font-size:14px; font-weight:500;
+                 border-left:3px solid transparent; }
+    .menu-item:hover  { color:white; background:rgba(255,255,255,0.05); border-left-color:var(--red); }
+    .menu-item.active { color:white; background:rgba(239,68,68,0.1); border-left-color:var(--red); font-weight:600; }
+    .menu-item .icon  { font-size:18px; width:22px; text-align:center; }
+    .sidebar-footer { padding:16px 24px; border-top:1px solid var(--border); }
+    .logout-btn { width:100%; padding:11px; border-radius:10px; border:1px solid rgba(239,68,68,0.3);
+                  background:rgba(239,68,68,0.08); color:#f87171; font-size:14px; font-weight:600;
+                  cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.2s;
+                  display:flex; align-items:center; justify-content:center; gap:8px; }
+    .logout-btn:hover { background:rgba(239,68,68,0.18); }
+
+    /* MAIN */
+    .main-content { margin-left:var(--sidebar-w); flex:1; min-height:100vh; padding:28px; overflow-y:auto; }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; animation:fadeUp 0.35s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+    /* HEADER BAR */
+    .top-bar { display:flex; align-items:center; justify-content:space-between;
+               background:linear-gradient(135deg,rgba(139,0,0,0.4),rgba(239,68,68,0.2),rgba(124,58,237,0.2));
+               border:1px solid rgba(239,68,68,0.25); border-radius:18px;
+               padding:22px 28px; margin-bottom:28px; }
+    .top-bar-title { font-size:30px; font-weight:900; letter-spacing:-0.5px;
+                     background:linear-gradient(135deg,#fff,#fca5a5,#c4b5fd);
+                     -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    /* STAT CARDS */
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:18px; margin-bottom:28px; }
+    .stat-card { background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:22px 20px; }
+    .stat-card-value { font-size:36px; font-weight:800; margin-bottom:4px; }
+    .stat-card-label { font-size:12px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+
+    /* TABLE */
+    .table-box { background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px; }
+    .table-box-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+    .table-box-header h3 { font-size:16px; font-weight:700; }
+    table { width:100%; border-collapse:collapse; }
+    th { padding:11px 14px; text-align:left; font-size:11px; font-weight:700; color:var(--muted);
+         text-transform:uppercase; letter-spacing:0.6px; background:rgba(255,255,255,0.03);
+         border-bottom:1px solid var(--border); }
+    td { padding:12px 14px; font-size:13px; color:var(--text); border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background:rgba(255,255,255,0.03); }
+    tr:last-child td { border-bottom:none; }
+
+    /* BUTTONS */
+    .btn { padding:8px 18px; border:none; border-radius:8px; cursor:pointer; font-size:13px;
+           font-weight:600; font-family:'Poppins',sans-serif; transition:all 0.2s; }
+    .btn-primary { background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:white; }
+    .btn-success { background:linear-gradient(135deg,var(--green),var(--green-dark)); color:white; }
+    .btn-danger  { background:rgba(239,68,68,0.15); color:#f87171; border:1px solid rgba(239,68,68,0.3); }
+    .btn-danger:hover { background:rgba(239,68,68,0.3); }
+    .btn-sm { padding:5px 12px; font-size:12px; }
+
+    /* SEARCH */
+    .search-input { padding:9px 14px; border-radius:10px; border:1px solid var(--border);
+                    background:rgba(255,255,255,0.06); color:white; font-size:13px;
+                    font-family:'Poppins',sans-serif; outline:none; width:220px;
+                    color-scheme:dark; }
+    .search-input:focus { border-color:var(--blue); }
+    .search-input::placeholder { color:var(--muted); }
+
+    /* MODAL */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7);
+                     z-index:9000; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+    .modal-overlay.show { display:flex; }
+    .modal { background:#0d1b2e; border:1px solid var(--border); border-radius:20px;
+             padding:32px; width:90%; max-width:480px; max-height:90vh; overflow-y:auto; }
+    .modal h3 { font-size:18px; font-weight:700; margin-bottom:20px; }
+    .form-group { margin-bottom:14px; }
+    .form-group label { display:block; font-size:11px; font-weight:700; color:var(--muted);
+                        text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px; }
+    .form-group input, .form-group select {
+      width:100%; padding:11px 14px; border-radius:10px; border:1px solid var(--border);
+      background:rgba(255,255,255,0.06); color:white; font-size:14px;
+      font-family:'Poppins',sans-serif; outline:none; color-scheme:dark; }
+    .form-group input:focus, .form-group select:focus { border-color:var(--blue); }
+
+    /* Filter dropdowns in table header */
+    select.search-input {
+      color-scheme: dark;
+      background: rgba(255,255,255,0.06);
+      color: white;
+    }
+    select option { background:#0d1b2e; color:white; }
+    .modal-actions { display:flex; gap:10px; margin-top:20px; }
+
+    /* POPUP */
+    .popup-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; display:none; }
+    .popup-overlay.show { display:block; }
+    .popup { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+             background:#0d1b2e; border:1px solid var(--border); padding:36px 44px;
+             border-radius:20px; z-index:10000; text-align:center; min-width:340px;
+             transition:transform 0.3s ease, opacity 0.3s ease; opacity:0; }
+    .popup.show { transform:translate(-50%,-50%) scale(1); opacity:1; }
+    .popup-icon { font-size:48px; margin-bottom:12px; }
+    .popup-title { font-size:20px; font-weight:700; margin-bottom:8px; }
+    .popup-msg { font-size:14px; color:var(--muted); margin-bottom:24px; }
+    .popup-btn { padding:10px 36px; background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+                 color:white; border:none; border-radius:10px; cursor:pointer;
+                 font-size:14px; font-weight:600; font-family:'Poppins',sans-serif; }
+
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .badge-blue  { background:rgba(59,130,246,0.15); color:#93c5fd; border:1px solid rgba(59,130,246,0.25); }
+    .badge-green { background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(34,197,94,0.25); }
+    .no-data { text-align:center; padding:50px; color:var(--muted); font-size:14px; }
+  </style>
+</head>
+<body>
+
+<!-- Popup -->
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+<div class="popup" id="popup">
+  <div class="popup-icon" id="popupIcon">✅</div>
+  <div class="popup-title" id="popupTitle">Done</div>
+  <div class="popup-msg" id="popupMsg"></div>
+  <button class="popup-btn" onclick="closePopup()">OK</button>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Add</h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-success" id="modalSaveBtn" onclick="modalSave()">Save</button>
+      <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-admin-card">
+    <div class="sidebar-admin-avatar">A</div>
+    <div>
+      <div class="sidebar-admin-label">Admin Portal</div>
+      <div class="sidebar-admin-name" id="adminName">Admin</div>
+    </div>
+  </div>
+  <div class="sidebar-menu">
+    <div class="menu-item active" onclick="showTab('home')"><span class="icon">🏠</span><span>Dashboard</span></div>
+    <div class="menu-item" onclick="showTab('faculty')"><span class="icon">👨‍🏫</span><span>Manage Faculty</span></div>
+    <div class="menu-item" onclick="showTab('students')"><span class="icon">🎓</span><span>Manage Students</span></div>
+    <div class="menu-item" onclick="showTab('hods')"><span class="icon">🏛️</span><span>Manage HODs</span></div>
+    <div class="menu-item" onclick="showTab('deans')"><span class="icon">�</span><span>Manage Deans</span></div>
+    <div class="menu-item" onclick="showTab('events')"><span class="icon">📅</span><span>All Events</span></div>
+    <div class="menu-item" onclick="showTab('registrations')"><span class="icon">📋</span><span>Registrations</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="top-bar-title">🛡️ Admin Panel</div>
+    <div style="font-size:13px;color:var(--muted);">College Event Management</div>
+  </div>
+
+  <!-- HOME TAB -->
+  <div id="home" class="tab-content active">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--blue);" id="statStudents">—</div>
+        <div class="stat-card-label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--green);" id="statFaculty">—</div>
+        <div class="stat-card-label">Total Faculty</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:var(--gold);" id="statEvents">—</div>
+        <div class="stat-card-label">Total Events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:#a78bfa;" id="statRegs">—</div>
+        <div class="stat-card-label">Registrations</div>
+      </div>
+    </div>
+    <div style="background:var(--glass);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;color:var(--muted);">
+      <div style="font-size:48px;margin-bottom:12px;">🛡️</div>
+      <div style="font-size:18px;font-weight:700;color:white;margin-bottom:8px;">Welcome, Admin</div>
+      <div style="font-size:14px;">You have full control over faculty, students, events and registrations.</div>
+    </div>
+  </div>
+
+  <!-- FACULTY TAB -->
+  <div id="faculty" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>👨‍🏫 Faculty Members</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input class="search-input" id="filterFacultyName" placeholder="🔍 Search faculty..." oninput="filterFaculty()">
+          <select class="search-input" id="filterDept" onchange="filterFaculty()" style="width:160px;">
+            <option value="">All Departments</option>
+            <option>CSE</option><option>ECE</option><option>EEE</option>
+            <option>MECH</option><option>CIVIL</option><option>IT</option>
+            <option>AIDS</option><option>AIML</option><option>MCA</option><option>MBA</option>
+          </select>
+          <button class="btn btn-success" onclick="openAddFaculty()">+ Add Faculty</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="facultyCount"></div>
+      <div style="overflow-x:auto;">
+        <table id="facultyTable">
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Department</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
+          <tbody id="facultyBody"><tr><td colspan="7" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENTS TAB -->
+  <div id="students" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>🎓 Students</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input class="search-input" id="filterStudentName" placeholder="🔍 Search name/ID..." oninput="filterStudents()">
+          <select class="search-input" id="filterBranch" onchange="filterStudents()" style="width:130px;">
+            <option value="">All Branches</option>
+            <option>CSE</option><option>ECE</option><option>EEE</option>
+            <option>MECH</option><option>CIVIL</option><option>IT</option>
+            <option>AIDS</option><option>AIML</option>
+          </select>
+          <select class="search-input" id="filterSection" onchange="filterStudents()" style="width:130px;">
+            <option value="">All Sections</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+          <select class="search-input" id="filterYear" onchange="filterStudents()" style="width:120px;">
+            <option value="">All Years</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+          </select>
+          <button class="btn btn-success" onclick="openAddStudent()">+ Add Student</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="studentCount"></div>
+      <div style="overflow-x:auto;">
+        <table id="studentsTable">
+          <thead><tr><th>#</th><th>Name</th><th>Student ID</th><th>Branch</th><th>Section</th><th>Year</th><th>Email</th><th>Actions</th></tr></thead>
+          <tbody id="studentsBody"><tr><td colspan="8" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS TAB -->
+  <div id="events" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>📅 All Events</h3>
+        <input class="search-input" placeholder="🔍 Search events..." oninput="filterTable('eventsTable',this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="eventsTable">
+          <thead><tr><th>#</th><th>Title</th><th>Date</th><th>Venue</th><th>Faculty</th><th>Actions</th></tr></thead>
+          <tbody id="eventsBody"><tr><td colspan="6" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOD TAB -->
+  <div id="hods" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>🏛️ HODs</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input class="search-input" id="filterHodName" placeholder="🔍 Search HOD..." oninput="filterHods()">
+          <select class="search-input" id="filterHodDept" onchange="filterHods()" style="width:160px;">
+            <option value="">All Departments</option>
+            <option>CSE</option><option>ECE</option><option>EEE</option>
+            <option>MECH</option><option>CIVIL</option><option>IT</option>
+            <option>AIDS</option><option>AIML</option><option>MCA</option><option>MBA</option>
+          </select>
+          <select class="search-input" id="filterHodYear" onchange="filterHods()" style="width:180px;">
+            <option value="">All Year Groups</option>
+            <option value="1">Year 1 (1st Year HOD)</option>
+            <option value="2-3-4">Years 2, 3 & 4 (Senior HOD)</option>
+          </select>
+          <button class="btn btn-success" onclick="openAddHod()">+ Add HOD</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="hodCount"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Department</th><th>Year</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
+          <tbody id="hodsBody"><tr><td colspan="8" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEAN TAB -->
+  <div id="deans" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>👔 Deans</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input class="search-input" id="filterDeanName" placeholder="🔍 Search Dean..." oninput="filterDeans()">
+          <select class="search-input" id="filterDeanYear" onchange="filterDeans()" style="width:120px;">
+            <option value="">All Years</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+          </select>
+          <button class="btn btn-success" onclick="openAddDean()">+ Add Dean</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="deanCount"></div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Faculty/Division</th><th>Year</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
+          <tbody id="deansBody"><tr><td colspan="8" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRATIONS TAB -->
+  <div id="registrations" class="tab-content">
+    <div class="table-box">
+      <div class="table-box-header">
+        <h3>📋 All Registrations</h3>
+        <input class="search-input" placeholder="🔍 Search..." oninput="filterTable('regsTable',this.value)">
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="regsTable">
+          <thead><tr><th>#</th><th>Student</th><th>Event</th><th>Status</th><th>Registered On</th></tr></thead>
+          <tbody id="regsBody"><tr><td colspan="5" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

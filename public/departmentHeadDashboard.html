@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HOD Dashboard | CEM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg:#020617; --sidebar-w:260px;
+      --green:#22c55e; --green-dark:#16a34a;
+      --blue:#3b82f6; --blue-dark:#2563eb;
+      --gold:#fbbf24;
+      --glass:rgba(255,255,255,0.06);
+      --border:rgba(255,255,255,0.1);
+      --text:rgba(255,255,255,0.85);
+      --muted:rgba(255,255,255,0.45);
+    }
+    html, body {
+      font-family:'Poppins',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+      overflow-y:auto !important;
+    }
+    body {
+      display:block !important;
+      align-items:unset !important;
+      justify-content:unset !important;
+    }
+    body::before, body::after { display:none !important; }
+    /* SIDEBAR */
+    .sidebar { width:var(--sidebar-w); min-height:100vh; position:fixed; left:0; top:0; z-index:200;
+               background:rgba(10,18,40,0.97); border-right:1px solid var(--border);
+               display:flex; flex-direction:column; }
+    .sidebar-profile { padding:20px; border-bottom:1px solid var(--border);
+                       display:flex; align-items:center; gap:12px; }
+    .sidebar-avatar { width:46px; height:46px; border-radius:14px; flex-shrink:0;
+                      background:linear-gradient(135deg,var(--green),var(--green-dark));
+                      display:flex; align-items:center; justify-content:center;
+                      font-size:22px; font-weight:700; color:white;
+                      box-shadow:0 4px 14px rgba(34,197,94,0.3); }
+    .sidebar-name { font-weight:700; color:white; font-size:14px; margin-bottom:2px;
+                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
+    .sidebar-role { font-size:10px; color:#86efac; font-weight:700;
+                    text-transform:uppercase; letter-spacing:0.8px; }
+    .sidebar-menu { flex:1; padding:12px 0; overflow-y:auto; }
+    .menu-item { padding:12px 24px; display:flex; align-items:center; gap:12px; cursor:pointer;
+                 color:var(--muted); font-weight:500; font-size:14px;
+                 border-left:3px solid transparent; transition:all 0.2s; }
+    .menu-item:hover  { color:white; background:rgba(255,255,255,0.05); border-left-color:var(--green); }
+    .menu-item.active { color:white; background:rgba(34,197,94,0.1); border-left-color:var(--green); font-weight:600; }
+    .menu-item .icon  { font-size:18px; width:22px; text-align:center; }
+    .sidebar-footer { padding:16px 24px; border-top:1px solid var(--border); }
+    .logout-btn { width:100%; padding:11px; border-radius:10px; border:1px solid rgba(239,68,68,0.3);
+                  background:rgba(239,68,68,0.08); color:#f87171; font-size:14px; font-weight:600;
+                  cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.2s;
+                  display:flex; align-items:center; justify-content:center; gap:8px; }
+    .logout-btn:hover { background:rgba(239,68,68,0.18); }
+
+    /* MAIN */
+    .main-content {
+  margin-left: var(--sidebar-w);
+  min-height: 100vh;
+  padding: 28px;
+}
+    .tab-content { display:none; }
+    .tab-content.active { display:block; animation:fadeUp 0.35s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+
+    /* TOP BAR */
+    .top-bar { display:flex; align-items:center; justify-content:space-between;
+               background:linear-gradient(135deg,rgba(22,101,52,0.5),rgba(34,197,94,0.15),rgba(2,6,23,0));
+               border:1px solid rgba(34,197,94,0.25); border-radius:20px;
+               padding:22px 32px; margin-bottom:28px; position:relative; overflow:hidden; }
+    .top-bar::before { content:''; position:absolute; top:-40px; left:-40px; width:200px; height:200px;
+                       background:radial-gradient(circle,rgba(34,197,94,0.15),transparent 65%);
+                       pointer-events:none; }
+    .top-bar-title { font-size:28px; font-weight:900; letter-spacing:-0.5px;
+                     background:linear-gradient(135deg,#fff,#bbf7d0,#86efac);
+                     -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .top-bar-badge { background:rgba(34,197,94,0.12); border:1px solid rgba(34,197,94,0.3);
+                     color:#86efac; padding:8px 18px; border-radius:20px; font-size:13px; font-weight:600; }
+
+    /* STAT CARDS */
+    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:28px; max-width:800px; }
+    .stat-card { background:var(--glass); border:1px solid var(--border); border-radius:16px;
+                 padding:22px 20px; transition:all 0.2s; }
+    .stat-card:hover { border-color:rgba(34,197,94,0.3); transform:translateY(-2px); }
+    .stat-icon { font-size:28px; margin-bottom:10px; }
+    .stat-value { font-size:34px; font-weight:800; margin-bottom:4px; }
+    .stat-label { font-size:12px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+
+    /* TABLE */
+    .table-box { background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px; }
+    .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
+    .table-header h3 { font-size:17px; font-weight:700; }
+    .count-badge { font-size:12px; color:#86efac; background:rgba(34,197,94,0.1);
+                   border:1px solid rgba(34,197,94,0.2); padding:4px 12px; border-radius:20px; font-weight:600; }
+    table { width:100%; border-collapse:collapse; }
+    th { padding:11px 14px; text-align:left; font-size:11px; font-weight:700; color:var(--muted);
+         text-transform:uppercase; letter-spacing:0.6px; background:rgba(255,255,255,0.03);
+         border-bottom:1px solid var(--border); }
+    td { padding:12px 14px; font-size:13px; color:var(--text); border-bottom:1px solid rgba(255,255,255,0.04); }
+    tr:hover td { background:rgba(34,197,94,0.05); }
+    tr:last-child td { border-bottom:none; }
+
+    .search-input { padding:9px 14px; border-radius:10px; border:1px solid var(--border);
+                    background:rgba(255,255,255,0.06); color:white; font-size:13px;
+                    font-family:'Poppins',sans-serif; outline:none; width:220px;
+                    color-scheme:dark; }
+    .search-input:focus { border-color:var(--green); }
+    .search-input::placeholder { color:var(--muted); }
+    select.search-input option { background:#0d1b2e; color:white; }
+
+    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+    .badge-green { background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(34,197,94,0.25); }
+    .badge-blue  { background:rgba(59,130,246,0.12); color:#93c5fd; border:1px solid rgba(59,130,246,0.25); }
+    .badge-gold  { background:rgba(251,191,36,0.12); color:#fde68a; border:1px solid rgba(251,191,36,0.25); }
+    .no-data { text-align:center; padding:50px; color:var(--muted); font-size:14px; }
+
+    /* EVENT CARDS */
+    .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+    .event-card { background:var(--glass); border:1px solid var(--border); border-radius:16px;
+                  padding:20px; transition:all 0.25s; }
+    .event-card:hover { border-color:rgba(34,197,94,0.35); transform:translateY(-3px);
+                        box-shadow:0 12px 40px rgba(34,197,94,0.1); }
+    .event-card-title { font-size:15px; font-weight:700; margin-bottom:8px; color:white; }
+    .event-meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .event-meta-item { font-size:11px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-profile">
+    <div class="sidebar-avatar" id="sidebarAvatar">H</div>
+    <div>
+      <div class="sidebar-name" id="profileName">Loading...</div>
+      <div class="sidebar-role">HOD Portal</div>
+    </div>
+  </div>
+  <div class="sidebar-menu">
+    <div class="menu-item active" onclick="showTab('dashboard',this)">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </div>
+    <div class="menu-item" onclick="showTab('faculty',this)">
+      <span class="icon">👨‍🏫</span><span>Faculty Members</span>
+    </div>
+    <div class="menu-item" onclick="showTab('students',this)">
+      <span class="icon">🎓</span><span>Students</span>
+    </div>
+    <div class="menu-item" onclick="showTab('events',this)">
+      <span class="icon">📅</span><span>Events</span>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-title">�️ HOD Dashboard</div>
+      <div style="font-size:13px;color:#86efac;margin-top:4px;">
+        Dept: <strong id="deptName">—</strong> &nbsp;|&nbsp; Year Group: <strong id="yearName">—</strong>
+      </div>
+    </div>
+    <div class="top-bar-badge" id="welcomeBadge">Loading...</div>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div id="dashboard" class="tab-content active">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-value" style="color:var(--blue);" id="statFaculty">—</div>
+        <div class="stat-label">Faculty Members</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🎓</div>
+        <div class="stat-value" style="color:var(--green);" id="statStudents">—</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-value" style="color:var(--gold);" id="statEvents">—</div>
+        <div class="stat-label">Events Published</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FACULTY TAB -->
+  <div id="faculty" class="tab-content">
+    <div class="table-box">
+      <div class="table-header">
+        <h3>👨‍🏫 Department Faculty</h3>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="count-badge" id="facultyCount">0 faculty</span>
+          <input class="search-input" placeholder="🔍 Search..." oninput="filterFaculty(this.value)">
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Phone</th></tr></thead>
+          <tbody id="facultyBody">
+            <tr><td colspan="5" class="no-data">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENTS TAB -->
+  <div id="students" class="tab-content">
+    <div class="table-box">
+      <div class="table-header">
+        <h3>🎓 Students</h3>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span class="count-badge" id="studentCount">0 students</span>
+          <input class="search-input" placeholder="🔍 Search name/ID..." oninput="filterStudents(this.value)">
+          <select class="search-input" id="filterSec" onchange="filterStudents()" style="width:130px;">
+            <option value="">All Sections</option>
+             <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
+          </select>
+          <select class="search-input" id="filterYr" onchange="filterStudents()" style="width:120px;">
+            <option value="">All Years</option>
+            <option>2</option><option>3</option><option>4</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Student ID</th><th>Year</th><th>Section</th><th>Email</th></tr></thead>
+          <tbody id="studentsBody">
+            <tr><td colspan="6" class="no-data">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS TAB -->
+  <div id="events" class="tab-content">
+    <div class="table-box">
+      <div class="table-header">
+        <h3>📅 Events by Department Faculty</h3>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="count-badge" id="eventsCount">0 events</span>
+          <input class="search-input" placeholder="🔍 Search events..." oninput="filterEvents(this.value)">
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Date</th>
+              <th>Venue</th>
+              <th>Published By</th>
+              <th>Registered</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="eventsBody">
+            <tr><td colspan="7" class="no-data">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div id="eventDetailPanel" style="display:none;">
+      <div class="table-box" style="border-color:rgba(34,197,94,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <h3 id="detailEventTitle" style="font-size:16px;font-weight:700;color:#86efac;">—</h3>
+          <div style="display:flex;gap:8px;">
+            <button onclick="switchDetail('analysis')" id="btnAnalysis"
+              style="padding:6px 14px;border-radius:8px;border:1px solid rgba(251,191,36,0.35);
+                     background:rgba(251,191,36,0.1);color:#fde68a;font-family:'Poppins',sans-serif;
+                     font-size:12px;font-weight:600;cursor:pointer;">📊 Analysis</button>
+            <button onclick="closeDetail()"
+              style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);
+                     color:#f87171;padding:6px 14px;border-radius:8px;cursor:pointer;
+                     font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;">✕ Close</button>
+          </div>
+        </div>
+
+        <!-- Tabs inside panel -->
+        <div style="display:flex;gap:8px;margin-bottom:18px;">
+          <button onclick="switchDetail('regs')" id="btnRegs"
+            style="padding:8px 18px;border-radius:8px;border:1px solid rgba(34,197,94,0.4);
+                   background:rgba(34,197,94,0.15);color:#86efac;font-family:'Poppins',sans-serif;
+                   font-size:13px;font-weight:600;cursor:pointer;">👥 Registered Students</button>
+          <button onclick="switchDetail('fb')" id="btnFb"
+            style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);
+                   background:var(--glass);color:var(--muted);font-family:'Poppins',sans-serif;
+                   font-size:13px;font-weight:600;cursor:pointer;">💬 Feedback</button>
+        </div>
+
+        <!-- Registrations sub-table -->
+        <div id="detailRegs">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead><tr><th>#</th><th>Student Name</th><th>Student ID</th><th>Attended</th><th>Score</th></tr></thead>
+              <tbody id="regsDetailBody"><tr><td colspan="5" class="no-data">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Feedback sub-table -->
+        <div id="detailFb" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead><tr><th>#</th><th>Student</th><th>Rating</th><th>Comment</th><th>Date</th></tr></thead>
+              <tbody id="fbDetailBody"><tr><td colspan="5" class="no-data">Loading...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Analysis sub-panel -->
+        <div id="detailAnalysis" style="display:none;">
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Branch</th>
+                  <th style="text-align:center;">Registered</th>
+                  <th style="text-align:left;">Bar</th>
+                </tr>
+              </thead>
+              <tbody id="analysisBody"><tr><td colspan="3" class="no-data">Loading...</td></tr></tbody>
+            </table>
+          </div>
+          <div style="margin-top:14px;font-size:12px;color:var(--muted);" id="analysisTotalRow"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentHod = null;
+let allFacultyData = [], allStudentsData = [], allEventsData = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  currentHod = JSON.parse(localStorage.getItem('departmentHeadData'));
+  if (!currentHod) { window.location.href = 'index.html'; return; }
+
+  const name = currentHod.fullName || currentHod.username || 'HOD';
+  document.getElementById('profileName').textContent = name;
+  document.getElementById('welcomeBadge').textContent = name;
+  document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+  document.getElementById('deptName').textContent = currentHod.department || '—';
+  document.getElementById('yearName').textContent = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : `Year ${currentHod.year}`;
+
+  await loadStats();
+  await loadFacultyData();
+  await loadStudentsData();
+  await loadEventsData();
+});
+
+function showTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+  document.getElementById(tab).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// ── STATS ──────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await fetch(`/api/department-head/stats/${currentHod._id}`);
+    const d = await r.json();
+    document.getElementById('statFaculty').textContent = d.totalFaculty;
+    document.getElementById('statStudents').textContent = d.totalStudents;
+    document.getElementById('statEvents').textContent   = d.totalEvents;
+  } catch(e) { console.error(e); }
+}
+
+// ── FACULTY ────────────────────────────────────────────
+async function loadFacultyData() {
+  try {
+    const r = await fetch(`/api/department-head/faculty/${currentHod._id}`);
+    allFacultyData = await r.json();
+    renderFaculty(allFacultyData);
+  } catch(e) { console.error(e); }
+}
+
+function renderFaculty(list) {
+  document.getElementById('facultyCount').textContent = `${list.length} faculty`;
+  const tbody = document.getElementById('facultyBody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No faculty found</td></tr>'; return; }
+  tbody.innerHTML = list.map((f, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${f.fullName||'—'}</strong></td>
+      <td><span class="badge badge-blue">${f.username||'—'}</span></td>
+      <td>${f.email||'—'}</td>
+      <td>${f.phone||'—'}</td>
+    </tr>`).join('');
+}
+
+function filterFaculty(q) {
+  const query = (q||'').toLowerCase();
+  renderFaculty(allFacultyData.filter(f =>
+    (f.fullName||'').toLowerCase().includes(query) ||
+    (f.username||'').toLowerCase().includes(query) ||
+    (f.email||'').toLowerCase().includes(query)
+  ));
+}
+
+// ── STUDENTS ───────────────────────────────────────────
+async function loadStudentsData() {
+  try {
+    const dept = currentHod.department;
+    const yearGroup = currentHod.year;
+    const years = yearGroup === '2-3-4' ? ['2','3','4'] : [yearGroup];
+    // Fetch all students for this dept from admin route
+    const r = await fetch('/api/admin/students');
+    const all = await r.json();
+    allStudentsData = all.filter(s => s.branch === dept && years.includes(s.year));
+    renderStudents(allStudentsData);
+  } catch(e) { console.error(e); }
+}
+
+function renderStudents(list) {
+  document.getElementById('studentCount').textContent = `${list.length} students`;
+  const tbody = document.getElementById('studentsBody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="no-data">No students found</td></tr>'; return; }
+  tbody.innerHTML = list.map((s, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${s.fullName||'—'}</strong></td>
+      <td><span class="badge badge-green">${s.studentId||'—'}</span></td>
+      <td><span class="badge badge-gold">Year ${s.year||'—'}</span></td>
+      <td>Section ${s.section||'—'}</td>
+      <td>${s.email||'—'}</td>
+    </tr>`).join('');
+}
+
+function filterStudents(q) {
+  const query = (q||'').toLowerCase();
+  const sec   = document.getElementById('filterSec').value;
+  const yr    = document.getElementById('filterYr').value;
+  renderStudents(allStudentsData.filter(s =>
+    (!query || (s.fullName||'').toLowerCase().includes(query) || (s.studentId||'').toLowerCase().includes(query)) &&
+    (!sec   || s.section === sec) &&
+    (!yr    || s.year    === yr)
+  ));
+}
+
+// ── EVENTS ─────────────────────────────────────────────
+async function loadEventsData() {
+  try {
+    const r = await fetch(`/api/department-head/events/${currentHod._id}`);
+    allEventsData = await r.json();
+    renderEvents(allEventsData);
+  } catch(e) { console.error(e); }
+}
+
+function renderEvents(list) {
+  document.getElementById('eventsCount').textContent = `${list.length} events`;
+  const tbody = document.getElementById('eventsBody');
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="no-data">No events found</td></tr>'; return; }
+  tbody.innerHTML = list.map((e, i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${e.title||'—'}</strong></td>
+      <td>${e.date ? new Date(e.date).toLocaleDateString() : '—'}</td>
+      <td>${e.venue||'—'}</td>
+      <td><span class="badge badge-blue">${e.publishedByName||e.faculty||'—'}</span></td>
+      <td><span class="badge badge-green">👥 ${e.registrationCount??0}</span></td>
+      <td>
+        <button onclick="openDetail('${e._id}','${(e.title||'').replace(/'/g,'')}')"
+          style="padding:6px 14px;border-radius:8px;border:1px solid rgba(34,197,94,0.35);
+                 background:rgba(34,197,94,0.1);color:#86efac;font-family:'Poppins',sans-serif;
+                 font-size:12px;font-weight:600;cursor:pointer;">View</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterEvents(q) {
+  const query = (q||'').toLowerCase();
+  renderEvents(allEventsData.filter(e =>
+    (e.title||'').toLowerCase().includes(query) ||
+    (e.publishedByName||e.faculty||'').toLowerCase().includes(query)
+  ));
+}
+
+async function openDetail(eventId, title) {
+  document.getElementById('eventDetailPanel').style.display = 'block';
+  document.getElementById('detailEventTitle').textContent = '📅 ' + title;
+  document.getElementById('eventDetailPanel').scrollIntoView({ behavior:'smooth' });
+  switchDetail('regs');
+  await loadRegs(eventId);
+  await loadFeedback(eventId);
+  renderAnalysis(eventId);
+}
+
+function closeDetail() {
+  document.getElementById('eventDetailPanel').style.display = 'none';
+}
+
+function switchDetail(tab) {
+  const tabs = ['regs','fb','analysis'];
+  tabs.forEach(t => {
+    const key = 'detail' + t.charAt(0).toUpperCase() + t.slice(1);
+    const el = document.getElementById(key);
+    if (el) el.style.display = t === tab ? 'block' : 'none';
+  });
+  const btnMap   = { regs:'btnRegs', fb:'btnFb', analysis:'btnAnalysis' };
+  const colorMap = {
+    regs:     { bg:'rgba(34,197,94,0.15)',  color:'#86efac', border:'rgba(34,197,94,0.4)' },
+    fb:       { bg:'rgba(59,130,246,0.15)', color:'#93c5fd', border:'rgba(59,130,246,0.4)' },
+    analysis: { bg:'rgba(251,191,36,0.15)', color:'#fde68a', border:'rgba(251,191,36,0.4)' }
+  };
+  Object.keys(btnMap).forEach(t => {
+    const btn = document.getElementById(btnMap[t]);
+    if (!btn) return;
+    const active = t === tab;
+    btn.style.background  = active ? colorMap[t].bg     : 'var(--glass)';
+    btn.style.color       = active ? colorMap[t].color  : 'var(--muted)';
+    btn.style.borderColor = active ? colorMap[t].border : 'var(--border)';
+  });
+  if (tab === 'analysis') renderAnalysis();
+}
+
+async function loadRegs(eventId) {
+  const tbody = document.getElementById('regsDetailBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
+  try {
+    const r = await fetch(`/api/department-head/event-registrations/${eventId}`);
+    const regs = await r.json();
+    window._currentRegs = regs; // cache for analysis tab
+    if (!regs.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No registrations yet</td></tr>'; return; }
+    tbody.innerHTML = regs.map((reg, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${reg.studentName||'—'}</td>
+        <td><span class="badge badge-green">${reg.pinNumber||'—'}</span></td>
+        <td>${reg.attended ? '<span class="badge badge-green">✅ Present</span>' : '<span class="badge" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);">Absent</span>'}</td>
+        <td>${reg.score ?? '—'}</td>
+      </tr>`).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
+}
+
+function renderAnalysis() {
+  const ALL_BRANCHES = ['CSE','ECE','EEE','MECH','CIVIL','IT','AIDS','AIML','MCA','MBA'];
+  const tbody   = document.getElementById('analysisBody');
+  const totalEl = document.getElementById('analysisTotalRow');
+  const regs    = window._currentRegs || [];
+
+  const counts = {};
+  ALL_BRANCHES.forEach(b => counts[b] = 0);
+  regs.forEach(r => {
+    const b = (r.branch || '').toUpperCase();
+    if (counts[b] !== undefined) counts[b]++;
+  });
+
+  const max   = Math.max(...Object.values(counts), 1);
+  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+
+  tbody.innerHTML = ALL_BRANCHES.map(b => {
+    const count = counts[b];
+    const pct   = Math.round((count / max) * 100);
+    return `
+      <tr>
+        <td><span class="badge badge-blue">${b}</span></td>
+        <td style="text-align:center;font-weight:700;color:${count>0?'#86efac':'var(--muted)'};">${count}</td>
+        <td style="min-width:200px;">
+          <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:18px;overflow:hidden;">
+            <div style="width:${pct}%;height:100%;
+                        background:${count>0?'linear-gradient(90deg,#22c55e,#16a34a)':'rgba(255,255,255,0.08)'};
+                        border-radius:6px;transition:width 0.6s ease;"></div>
+          </div>
+        </td>
+      </tr>`;
+  }).join('');
+
+  totalEl.textContent = `Total: ${total} registrations across ${ALL_BRANCHES.filter(b=>counts[b]>0).length} branches`;
+}
+
+async function loadFeedback(eventId) {
+  const tbody = document.getElementById('fbDetailBody');
+  tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
+  try {
+    const r = await fetch(`/api/department-head/event-feedback/${eventId}`);
+    const fb = await r.json();
+    if (!fb.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback submitted yet</td></tr>'; return; }
+    const stars = n => '⭐'.repeat(n);
+    tbody.innerHTML = fb.map((f, i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${f.studentName||'—'}</td>
+        <td>${stars(f.rating)} <span style="color:var(--gold);font-weight:700;">${f.rating}/5</span></td>
+        <td style="max-width:300px;">${f.comment||'—'}</td>
+        <td>${f.submittedAt ? new Date(f.submittedAt).toLocaleDateString() : '—'}</td>
+      </tr>`).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
+}
+
+function logout() {
+  localStorage.removeItem('departmentHeadData');
+  localStorage.removeItem('role');
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>
+</div>
