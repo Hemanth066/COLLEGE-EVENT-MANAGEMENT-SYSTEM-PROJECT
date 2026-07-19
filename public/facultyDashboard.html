@@ -1,0 +1,7035 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+
+
+<head>
+
+
+  <meta charset="UTF-8">
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  <title>Faculty Dashboard | CEM</title>
+
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+
+  <style>
+
+
+    
+    :root {
+
+
+      --bg: #F8FAFC;
+
+
+      --sidebar-w: 260px;
+
+
+      --blue: #1E88E5;
+
+
+      --blue-dark: #0F4C81;
+
+
+      --gold: #FFC107;
+
+
+      --glass: #ffffff;
+
+
+      --border: #e2e8f0;
+
+
+      --text: #1F2937;
+
+
+      --muted: #6B7280;
+
+
+    }
+
+
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+
+    
+    body {
+
+
+      font-family: 'Poppins', sans-serif;
+
+
+      background: var(--bg);
+
+
+      color: var(--text);
+
+
+      min-height: 100vh;
+
+
+      display: flex;
+
+
+      overflow-x: hidden;
+
+
+    }
+
+
+    
+    /* -- SIDEBAR -- */
+
+
+    .sidebar {
+
+
+      width: var(--sidebar-w);
+
+
+      min-height: 100vh;
+
+
+      height: 100vh;
+
+
+      position: fixed;
+
+
+      left: 0; top: 0;
+
+
+      z-index: 200;
+
+
+      background: #0F4C81;
+
+
+      border-right: none;
+
+
+      backdrop-filter: none;
+
+
+      display: flex;
+
+
+      flex-direction: column;
+
+
+      box-shadow: 4px 0 20px rgba(15,76,129,0.15);
+
+
+      overflow-y: auto;
+
+
+      overflow-x: hidden;
+
+
+    }
+
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+
+
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+
+
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 4px; }
+
+
+    .sidebar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+
+    
+    .sidebar-header { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+
+
+    .sidebar-header h2 { font-size: 17px; font-weight: 700; color: white; }
+
+
+    .sidebar-header p  { font-size: 11px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+
+    
+    .sidebar-faculty-card {
+
+
+      display: flex; align-items: center; gap: 12px;
+
+
+      padding: 16px 20px 18px;
+
+
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+
+
+    }
+
+
+    .sidebar-faculty-avatar {
+
+
+      width: 46px; height: 46px; border-radius: 14px; flex-shrink: 0;
+
+
+      background: rgba(255,255,255,0.2);
+
+
+      display: flex; align-items: center; justify-content: center;
+
+
+      font-size: 20px; font-weight: 700; color: white;
+
+
+      border: 2px solid rgba(255,255,255,0.3);
+
+
+    }
+
+
+    .sidebar-faculty-info { min-width: 0; }
+
+
+    .sidebar-faculty-label { font-size: 10px; color: #FFC107; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; }
+
+
+    .sidebar-faculty-name  { font-size: 14px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+    
+    .sidebar-menu { flex: 1; padding: 12px 0; overflow-y: visible; }
+
+
+    .sidebar-menu::-webkit-scrollbar { display: none; }
+    .sidebar-menu::-webkit-scrollbar-thumb { display: none; }
+
+    
+    .menu-item {
+
+
+      display: flex; align-items: center; gap: 12px;
+
+
+      padding: 12px 24px; cursor: pointer; transition: all 0.25s;
+
+
+      color: rgba(255,255,255,0.65); font-size: 14px; font-weight: 500;
+
+
+      border-left: 3px solid transparent;
+
+
+    }
+
+
+    .menu-item:hover  { color: white; background: rgba(255,255,255,0.1); border-left-color: #FFC107; }
+
+
+    .menu-item.active { color: white; background: rgba(255,255,255,0.15); border-left-color: #FFC107; font-weight: 600; }
+
+
+    .menu-item .icon  { font-size: 18px; width: 22px; text-align: center; }
+
+    
+    .sidebar-footer { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.12); }
+
+
+    .logout-btn {
+
+
+      width: 100%; padding: 11px; border-radius: 10px;
+
+
+      border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08);
+
+
+      color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 600; cursor: pointer;
+
+
+      font-family: 'Poppins', sans-serif; transition: all 0.2s;
+
+
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+
+
+    }
+
+
+    .logout-btn:hover { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
+
+    
+    /* -- MAIN CONTENT -- */
+
+
+    .main-content {
+
+
+      margin-left: var(--sidebar-w);
+
+
+      flex: 1; min-height: 100vh;
+
+
+      padding: 32px;
+
+
+      overflow-y: auto; overflow-x: hidden;
+
+
+    }
+
+    
+    /* -- TAB CONTENT -- */
+
+
+    .tab-content { display: none; }
+
+
+    .tab-content.active { display: block; animation: fadeUp 0.4s ease; }
+
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+
+    @keyframes blobFloat { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-18px) scale(1.06); } }
+
+    
+    /* -- CONTENT HEADER -- */
+
+
+    .content-header {
+
+
+      background: linear-gradient(135deg, rgba(15,76,129,0.06), rgba(30,136,229,0.04));
+
+
+      border: 1px solid rgba(30,136,229,0.15); border-radius: 16px;
+
+
+      padding: 24px 28px; margin-bottom: 28px;
+
+
+    }
+
+
+    .content-header h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; color: var(--blue-dark); }
+
+
+    .content-header p  { font-size: 14px; color: var(--muted); }
+
+    
+    /* -- TABLE CONTAINER -- */
+
+
+    .table-container {
+
+
+      background: var(--glass); border: 1px solid var(--border);
+
+
+      border-radius: 16px; padding: 24px; margin-bottom: 20px;
+
+
+      box-shadow: 0 2px 12px rgba(15,76,129,0.06);
+
+
+    }
+
+
+    .table-header {
+
+
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+
+
+    }
+
+
+    .table-header h3 { font-size: 17px; font-weight: 600; color: var(--blue-dark); }
+
+    
+    table { width: 100%; border-collapse: collapse; }
+
+
+    th {
+
+
+      padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700;
+
+
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px;
+
+
+      background: #f8fafc; border-bottom: 1px solid var(--border);
+
+
+    }
+
+
+    td { padding: 13px 14px; font-size: 14px; color: var(--text); border-bottom: 1px solid #f1f5f9; }
+
+
+    tr:hover td { background: #f8fafc; }
+
+
+    tr:last-child td { border-bottom: none; }
+
+    
+    /* -- BUTTONS -- */
+
+
+    .btn-primary {
+
+
+      padding: 10px 22px;
+
+
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+
+
+      color: white; border: none; border-radius: 10px; cursor: pointer;
+
+
+      font-size: 14px; font-weight: 600; font-family: 'Poppins', sans-serif;
+
+
+      transition: all 0.2s; box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+
+
+    }
+
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.45); }
+
+    
+    .btn-success {
+
+
+      padding: 6px 14px; border: 1px solid rgba(34,197,94,0.3);
+
+
+      background: rgba(34,197,94,0.12); color: #4ade80;
+
+
+      border-radius: 8px; cursor: pointer; font-size: 12px;
+
+
+      font-weight: 600; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+
+
+    }
+
+
+    .btn-success:hover { background: rgba(34,197,94,0.25); }
+
+    
+    .attendance-btn { padding: 6px 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: 'Poppins', sans-serif; transition: all 0.2s; }
+
+
+    .attendance-btn.present { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+
+    .attendance-btn.absent  { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+    
+    .count {
+
+
+      padding: 5px 14px; background: rgba(59,130,246,0.12);
+
+
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 20px;
+
+
+      font-size: 13px; color: var(--blue); font-weight: 600;
+
+
+    }
+
+    
+    /* -- SELECT DROPDOWN -- */
+
+
+    .hero-select {
+
+
+      width: 100%; padding: 18px 50px 18px 24px; font-size: 16px;
+
+
+      border: 1px solid var(--border); border-radius: 50px;
+
+
+      background: white; color: var(--text);
+
+
+      box-shadow: 0 4px 20px rgba(15,76,129,0.08);
+
+
+      cursor: pointer; transition: all 0.3s ease; appearance: none;
+
+
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231F2937' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+
+
+      background-repeat: no-repeat; background-position: right 20px center; background-size: 20px;
+
+
+      font-family: 'Poppins', sans-serif;
+
+
+    }
+
+
+    .hero-select:focus { outline: none; border-color: var(--blue); }
+
+
+    .hero-select option { background: white; color: var(--text); }
+
+    
+    /* -- EVENT CARDS -- */
+
+
+    .event-card {
+
+
+      background: white; border: 1px solid var(--border);
+
+
+      border-radius: 16px; padding: 20px 24px; margin-bottom: 14px; transition: all 0.25s;
+
+
+      box-shadow: 0 2px 8px rgba(15,76,129,0.06);
+
+
+    }
+
+
+    .event-card:hover { border-color: rgba(30,136,229,0.35); box-shadow: 0 8px 30px rgba(15,76,129,0.12); transform: translateY(-2px); }
+
+
+    .event-card h4  { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--blue-dark); }
+
+
+    .event-card p   { font-size: 13px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+
+
+    .event-meta     { display: flex; gap: 16px; margin: 10px 0; flex-wrap: wrap; }
+
+
+    .meta-item      { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+
+    
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+
+    .badge.green { background: rgba(46,125,50,0.1); color: #2E7D32; border: 1px solid rgba(46,125,50,0.25); }
+
+
+    .badge.blue  { background: rgba(30,136,229,0.12); color: #1E88E5; border: 1px solid rgba(30,136,229,0.25); }
+
+    
+    .view-btn {
+
+
+      width: 100%; padding: 10px; background: #f8fafc;
+
+
+      color: var(--text); border: 1px solid var(--border); border-radius: 8px;
+
+
+      cursor: pointer; font-size: 13px; font-family: 'Poppins', sans-serif;
+
+
+      margin-top: 10px; transition: all 0.2s;
+
+
+    }
+
+
+    .view-btn:hover { background: rgba(30,136,229,0.08); border-color: rgba(30,136,229,0.3); }
+
+    
+    .reg-list { display: none; margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid var(--border); }
+
+
+    .reg-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+
+
+    .reg-item:last-child { border-bottom: none; }
+
+    
+    /* -- FORM INPUTS -- */
+
+
+    .form-group { display: grid; gap: 20px; }
+
+
+    .form-label { display: block; margin-bottom: 5px; font-size: 14px; color: var(--muted); }
+
+
+    .form-input {
+
+
+      width: 100%; padding: 10px 14px; border-radius: 10px;
+
+
+      border: 1px solid var(--border); background: #f8fafc;
+
+
+      color: var(--text); font-size: 14px; font-family: 'Poppins', sans-serif;
+
+
+      transition: border-color 0.2s;
+
+
+    }
+
+
+    .form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(30,136,229,0.15); }
+
+
+    .form-input::placeholder { color: var(--muted); }
+
+
+    .form-input option { background: white; }
+
+
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    
+    /* -- STAT CARDS -- */
+
+
+    .stat-card {
+
+
+      background: white; border: 1px solid var(--border);
+
+
+      border-radius: 16px; padding: 24px; display: flex; align-items: center; gap: 16px;
+
+
+      box-shadow: 0 2px 8px rgba(15,76,129,0.06);
+
+
+    }
+
+
+    .stat-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+
+
+    .stat-value { font-size: 32px; font-weight: 800; line-height: 1; color: var(--blue-dark); }
+
+
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    
+    /* -- NO DATA -- */
+
+
+    .no-data { text-align: center; padding: 60px 20px; color: var(--muted); }
+
+
+    .no-data-icon { font-size: 56px; margin-bottom: 16px; opacity: 0.4; }
+
+    
+    /* -- POPUP -- */
+
+
+    .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 9999; display: none; backdrop-filter: blur(6px); }
+
+
+    .popup-overlay.show { display: block; }
+
+
+    .popup-box {
+
+
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+
+
+      background: white; border: 1px solid var(--border);
+
+
+      padding: 40px 48px; border-radius: 20px;
+
+
+      box-shadow: 0 20px 60px rgba(15,76,129,0.15);
+
+
+      z-index: 10000; text-align: center; opacity: 0; min-width: 360px;
+
+
+      transition: transform 0.3s ease, opacity 0.3s ease;
+
+
+    }
+
+
+    .popup-box.show { transform: translate(-50%,-50%) scale(1); opacity: 1; }
+
+
+    .popup-icon    { font-size: 56px; margin-bottom: 16px; }
+
+
+    .popup-title   { font-size: 22px; font-weight: 700; color: var(--blue-dark); margin-bottom: 8px; }
+
+
+    .popup-message { font-size: 15px; color: var(--muted); margin-bottom: 28px; line-height: 1.6; }
+
+
+    .popup-ok {
+
+
+      padding: 12px 40px; background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+
+
+      color: white; border: none; border-radius: 10px; cursor: pointer;
+
+
+      font-size: 15px; font-weight: 600; font-family: 'Poppins', sans-serif; transition: all 0.2s;
+
+
+    }
+
+
+    .popup-ok:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+
+
+    .popup-ok.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+    
+    /* -- PROFILE CARD -- */
+
+
+    .profile-wrap { display: flex; flex-direction: column; align-items: center; padding: 20px 0 40px; }
+
+
+    .profile-card {
+
+
+      width: 100%; max-width: 680px;
+
+
+      background: var(--glass); border: 1px solid var(--border);
+
+
+      border-radius: 24px; box-shadow: 0 8px 40px rgba(15,76,129,0.12);
+
+
+    }
+
+
+    .profile-banner {
+
+
+      height: 150px; position: relative;
+
+
+      background: linear-gradient(135deg, #0F4C81 0%, #1E88E5 55%, #42A5F5 100%);
+
+
+      border-radius: 24px 24px 0 0; overflow: hidden;
+
+
+    }
+
+
+    .profile-banner::before {
+
+
+      content: ''; position: absolute; inset: 0;
+
+
+      background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1), transparent 60%),
+
+
+                  radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08), transparent 50%);
+
+
+    }
+
+
+    .profile-avatar-wrap { display: flex; justify-content: center; margin-top: -58px; position: relative; z-index: 10; }
+
+
+    .profile-avatar {
+
+
+      width: 116px; height: 116px; border-radius: 50%;
+
+
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+
+
+      display: flex; align-items: center; justify-content: center;
+
+
+      font-size: 46px; font-weight: 700; color: white;
+
+
+      border: 5px solid white;
+
+
+      box-shadow: 0 8px 32px rgba(15,76,129,0.25), 0 0 0 3px rgba(30,136,229,0.2);
+
+
+    }
+
+
+    .profile-body { padding: 16px 32px 36px; display: flex; flex-direction: column; align-items: center; }
+
+
+    .profile-name { font-size: 24px; font-weight: 800; text-align: center; margin: 14px 0 6px; color: var(--blue-dark); }
+
+
+    .profile-sub  {
+
+
+      font-size: 13px; color: var(--blue); font-weight: 600; text-align: center; margin-bottom: 28px;
+
+
+      background: rgba(30,136,229,0.08); border: 1px solid rgba(30,136,229,0.2);
+
+
+      padding: 4px 16px; border-radius: 20px;
+
+
+    }
+
+
+    .profile-stats { display: flex; width: 100%; margin-bottom: 28px; background: #f8fafc; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+
+
+    .profile-stat  { flex: 1; padding: 20px 12px; text-align: center; border-right: 1px solid var(--border); }
+
+
+    .profile-stat:last-child { border-right: none; }
+
+
+    .profile-stat-value { font-size: 28px; font-weight: 800; margin-bottom: 4px; color: var(--blue-dark); }
+
+
+    .profile-stat-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+
+
+    .profile-field { background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; transition: all 0.2s; }
+
+
+    .profile-field:hover { border-color: rgba(30,136,229,0.3); background: rgba(30,136,229,0.04); }
+
+
+    .profile-field-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px; }
+
+
+    .profile-field-value { font-size: 15px; font-weight: 600; color: var(--text); }
+
+    
+    /* -- SCROLLBAR -- */
+
+
+    ::-webkit-scrollbar { width: 6px; }
+
+
+    ::-webkit-scrollbar-track { background: transparent; }
+
+
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    
+    /* -- NOTIFICATION DROPDOWN -- */
+
+
+    #facNotifDropdown { display: none; position: absolute; top: calc(100% + 12px); right: 0; width: 400px; max-height: 520px; background: white; border: 1px solid var(--border); border-radius: 18px; box-shadow: 0 20px 60px rgba(15,76,129,0.15); z-index: 9999; flex-direction: column; overflow: hidden; }
+
+
+  </style>
+
+
+</head>
+
+
+<body>
+
+
+<!-- -- POPUP -- -->
+
+
+<div class="popup-overlay" id="popupOverlay" onclick="closePopup()"></div>
+
+
+<div class="popup-box" id="popupBox">
+
+
+  <div class="popup-icon" id="popupIcon">✅</div>
+
+
+  <div class="popup-title" id="popupTitle">Success!</div>
+
+
+  <div class="popup-message" id="popupMessage">Operation completed successfully.</div>
+
+
+  <button class="popup-ok" id="popupOk" onclick="closePopup()">OK</button>
+
+
+</div>
+
+
+<!-- -- SIDEBAR -- -->
+
+
+<div class="sidebar">
+
+
+  <div class="sidebar-header">
+
+
+    <h2>🎓 CEM Portal</h2>
+
+
+    <p>Faculty Event Management</p>
+
+
+  </div>
+
+
+  <div class="sidebar-faculty-card">
+
+
+    <div class="sidebar-faculty-avatar" id="sidebarAvatar">F</div>
+
+
+    <div class="sidebar-faculty-info">
+
+
+      <div class="sidebar-faculty-label">Faculty Portal</div>
+
+
+      <div class="sidebar-faculty-name" id="sidebarFacultyName">Loading...</div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <nav class="sidebar-menu">
+
+
+    <div class="menu-item active" onclick="showTab('home')">
+
+
+      <span class="icon">🏠</span><span>Home</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('publish')">
+
+
+      <span class="icon">📢</span><span>Publish Event</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('updateEvent')">
+
+
+      <span class="icon">✏️</span><span>Update Event</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('registrations')">
+
+
+      <span class="icon">👥</span><span>All Registrations</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('attendance')">
+
+
+      <span class="icon">✅</span><span>Attendance</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('analytics')">
+
+
+      <span class="icon">📊</span><span>Analytics</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('feedbackAnalysis')">
+
+
+      <span class="icon">💬</span><span>Feedback Analysis</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('certificates')">
+
+
+      <span class="icon">🏅</span><span>Certificates</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('addPastData')">
+
+
+      <span class="icon">📁</span><span>Add Past Data</span>
+
+
+    </div>
+
+
+    <div class="menu-item" onclick="showTab('profile')">
+
+
+      <span class="icon">👤</span><span>My Profile</span>
+
+
+    </div>
+
+
+  </nav>
+
+
+  <div class="sidebar-footer">
+
+
+    <button class="logout-btn" onclick="logout()">
+
+
+      <span>🚪</span><span>Logout</span>
+
+
+    </button>
+
+
+  </div>
+
+
+</div>
+
+
+<!-- -- MAIN CONTENT -- -->
+
+
+<div class="main-content">
+
+
+  <!-- TOP HEADER BAR -->
+
+
+  <div style="position:relative; display:flex; align-items:center; justify-content:center;
+
+
+              background:linear-gradient(135deg,#0F4C81 0%,#1E88E5 100%);
+
+
+              border-radius:20px;
+
+
+              padding:28px 32px; margin-bottom:28px; overflow:visible;
+
+
+              box-shadow:0 4px 20px rgba(15,76,129,0.2);">
+
+
+    <div style="position:relative;z-index:1;text-align:center;">
+
+
+      <div id="emTitle" style="font-size:38px;font-weight:900;letter-spacing:-1px;line-height:1.1;
+
+
+                                color:white;
+
+
+                                opacity:0;transform:translateY(20px) scale(0.96);
+
+
+                                transition:opacity 0.8s cubic-bezier(.22,1,.36,1), transform 0.8s cubic-bezier(.22,1,.36,1);">
+
+
+        🎓 Event Management
+
+
+      </div>
+
+
+    </div>
+
+
+    <!-- Notification Bell -->
+
+
+    <div id="facNotifWrap" style="position:absolute;right:32px;z-index:1;">
+
+
+      <button id="facNotifBtn" onclick="toggleFacNotif()"
+
+
+        style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.2);
+
+
+               border:1px solid rgba(255,255,255,0.35);color:white;font-size:22px;cursor:pointer;
+
+
+               display:flex;align-items:center;justify-content:center;position:relative;
+
+
+               transition:all 0.2s;"
+
+
+        onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+
+
+        onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+
+
+        🔔
+
+
+        <span id="facNotifBadge" style="display:none;position:absolute;top:-6px;right:-6px;
+
+
+              min-width:20px;height:20px;border-radius:10px;
+
+
+              background:linear-gradient(135deg,#ef4444,#dc2626);color:white;
+
+
+              font-size:10px;font-weight:700;align-items:center;justify-content:center;
+
+
+              padding:0 5px;border:2px solid white;">0</span>
+
+
+      </button>
+
+
+      <div id="facNotifDropdown">
+
+
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:#ffffff;">
+
+          <span style="font-size:15px;font-weight:700;color:var(--blue-dark);">🔔 Notifications</span>
+
+
+          <div style="display:flex;gap:8px;">
+
+
+            <button onclick="facMarkAllRead()" style="font-size:11px;color:var(--blue);background:rgba(30,136,229,0.08);border:1px solid rgba(30,136,229,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Mark all read</button>
+
+
+            <button onclick="facClearAll()" style="font-size:11px;color:#dc2626;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;font-family:'Poppins',sans-serif;font-weight:600;">Clear all</button>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div id="facNotifList" style="overflow-y:auto;max-height:460px;padding:6px 0;">
+
+
+          <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;">No notifications yet</div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+  <!-- ---------------- HOME TAB ---------------- -->
+
+
+  <div id="home" class="tab-content active">
+
+
+    <div class="content-header" style="text-align:center;">
+
+
+      <h1>📊 Dashboard Overview</h1>
+
+
+      <p>Welcome to the Faculty Event Management Portal</p>
+
+
+    </div>
+
+
+
+
+
+    <!-- Stats Row -->
+
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:32px;">
+
+
+      <div class="stat-card">
+
+
+        <div class="stat-icon" style="background:rgba(102,126,234,0.2);">📅</div>
+
+
+        <div>
+
+
+          <div class="stat-value" id="totalEvents">0</div>
+
+
+          <div class="stat-label">Total Events</div>
+
+
+        </div>
+
+
+      </div>
+
+
+      <div class="stat-card">
+
+
+        <div class="stat-icon" style="background:rgba(76,175,80,0.2);">👥</div>
+
+
+        <div>
+
+
+          <div class="stat-value" id="totalRegistrations">0</div>
+
+
+          <div class="stat-label">Total Registrations</div>
+
+
+        </div>
+
+
+      </div>
+
+
+      <div class="stat-card">
+
+
+        <div class="stat-icon" style="background:rgba(251,191,36,0.2);">📊</div>
+
+
+        <div>
+
+
+          <div class="stat-value" id="avgRegistrations">0</div>
+
+
+          <div class="stat-label">Avg per Event</div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- Published Events List -->
+
+
+    <div class="content-header" style="text-align:center;">
+
+
+      <h1>📅 Published Events</h1>
+
+
+      <p>All your events with registration details</p>
+
+
+    </div>
+
+
+    <div id="eventsGrid" style="display:flex;flex-direction:column;gap:16px;max-width:900px;margin:0 auto;"></div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- PUBLISH EVENT TAB ---------------- -->
+
+
+  <div id="publish" class="tab-content">
+
+
+    <div class="content-header">
+
+
+      <h1>📢 Publish New Event</h1>
+
+
+      <p>Create and publish a new event for students</p>
+
+
+    </div>
+
+
+    <div class="table-container" style="max-width:800px;">
+
+
+      <form id="publishEventForm" onsubmit="handlePublishEvent(event)">
+
+
+        <div class="form-group">
+
+
+          <div>
+
+
+            <label class="form-label">Event Title *</label>
+
+
+            <input class="form-input" type="text" id="eventTitle" required placeholder="e.g. Tech Fest 2025">
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Description</label>
+
+
+            <textarea class="form-input" id="eventDescription" rows="3" placeholder="Brief description of the event"></textarea>
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Venue</label>
+
+
+            <input class="form-input" type="text" id="eventVenue" placeholder="e.g. Seminar Hall A">
+
+
+          </div>
+
+
+          <div class="form-grid-2">
+
+
+            <div>
+
+
+              <label class="form-label">Date *</label>
+
+
+              <input class="form-input" type="date" id="eventDate" required>
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Time *</label>
+
+
+              <input class="form-input" type="time" id="eventTime" required>
+
+
+            </div>
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Registration Deadline *</label>
+
+
+            <input class="form-input" type="datetime-local" id="eventRegistrationDeadline" required>
+
+
+            <small style="display:block;margin-top:5px;font-size:12px;color:var(--muted);">Events disappear from student view after this deadline.</small>
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Max Participants <span style="font-size:12px;">(leave blank for unlimited)</span></label>
+
+
+            <input class="form-input" type="number" id="eventMaxParticipants" min="1" placeholder="e.g. 50">
+
+
+          </div>
+
+
+          <div class="form-grid-2">
+
+
+            <div>
+
+
+              <label class="form-label">Faculty Coordinator</label>
+
+
+              <input class="form-input" type="text" id="eventFaculty" placeholder="Faculty name">
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Faculty Phone</label>
+
+
+              <input class="form-input" type="tel" id="eventFacultyPhone" placeholder="Phone number">
+
+
+            </div>
+
+
+          </div>
+
+
+          <div class="form-grid-2">
+
+
+            <div>
+
+
+              <label class="form-label">Student Coordinator</label>
+
+
+              <input class="form-input" type="text" id="eventStudent" placeholder="Student name">
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Student Phone</label>
+
+
+              <input class="form-input" type="tel" id="eventStudentPhone" placeholder="Phone number">
+
+
+            </div>
+
+
+          </div>
+
+
+          <div style="text-align:center;margin-top:10px;">
+
+
+            <button type="submit" class="btn-primary" style="padding:12px 48px;">📢 Publish Event</button>
+
+
+          </div>
+
+
+        </div>
+
+
+      </form>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- UPDATE EVENT TAB ---------------- -->
+
+
+  <div id="updateEvent" class="tab-content">
+
+
+    <div style="text-align:center;padding:60px 20px 40px;">
+
+
+      <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">✏️ Update Event</h1>
+
+
+      <div style="max-width:600px;margin:0 auto;">
+
+
+        <select id="eventToUpdate" class="hero-select" onchange="loadEventData()">
+
+
+          <option value="">✏️ Select an event to update...</option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <p style="margin-top:16px;color:var(--muted);font-size:14px;">Select an event from the dropdown to edit its details</p>
+
+
+    </div>
+
+
+    <div id="updateEventForm" style="display:none;padding:0 0 40px;max-width:800px;margin:0 auto;">
+
+
+      <div class="table-container">
+
+
+        <form onsubmit="handleUpdateEvent(event)">
+
+
+          <div class="form-group">
+
+
+            <div>
+
+
+              <label class="form-label">Event Title *</label>
+
+
+              <input class="form-input" type="text" id="updateTitle" required>
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Description</label>
+
+
+              <textarea class="form-input" id="updateDescription" rows="3"></textarea>
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Venue</label>
+
+
+              <input class="form-input" type="text" id="updateVenue">
+
+
+            </div>
+
+
+            <div class="form-grid-2">
+
+
+              <div>
+
+
+                <label class="form-label">Date *</label>
+
+
+                <input class="form-input" type="date" id="updateDate" required>
+
+
+              </div>
+
+
+              <div>
+
+
+                <label class="form-label">Time *</label>
+
+
+                <input class="form-input" type="time" id="updateTime" required>
+
+
+              </div>
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Registration Deadline *</label>
+
+
+              <input class="form-input" type="datetime-local" id="updateRegistrationDeadline" required>
+
+
+            </div>
+
+
+            <div>
+
+
+              <label class="form-label">Max Participants</label>
+
+
+              <input class="form-input" type="number" id="updateMaxParticipants" min="1" placeholder="Leave blank for unlimited">
+
+
+            </div>
+
+
+            <div class="form-grid-2">
+
+
+              <div>
+
+
+                <label class="form-label">Faculty Coordinator</label>
+
+
+                <input class="form-input" type="text" id="updateFaculty">
+
+
+              </div>
+
+
+              <div>
+
+
+                <label class="form-label">Faculty Phone</label>
+
+
+                <input class="form-input" type="tel" id="updateFacultyPhone">
+
+
+              </div>
+
+
+            </div>
+
+
+            <div class="form-grid-2">
+
+
+              <div>
+
+
+                <label class="form-label">Student Coordinator</label>
+
+
+                <input class="form-input" type="text" id="updateStudent">
+
+
+              </div>
+
+
+              <div>
+
+
+                <label class="form-label">Student Phone</label>
+
+
+                <input class="form-input" type="tel" id="updateStudentPhone">
+
+
+              </div>
+
+
+            </div>
+
+
+            <div style="display:flex;gap:12px;justify-content:center;">
+
+
+              <button type="submit" class="btn-primary" style="padding:12px 40px;">✅ Update Event</button>
+
+
+              <button type="button" onclick="cancelUpdate()" style="padding:12px 40px;background:rgba(239,68,68,0.8);color:white;border:none;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;font-family:'Poppins',sans-serif;">❌Cancel</button>
+
+
+            </div>
+
+
+          </div>
+
+
+        </form>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- REGISTRATIONS TAB ---------------- -->
+
+
+  <div id="registrations" class="tab-content">
+
+
+    <div style="text-align:center;padding:60px 20px 40px;">
+
+
+      <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">👥 All Registrations</h1>
+
+
+      <div style="max-width:600px;margin:0 auto;">
+
+
+        <select id="filterEventReg" class="hero-select" onchange="filterRegistrations()">
+
+
+          <option value="">👥 Select an event to view registrations...</option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <p style="margin-top:16px;color:var(--muted);font-size:14px;">Select an event to view and manage registrations</p>
+
+
+    </div>
+
+
+    <div id="registrationsTableContainer" style="display:none;padding:0 0 40px;max-width:1400px;margin:0 auto;width:100%;">
+
+
+      <div class="table-container">
+
+
+        <div class="table-header">
+
+
+          <h3>Registration List</h3>
+
+
+          <div style="display:flex;align-items:center;gap:12px;">
+
+
+            <span class="count" id="regCount">0 Registrations</span>
+
+
+            <button onclick="downloadEventReport()" class="btn-primary" style="padding:8px 18px;font-size:13px;">📄 Download PDF Report</button>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div style="overflow-x:auto;">
+
+
+          <table>
+
+
+            <thead>
+
+
+              <tr>
+
+
+                <th>#</th><th>Student Name</th><th>PIN Number</th>
+
+
+                <th>Branch</th><th>Section</th><th>Year</th>
+
+
+                <th>Event</th><th>Attendance</th>
+
+
+              </tr>
+
+
+            </thead>
+
+
+            <tbody id="registrationsBody">
+
+
+              <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Select an event to view registrations</td></tr>
+
+
+            </tbody>
+
+
+          </table>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- ATTENDANCE TAB ---------------- -->
+
+
+  <div id="attendance" class="tab-content">
+
+
+    <div style="text-align:center;padding:60px 20px 40px;">
+
+
+      <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">✅ Attendance &amp; Scoring</h1>
+
+
+      <div style="max-width:600px;margin:0 auto;">
+
+
+        <select id="filterEventAtt" class="hero-select" onchange="filterAttendance()">
+
+
+          <option value="">✅ Select an event to view attendance...</option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <p style="margin-top:16px;color:var(--muted);font-size:14px;">Select an event to view attended students and assign scores</p>
+
+
+    </div>
+
+
+    <div id="attendanceTableContainer" style="display:none;padding:0 0 40px;max-width:1400px;margin:0 auto;width:100%;">
+
+
+      <div class="table-container">
+
+
+        <div class="table-header">
+
+
+          <h3>Attended Students</h3>
+
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+
+
+            <div style="position:relative;">
+
+
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;">🔍</span>
+
+
+              <input type="text" id="attPinSearch" placeholder="Search by PIN..."
+
+
+                oninput="filterAttByPin()"
+
+
+                style="padding:8px 12px 8px 36px;border-radius:8px;border:1.5px solid #e2e8f0;
+
+
+                       background:#ffffff;color:#1F2937;font-size:13px;font-family:'Poppins',sans-serif;
+
+
+                       width:200px;outline:none;transition:border-color 0.2s;"
+
+
+                onfocus="this.style.borderColor='#1E88E5'"
+
+
+                onblur="this.style.borderColor='#e2e8f0'">
+
+
+            </div>
+
+
+            <span class="count" id="attendedCount">0 Students</span>
+
+
+            <button onclick="generateAllCertificates()" class="btn-success">🏅 Generate All Certificates</button>
+
+
+          </div>
+
+
+        </div>
+
+
+        <div style="overflow-x:auto;">
+
+
+          <table>
+
+
+            <thead>
+
+
+              <tr>
+
+
+                <th>#</th><th>Student Name</th><th>PIN Number</th>
+
+
+                <th>Branch</th><th>Section</th><th>Year</th>
+
+
+                <th>Event</th><th>Assign Score</th><th>Certificate</th>
+
+
+              </tr>
+
+
+            </thead>
+
+
+            <tbody id="attendanceBody">
+
+
+              <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">Select an event to view attended students</td></tr>
+
+
+            </tbody>
+
+
+          </table>
+
+
+        </div>
+
+
+        <div style="text-align:right;margin-top:20px;">
+
+
+          <button class="btn-primary" onclick="saveAllScores()">💾 Save All Scores</button>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- ANALYTICS TAB ---------------- -->
+
+
+  <div id="analytics" class="tab-content">
+
+
+    <div class="content-header">
+
+
+      <h1>📊 Analytics &amp; Reports</h1>
+
+
+      <p>Statistics and insights about your events</p>
+
+
+    </div>
+
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:28px;">
+
+
+      <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:25px;border-radius:14px;color:white;">
+
+
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px;">Total Events</div>
+
+
+        <div style="font-size:36px;font-weight:700;" id="analyticsEvents">0</div>
+
+
+      </div>
+
+
+      <div style="background:linear-gradient(135deg,#f093fb,#f5576c);padding:25px;border-radius:14px;color:white;">
+
+
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px;">Total Registrations</div>
+
+
+        <div style="font-size:36px;font-weight:700;" id="analyticsRegistrations">0</div>
+
+
+      </div>
+
+
+      <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);padding:25px;border-radius:14px;color:white;">
+
+
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px;">Students Attended</div>
+
+
+        <div style="font-size:36px;font-weight:700;" id="analyticsAttended">0</div>
+
+
+      </div>
+
+
+      <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);padding:25px;border-radius:14px;color:white;">
+
+
+        <div style="font-size:13px;opacity:0.9;margin-bottom:8px;">Avg Attendance Rate</div>
+
+
+        <div style="font-size:36px;font-weight:700;" id="analyticsRate">0%</div>
+
+
+      </div>
+
+
+    </div>
+
+
+    <div class="table-container" style="margin-bottom:24px;">
+
+
+      <div class="table-header"><h3>📊 Event Performance</h3></div>
+
+
+      <div id="eventPerformance"></div>
+
+
+    </div>
+
+
+    <div class="table-container">
+
+
+      <div class="table-header"><h3>🏆 Top Performing Students</h3></div>
+
+
+      <div id="topStudents"></div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- FEEDBACK ANALYSIS TAB ---------------- -->
+
+
+  <div id="feedbackAnalysis" class="tab-content">
+
+
+    <div style="text-align:center;padding:60px 20px 40px;">
+
+
+      <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">💬 Feedback Analysis</h1>
+
+
+      <div style="max-width:600px;margin:0 auto;">
+
+
+        <select id="feedbackEventSelect" class="hero-select" onchange="loadFeedbackAnalysis()">
+
+
+          <option value="">💬 Select an event to view feedback...</option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <p style="margin-top:16px;color:var(--muted);font-size:14px;">Select an event to view ratings and student comments</p>
+
+
+    </div>
+
+
+    <div id="feedbackResultsContainer" style="display:none;max-width:1200px;margin:0 auto;padding:0 0 40px;">
+
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;margin-bottom:28px;">
+
+
+        <div style="background:linear-gradient(135deg,#667eea,#764ba2);padding:24px;border-radius:14px;color:white;text-align:center;">
+
+
+          <div style="font-size:13px;opacity:0.9;margin-bottom:6px;">Total Feedbacks</div>
+
+
+          <div style="font-size:40px;font-weight:700;" id="fbTotalCount">0</div>
+
+
+        </div>
+
+
+        <div style="background:linear-gradient(135deg,#4facfe,#00f2fe);padding:24px;border-radius:14px;color:white;text-align:center;">
+
+
+          <div style="font-size:13px;opacity:0.9;margin-bottom:6px;">Average Rating</div>
+
+
+          <div style="font-size:40px;font-weight:700;" id="fbAvgRating">—</div>
+
+
+        </div>
+
+
+        <div style="background:linear-gradient(135deg,#43e97b,#38f9d7);padding:24px;border-radius:14px;color:white;text-align:center;">
+
+
+          <div style="font-size:13px;opacity:0.9;margin-bottom:6px;">Star Rating</div>
+
+
+          <div style="font-size:26px;" id="fbStars">—</div>
+
+
+        </div>
+
+
+      </div>
+
+
+      <div class="table-container" style="margin-bottom:24px;">
+
+
+        <div class="table-header"><h3>⭐ Rating Breakdown</h3><span class="count" id="fbBreakdownCount"></span></div>
+
+
+        <div style="padding:16px;" id="fbBreakdown"></div>
+
+
+      </div>
+
+
+      <div class="table-container">
+
+
+        <div class="table-header"><h3>💬 Student Comments</h3><span class="count" id="fbCommentsCount">0 Comments</span></div>
+
+
+        <div style="overflow-x:auto;">
+
+
+          <table>
+
+
+            <thead>
+
+
+              <tr><th>#</th><th>Student Name</th><th>Rating</th><th>Comment</th><th>Submitted At</th></tr>
+
+
+            </thead>
+
+
+            <tbody id="fbCommentsBody"></tbody>
+
+
+          </table>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- CERTIFICATES TAB ---------------- -->
+
+
+  <div id="certificates" class="tab-content">
+
+
+    <div style="text-align:center;padding:60px 20px 40px;">
+
+
+      <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">🏅 Upload Certificates</h1>
+
+
+      <div style="max-width:600px;margin:0 auto;">
+
+
+        <select id="filterEventCert" class="hero-select" onchange="filterCertificates()">
+
+
+          <option value="">🏅 Select an event to upload certificates...</option>
+
+
+        </select>
+
+
+      </div>
+
+
+      <p style="margin-top:16px;color:var(--muted);font-size:14px;">Only students who attended the event are shown. Upload PDF or image certificates.</p>
+
+
+    </div>
+
+
+    <div id="certTableContainer" style="display:none;max-width:1400px;margin:0 auto;padding:0 0 40px;width:100%;">
+
+
+      <div class="table-container">
+
+
+        <div class="table-header"><h3>Attended Students</h3><span class="count" id="certCount">0 Students</span></div>
+
+
+        <div style="overflow-x:auto;">
+
+
+          <table>
+
+
+            <thead>
+
+
+              <tr><th>#</th><th>Student Name</th><th>PIN Number</th><th>Branch</th><th>Section</th><th>Year</th><th>Certificate</th><th>Action</th></tr>
+
+
+            </thead>
+
+
+            <tbody id="certBody">
+
+
+              <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">Select an event to load students...</td></tr>
+
+
+            </tbody>
+
+
+          </table>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- PROFILE TAB ---------------- -->
+
+
+  <div id="profile" class="tab-content">
+
+
+    <div class="profile-wrap">
+
+
+      <div class="profile-card">
+
+
+        <div class="profile-banner"></div>
+
+
+        <div class="profile-avatar-wrap">
+
+
+          <div class="profile-avatar" id="profileAvatarIcon">F</div>
+
+
+        </div>
+
+
+        <div class="profile-body">
+
+
+          <div class="profile-name" id="profileFullName">Faculty Name</div>
+
+
+          <div class="profile-sub" id="profileUsername">@username</div>
+
+
+          <div class="profile-stats">
+
+
+            <div class="profile-stat">
+
+
+              <div class="profile-stat-value" id="profileStatEvents">0</div>
+
+
+              <div class="profile-stat-label">Events</div>
+
+
+            </div>
+
+
+            <div class="profile-stat">
+
+
+              <div class="profile-stat-value" id="profileStatRegs">0</div>
+
+
+              <div class="profile-stat-label">Registrations</div>
+
+
+            </div>
+
+
+            <div class="profile-stat">
+
+
+              <div class="profile-stat-value" style="color:var(--blue);" id="profileStatAvg">0</div>
+
+
+              <div class="profile-stat-label">Avg / Event</div>
+
+
+            </div>
+
+
+          </div>
+
+
+          <!-- Read-only info -->
+
+
+          <div class="profile-grid" style="margin-bottom:24px;">
+
+
+            <div class="profile-field">
+
+
+              <div class="profile-field-label">Full Name</div>
+
+
+              <div class="profile-field-value" id="profileFullNameDisplay">—</div>
+
+
+            </div>
+
+
+            <div class="profile-field">
+
+
+              <div class="profile-field-label">Department</div>
+
+
+              <div class="profile-field-value" id="profileDepartmentDisplay">—</div>
+
+
+            </div>
+
+
+            <div class="profile-field">
+
+
+              <div class="profile-field-label">Email</div>
+
+
+              <div class="profile-field-value" id="profileEmailDisplay">—</div>
+
+
+            </div>
+
+
+            <div class="profile-field">
+
+
+              <div class="profile-field-label">Phone</div>
+
+
+              <div class="profile-field-value" id="profilePhoneDisplay">—</div>
+
+
+            </div>
+
+
+          </div>
+
+
+          <!-- Edit Form -->
+
+
+          <div style="width:100%;margin-bottom:24px;padding:20px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;">
+
+
+            <div style="font-size:14px;font-weight:700;margin-bottom:16px;">Edit Profile</div>
+
+
+            <form id="profileForm" onsubmit="updateProfile(event)">
+
+
+              <div class="form-group">
+
+
+                <div>
+
+
+                  <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Full Name *</label>
+
+
+                  <input class="form-input" type="text" id="profileFullNameInput" required>
+
+
+                </div>
+
+
+                <div>
+
+
+                  <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Email</label>
+
+
+                  <input class="form-input" type="email" id="profileEmail">
+
+
+                </div>
+
+
+                <div class="form-grid-2">
+
+
+                  <div>
+
+
+                    <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Phone</label>
+
+
+                    <input class="form-input" type="tel" id="profilePhone">
+
+
+                  </div>
+
+
+                  <div>
+
+
+                    <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Department</label>
+
+
+                    <input class="form-input" type="text" id="profileDepartment">
+
+
+                  </div>
+
+
+                </div>
+
+
+                <button type="submit" class="btn-primary" style="width:100%;padding:12px;">Save Profile</button>
+
+
+              </div>
+
+
+            </form>
+
+
+          </div>
+
+
+          <!-- Change Password -->
+
+
+          <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);">
+
+
+            <div style="font-size:14px;font-weight:700;margin-bottom:16px;">Change Password</div>
+
+
+            <div class="form-group">
+
+
+              <div>
+
+
+                <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Current Password</label>
+
+
+                <input class="form-input" type="password" id="facultyCurrentPwd" placeholder="Enter current password">
+
+
+              </div>
+
+
+              <div>
+
+
+                <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">New Password</label>
+
+
+                <input class="form-input" type="password" id="facultyNewPwd" placeholder="Min 6 characters">
+
+
+              </div>
+
+
+              <div>
+
+
+                <label class="form-label" style="font-size:11px;text-transform:uppercase;letter-spacing:0.8px;">Confirm New Password</label>
+
+
+                <input class="form-input" type="password" id="facultyConfirmPwd" placeholder="Repeat new password">
+
+
+              </div>
+
+
+              <button class="btn-primary" onclick="changeFacultyPassword()" style="width:100%;padding:12px;">🔒 Change Password</button>
+
+
+            </div>
+
+
+          </div>
+
+
+          <!-- ── SIGNATURE UPLOAD ── -->
+          <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);margin-top:8px;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;">✍️ My Signature</div>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Upload your signature — it will appear on all generated certificates.</p>
+
+            <!-- Current signature preview -->
+            <div id="sigPreviewWrap" style="display:none;margin-bottom:16px;padding:14px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,0.03);text-align:center;">
+              <img id="sigPreviewImg" src="" alt="Signature" style="max-height:80px;max-width:260px;object-fit:contain;border-radius:6px;">
+              <div style="font-size:11px;color:var(--muted);margin-top:8px;">Current Signature</div>
+            </div>
+
+            <!-- Upload area -->
+            <label for="sigFileInput" id="sigUploadLabel"
+              style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+                     padding:28px;border-radius:14px;border:2px dashed var(--border);
+                     background:rgba(255,255,255,0.02);cursor:pointer;transition:all 0.2s;"
+              onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(30,136,229,0.05)'"
+              onmouseout="this.style.borderColor='var(--border)';this.style.background='rgba(255,255,255,0.02)'">
+              <span style="font-size:36px;">🖊️</span>
+              <span style="font-size:13px;font-weight:600;">Click to upload signature image</span>
+              <span style="font-size:11px;color:var(--muted);">PNG or JPG with transparent/white background recommended</span>
+            </label>
+            <input type="file" id="sigFileInput" accept="image/*" style="display:none;" onchange="previewSignature(event)">
+
+            <!-- Canvas for preview before save -->
+            <canvas id="sigCanvas" style="display:none;"></canvas>
+
+            <div id="sigNewPreview" style="display:none;margin-top:14px;padding:14px;border-radius:12px;border:1px solid rgba(30,136,229,0.3);background:rgba(30,136,229,0.05);text-align:center;">
+              <img id="sigNewImg" src="" alt="New Signature" style="max-height:80px;max-width:260px;object-fit:contain;">
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;">Preview — click Save to apply</div>
+            </div>
+
+            <button onclick="saveSignature()" id="sigSaveBtn"
+              style="display:none;width:100%;padding:12px;border-radius:10px;border:none;margin-top:14px;
+                     background:linear-gradient(135deg,#22c55e,#16a34a);color:white;
+                     font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.2s;"
+              onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+              💾 Save Signature
+            </button>
+            <div id="sigMsg" style="display:none;margin-top:10px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;"></div>
+          </div>
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- ---------------- ADD PAST DATA TAB ---------------- -->
+
+
+  <div id="addPastData" class="tab-content">
+
+
+    <div class="content-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+
+
+      <div>
+
+
+        <h1>📁 Add Past Event Data</h1>
+
+
+        <p>Manually assign attendance &amp; scores for students — visible instantly in their dashboard</p>
+
+
+      </div>
+
+
+      <button onclick="aedToggleNewEventForm()"
+
+
+        id="aedAddEventBtn"
+
+
+        style="padding:11px 22px;border-radius:10px;border:none;
+
+
+               background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+
+
+               color:white;font-size:14px;font-weight:600;cursor:pointer;
+
+
+               font-family:'Poppins',sans-serif;white-space:nowrap;flex-shrink:0;
+
+
+               transition:all 0.2s;box-shadow:0 4px 14px rgba(59,130,246,0.3);"
+
+
+        onmouseover="this.style.transform='translateY(-1px)'"
+
+
+        onmouseout="this.style.transform='translateY(0)'">
+
+
+        ➕ Add Event
+
+
+      </button>
+
+
+    </div>
+
+
+
+
+
+    <!-- Inline New Event Form (collapsible) -->
+
+
+    <div id="aedNewEventPanel" style="display:none;max-width:1100px;margin-bottom:28px;">
+
+
+      <div class="table-container">
+
+
+        <div style="font-size:17px;font-weight:700;margin-bottom:22px;display:flex;align-items:center;gap:10px;">
+
+
+          <span style="font-size:22px;">📋</span> Create New Event &amp; Upload Past Data
+
+
+        </div>
+
+
+
+
+
+        <!-- Row 1: Title + Venue -->
+
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+
+          <div>
+
+
+            <label class="form-label">Event Title *</label>
+
+
+            <input class="form-input" type="text" id="aedTitle" placeholder="e.g. Tech Fest 2025">
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Venue</label>
+
+
+            <input class="form-input" type="text" id="aedVenue" placeholder="e.g. Seminar Hall A">
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Row 2: Date + Time -->
+
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+
+          <div>
+
+
+            <label class="form-label">Date *</label>
+
+
+            <input class="form-input" type="date" id="aedDate">
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Time *</label>
+
+
+            <input class="form-input" type="time" id="aedTime">
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Row 3: Description -->
+
+
+        <div style="margin-bottom:16px;">
+
+
+          <label class="form-label">Description</label>
+
+
+          <textarea class="form-input" id="aedDesc" rows="2" placeholder="Brief description of the event"></textarea>
+
+
+        </div>
+
+
+
+
+
+        <!-- Row 4: Faculty Coordinator + Phone -->
+
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+
+          <div>
+
+
+            <label class="form-label">Faculty Coordinator</label>
+
+
+            <input class="form-input" type="text" id="aedFaculty" placeholder="Faculty name">
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Faculty Phone</label>
+
+
+            <input class="form-input" type="tel" id="aedFacultyPhone" placeholder="e.g. 9876543210">
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Row 5: Student Coordinator + Phone -->
+
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+
+
+          <div>
+
+
+            <label class="form-label">Student Coordinator</label>
+
+
+            <input class="form-input" type="text" id="aedStudent" placeholder="Student name">
+
+
+          </div>
+
+
+          <div>
+
+
+            <label class="form-label">Student Phone</label>
+
+
+            <input class="form-input" type="tel" id="aedStudentPhone" placeholder="e.g. 9876543210">
+
+
+          </div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Excel Upload -->
+
+
+        <div style="margin-bottom:24px;padding:20px;border:2px dashed rgba(59,130,246,0.35);border-radius:14px;background:rgba(59,130,246,0.04);text-align:center;">
+
+
+          <div style="font-size:15px;font-weight:700;margin-bottom:6px;">📤 Upload Student Data (Excel)</div>
+
+
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+
+
+            Upload <strong>.xlsx</strong>, <strong>.xls</strong> or <strong>.csv</strong> file.<br>
+
+
+            Required columns: <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">PIN Number</code> &nbsp;|&nbsp; Optional: <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">Name</code>, <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">Branch</code>, <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">Section</code>, <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">Score</code>, <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;">Attended</code>
+
+
+          </div>
+
+
+          <label id="aedUploadLabel"
+
+
+            style="display:inline-flex;align-items:center;gap:10px;padding:11px 24px;border-radius:10px;
+
+
+                   background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.4);
+
+
+                   color:#93c5fd;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+
+
+            onmouseover="this.style.background='rgba(59,130,246,0.28)'"
+
+
+            onmouseout="this.style.background='rgba(59,130,246,0.15)'">
+
+
+            📂 Choose File
+
+
+            <input type="file" id="aedExcelFile" accept=".xlsx,.xls,.csv" style="display:none;" onchange="aedHandleExcelUpload(this)">
+
+
+          </label>
+
+
+          <div id="aedFileNameDisplay" style="margin-top:10px;font-size:13px;color:var(--muted);"></div>
+
+
+        </div>
+
+
+
+
+
+        <!-- Submit button -->
+
+
+        <div style="display:flex;gap:12px;">
+
+
+          <button onclick="aedSubmitEventAndData()"
+
+
+            style="flex:1;padding:13px;border:none;border-radius:10px;
+
+
+                   background:linear-gradient(135deg,#10b981,#059669);
+
+
+                   color:white;font-size:15px;font-weight:700;cursor:pointer;
+
+
+                   font-family:'Poppins',sans-serif;transition:all 0.2s;
+
+
+                   box-shadow:0 4px 14px rgba(16,185,129,0.35);"
+
+
+            onmouseover="this.style.transform='translateY(-1px)'"
+
+
+            onmouseout="this.style.transform='translateY(0)'">
+
+
+            ✅ Submit
+
+
+          </button>
+
+
+          <button onclick="aedToggleNewEventForm()"
+
+
+            style="padding:13px 28px;border:1px solid var(--border);border-radius:10px;
+
+
+                   background:#f8fafc;color:var(--muted);font-size:14px;
+
+
+                   cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.2s;"
+
+
+            onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+
+
+            Cancel
+
+
+          </button>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+
+    <!-- Preview table (shown after Submit) -->
+
+
+    <div id="aedPreviewPanel" style="display:block;max-width:1100px;margin-bottom:28px;">
+
+
+
+
+
+      <!-- Search bar: past events only -->
+
+
+      <div class="table-container" style="margin-bottom:20px;">
+
+
+        <div style="font-size:15px;font-weight:700;margin-bottom:14px;">🔍 Select Past Event</div>
+
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+
+
+          <div style="position:relative;flex:1;min-width:220px;">
+
+
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none;">🔍</span>
+
+
+            <input type="text" id="aedEventSearchInput"
+
+
+              placeholder="Type event title to search..."
+
+
+              oninput="aedFilterEventSearch()"
+
+
+              style="width:100%;padding:11px 14px 11px 40px;border-radius:12px;
+
+
+                     background:rgba(255,255,255,0.06);border:1px solid var(--border);
+
+
+                     color:white;font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+
+
+              onfocus="this.style.borderColor='var(--blue)';document.getElementById('aedEventDropdown').style.display='block'"
+
+
+              onblur="setTimeout(()=>document.getElementById('aedEventDropdown').style.display='none',200)">
+
+
+            <!-- Dropdown list -->
+
+
+            <div id="aedEventDropdown"
+
+
+              style="display:none;position:absolute;top:100%;left:0;right:0;z-index:100;
+
+
+                     background:#0d1b2e;border:1px solid rgba(59,130,246,0.35);border-radius:12px;
+
+
+                     margin-top:4px;max-height:200px;overflow-y:auto;box-shadow:0 8px 30px rgba(0,0,0,0.4);">
+
+
+            </div>
+
+
+          </div>
+
+
+          <button onclick="aedGetDetails()"
+
+
+            style="padding:11px 28px;border:none;border-radius:12px;
+
+
+                   background:linear-gradient(135deg,#10b981,#059669);
+
+
+                   color:white;font-size:14px;font-weight:700;cursor:pointer;
+
+
+                   font-family:'Poppins',sans-serif;white-space:nowrap;
+
+
+                   transition:all 0.2s;box-shadow:0 4px 14px rgba(16,185,129,0.35);"
+
+
+            onmouseover="this.style.transform='translateY(-1px)'"
+
+
+            onmouseout="this.style.transform='translateY(0)'">
+
+
+            🔍 Get Details
+
+
+          </button>
+
+
+        </div>
+
+
+        <div id="aedSelectedEventBadge" style="display:none;margin-top:10px;padding:10px 14px;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:10px;font-size:13px;color:#93c5fd;"></div>
+
+
+      </div>
+
+
+
+
+
+      <!-- Data table (shown after Get Details) -->
+
+
+      <div id="aedDataTableWrap" style="display:none;">
+
+
+        <div class="table-container">
+
+
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+
+
+            <div>
+
+
+              <div style="font-size:16px;font-weight:700;" id="aedPreviewEventTitle">Event: 📌</div>
+
+
+              <div style="font-size:13px;color:var(--muted);margin-top:4px;" id="aedPreviewEventMeta"></div>
+
+
+            </div>
+
+
+            <div style="display:flex;gap:10px;">
+
+
+              <button onclick="aedSaveAllData()"
+
+
+                style="padding:10px 22px;border:none;border-radius:10px;
+
+
+                       background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+
+
+                       color:white;font-size:14px;font-weight:700;cursor:pointer;
+
+
+                       font-family:'Poppins',sans-serif;transition:all 0.2s;
+
+
+                       box-shadow:0 4px 14px rgba(59,130,246,0.3);"
+
+
+                onmouseover="this.style.transform='translateY(-1px)'"
+
+
+                onmouseout="this.style.transform='translateY(0)'">
+
+
+                💾 Save All to Database
+
+
+              </button>
+
+
+              <button onclick="aedResetForm()"
+
+
+                style="padding:10px 18px;border:1px solid var(--border);border-radius:10px;
+
+
+                       background:rgba(255,255,255,0.05);color:var(--muted);font-size:13px;
+
+
+                       cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.2s;"
+
+
+                onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--muted)'">
+
+
+                🔄 New Entry
+
+
+              </button>
+
+
+            </div>
+
+
+          </div>
+
+
+          <div style="overflow-x:auto;">
+
+
+            <table>
+
+
+              <thead>
+
+
+                <tr>
+
+
+                  <th>#</th>
+
+
+                  <th>PIN / ID</th>
+
+
+                  <th>Student Name</th>
+
+
+                  <th>Branch</th>
+
+
+                  <th>Section</th>
+
+
+                  <th>Attendance</th>
+
+
+                  <th>Score (0–100)</th>
+
+
+                  <th>Status</th>
+
+
+                </tr>
+
+
+              </thead>
+
+
+              <tbody id="aedPreviewBody"></tbody>
+
+
+            </table>
+
+
+          </div>
+
+
+          <div id="aedPreviewCount" style="margin-top:12px;font-size:13px;color:var(--muted);text-align:right;"></div>
+
+
+        </div>
+
+
+      </div>
+
+
+    </div>
+
+
+
+
+
+  </div><!-- end #addPastData -->
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  STATE
+
+
+// ----------------------------------------------
+
+
+let allEvents        = [];
+
+
+let allRegistrations = [];
+
+
+let currentFaculty   = null;
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  INIT
+
+
+// ----------------------------------------------
+
+
+document.addEventListener('DOMContentLoaded', async () => {
+
+
+  // Animate header title
+
+
+  setTimeout(() => {
+
+
+    const t = document.getElementById('emTitle');
+
+
+    if (t) { t.style.opacity = '1'; t.style.transform = 'translateY(0) scale(1)'; }
+
+
+  }, 100);
+
+
+
+
+
+  currentFaculty = JSON.parse(localStorage.getItem('facultyData')) || JSON.parse(localStorage.getItem('user'));
+
+
+  if (!currentFaculty) { alert('Please login first'); window.location.href = 'index.html'; return; }
+
+
+  if (!currentFaculty.facultyId && currentFaculty._id) currentFaculty.facultyId = currentFaculty._id;
+
+
+
+
+
+  // Sidebar card
+
+
+  const name = currentFaculty.fullName || currentFaculty.name || currentFaculty.username || 'Faculty';
+
+
+  const nameEl   = document.getElementById('sidebarFacultyName');
+
+
+  const avatarEl = document.getElementById('sidebarAvatar');
+
+
+  if (nameEl)   nameEl.textContent   = name;
+
+
+  if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+
+
+
+
+
+  await loadEvents();
+
+
+  await loadRegistrations();
+
+
+  updateStats();
+
+
+  displayEvents();
+
+
+  populateAllDropdowns();
+
+
+
+
+
+  // Notification polling
+
+
+  fetchFacNotifs();
+
+
+  setInterval(fetchFacNotifs, 30000);
+
+
+});
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  DATA LOADING
+
+
+// ----------------------------------------------
+
+
+async function loadEvents() {
+
+
+  try {
+
+
+    const id = currentFaculty.facultyId || currentFaculty._id;
+
+
+    const res = await fetch(`/api/events/faculty/${id}`);
+
+
+    allEvents = res.ok ? await res.json() : [];
+
+
+  } catch { allEvents = []; }
+
+
+}
+
+
+
+
+
+async function loadRegistrations() {
+
+
+  try {
+
+
+    const res = await fetch('/api/registrations/all');
+
+
+    if (!res.ok) { allRegistrations = []; return; }
+
+
+    const all = await res.json();
+
+
+    allRegistrations = all.filter(reg => {
+
+
+      const rid = typeof reg.eventId === 'string' ? reg.eventId : reg.eventId?._id;
+
+
+      return allEvents.some(e => e._id === rid);
+
+
+    });
+
+
+  } catch { allRegistrations = []; }
+
+
+}
+
+
+
+
+
+function getRegEventId(reg) {
+
+
+  return typeof reg.eventId === 'string' ? reg.eventId : reg.eventId._id;
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  STATS & HOME
+
+
+// ----------------------------------------------
+
+
+function updateStats() {
+
+
+  const validRegs = allRegistrations.filter(r => allEvents.find(e => e._id === getRegEventId(r)));
+
+
+  const total   = validRegs.length;
+
+
+  const avg     = allEvents.length > 0 ? Math.round(total / allEvents.length) : 0;
+
+
+
+
+
+  document.getElementById('totalEvents').textContent        = allEvents.length;
+
+
+  document.getElementById('totalRegistrations').textContent = total;
+
+
+  document.getElementById('avgRegistrations').textContent   = avg;
+
+
+
+
+
+  const pE = document.getElementById('profileStatEvents');
+
+
+  const pR = document.getElementById('profileStatRegs');
+
+
+  const pA = document.getElementById('profileStatAvg');
+
+
+  if (pE) pE.textContent = allEvents.length;
+
+
+  if (pR) pR.textContent = total;
+
+
+  if (pA) pA.textContent = avg;
+
+
+}
+
+
+
+
+
+function displayEvents() {
+
+
+  const grid = document.getElementById('eventsGrid');
+
+
+  if (!allEvents.length) {
+
+
+    grid.innerHTML = `<div class="no-data"><div class="no-data-icon">📅</div><p>No events published yet. Create your first event!</p></div>`;
+
+
+    return;
+
+
+  }
+
+
+  grid.innerHTML = '';
+
+
+  allEvents.forEach(event => {
+
+
+    const regs = allRegistrations.filter(r => getRegEventId(r) === event._id);
+
+
+    const card = document.createElement('div');
+
+
+    card.className = 'event-card';
+
+
+    card.innerHTML = `
+
+
+      <h4>🎉 ${event.title}</h4>
+
+
+      <p>${event.description || 'No description provided'}</p>
+
+
+      <div class="event-meta">
+
+
+        <div class="meta-item">📍 ${event.venue || 'TBA'}</div>
+
+
+        <div class="meta-item">📅 ${event.date || 'TBA'}</div>
+
+
+        <div class="meta-item">⏰ ${event.time || 'TBA'}</div>
+
+
+      </div>
+
+
+      <span class="badge green">👥 ${regs.length}${event.maxParticipants ? ` / ${event.maxParticipants}` : ''} Registered</span>
+      ${event.maxParticipants ? `
+        <span class="badge ${(event.registrationCount || regs.length) >= event.maxParticipants ? '' : 'blue'}"
+          style="${(event.registrationCount || regs.length) >= event.maxParticipants
+            ? 'background:rgba(211,47,47,0.1);color:#c62828;border:1px solid rgba(211,47,47,0.25);margin-left:6px;'
+            : 'margin-left:6px;'}">
+          ${(event.registrationCount || regs.length) >= event.maxParticipants
+            ? '🔴 Full'
+            : `🟢 ${event.maxParticipants - (event.registrationCount || regs.length)} slots left`}
+        </span>` : ''}
+
+
+      ${regs.length > 0 ? `
+
+
+        <button class="view-btn" onclick="toggleRegList('${event._id}', this)">View Registrations 👁️</button>
+
+
+        <div class="reg-list" id="reglist-${event._id}">
+
+
+          ${regs.map((r, i) => `<div class="reg-item"><strong>${i+1}. ${r.studentName}</strong> · ${r.pinNumber} | ${r.branch} - ${r.section}</div>`).join('')}
+
+
+        </div>` : ''}
+
+
+    `;
+
+
+    grid.appendChild(card);
+
+
+  });
+
+
+}
+
+
+
+
+
+function toggleRegList(eventId, btn) {
+
+
+  const el = document.getElementById(`reglist-${eventId}`);
+
+
+  const open = el.style.display === 'block';
+
+
+  el.style.display = open ? 'none' : 'block';
+
+
+  btn.textContent = open ? 'View Registrations 👁️' : 'Hide Registrations 🔼';
+
+
+}
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  TAB SWITCHING
+
+
+// ----------------------------------------------
+
+
+function showTab(tabName) {
+
+
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+
+
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+
+
+
+
+
+  const tab = document.getElementById(tabName);
+
+
+  if (tab) tab.classList.add('active');
+
+
+
+
+
+  document.querySelectorAll('.menu-item').forEach(m => {
+
+
+    if (m.getAttribute('onclick')?.includes(tabName)) m.classList.add('active');
+
+
+  });
+
+
+
+
+
+  if (tabName === 'profile')          loadProfile();
+
+
+  if (tabName === 'analytics')        loadAnalytics();
+
+
+  if (tabName === 'feedbackAnalysis') populateFeedbackEventDropdown();
+
+
+  if (tabName === 'addPastData')      { aedInit(); pdInitDropdown(); }
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  DROPDOWNS
+
+
+// ----------------------------------------------
+
+
+function populateAllDropdowns() {
+
+
+  const ids  = ['filterEventReg', 'filterEventAtt', 'eventToUpdate', 'filterEventCert', 'feedbackEventSelect', 'pdEventSelect'];
+
+
+  const msgs = [
+
+
+    '🔍 Select an event to view registrations...',
+
+
+    '🔍 Select an event to view attendance...',
+
+
+    '🔍 Select an event to update...',
+
+
+    '🔍 Select an event to upload certificates...',
+
+
+    '🔍 Select an event to view feedback...',
+
+
+    '📋 Choose an event'
+
+
+  ];
+
+
+  ids.forEach((id, i) => {
+
+
+    const el = document.getElementById(id);
+
+
+    if (!el) return;
+
+
+    el.innerHTML = `<option value="">${msgs[i]}</option>`;
+
+
+    allEvents.forEach(e => {
+
+
+      el.innerHTML += `<option value="${e._id}">${e.title}${id === 'eventToUpdate' ? ` (v${e.version || 1})` : ''}</option>`;
+
+
+    });
+
+
+  });
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  REGISTRATIONS TAB
+
+
+// ----------------------------------------------
+
+
+function filterRegistrations() {
+
+
+  const eventId = document.getElementById('filterEventReg').value;
+
+
+  const tbody   = document.getElementById('registrationsBody');
+
+
+  const count   = document.getElementById('regCount');
+
+
+  const wrap    = document.getElementById('registrationsTableContainer');
+
+
+
+
+
+  if (!eventId) { wrap.style.display = 'none'; count.textContent = 'Select an event'; return; }
+
+
+  wrap.style.display = 'block';
+
+
+
+
+
+  const filtered = allRegistrations.filter(r => getRegEventId(r) === eventId && allEvents.find(e => e._id === getRegEventId(r)));
+
+
+  const selEv = allEvents.find(e => e._id === eventId);
+  const capText = selEv?.maxParticipants ? ` / ${selEv.maxParticipants} (${selEv.maxParticipants - filtered.length} slots left)` : '';
+  count.textContent = `${filtered.length}${capText} Registrations`;
+
+
+
+
+
+  if (!filtered.length) {
+
+
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No registrations for this event</td></tr>`;
+
+
+    return;
+
+
+  }
+
+
+
+
+
+  tbody.innerHTML = '';
+
+
+  filtered.forEach((reg, i) => {
+
+
+    const event = allEvents.find(e => e._id === getRegEventId(reg));
+
+
+    const row = document.createElement('tr');
+
+
+    row.innerHTML = `
+
+
+      <td>${i + 1}</td>
+
+
+      <td>${reg.studentName}</td>
+
+
+      <td>${reg.pinNumber}</td>
+
+
+      <td>${reg.branch}</td>
+
+
+      <td>${reg.section}</td>
+
+
+      <td>${reg.year || 'N/A'}</td>
+
+
+      <td>${event?.title || 'Unknown Event'}</td>
+
+
+      <td>
+
+
+        <button class="attendance-btn ${reg.attended ? 'present' : 'absent'}"
+
+
+                onclick="toggleAttendance('${reg._id}', ${!reg.attended})">
+
+
+          ${reg.attended ? ' Present' : ' Absent'}
+
+
+        </button>
+
+
+      </td>`;
+
+
+    tbody.appendChild(row);
+
+
+  });
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  ATTENDANCE TAB
+
+
+// ----------------------------------------------
+
+
+function filterAttendance() {
+
+
+  const eventId = document.getElementById('filterEventAtt').value;
+
+
+  const tbody   = document.getElementById('attendanceBody');
+
+
+  const count   = document.getElementById('attendedCount');
+
+
+  const wrap    = document.getElementById('attendanceTableContainer');
+
+
+
+
+
+  if (!eventId) { wrap.style.display = 'none'; count.textContent = 'Select an event'; return; }
+
+
+  wrap.style.display = 'block';
+
+
+
+
+
+  const filtered = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId && allEvents.find(e => e._id === getRegEventId(r)));
+
+
+  count.textContent = `${filtered.length} Students`;
+
+
+
+
+
+  if (!filtered.length) {
+
+
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">No attended students for this event yet</td></tr>`;
+
+
+    return;
+
+
+  }
+
+
+
+
+
+  tbody.innerHTML = '';
+
+
+  filtered.forEach((reg, i) => {
+
+
+    const event = allEvents.find(e => e._id === getRegEventId(reg));
+
+
+    const row = document.createElement('tr');
+
+
+    row.innerHTML = `
+
+
+      <td>${i + 1}</td>
+
+
+      <td>${reg.studentName}</td>
+
+
+      <td>${reg.pinNumber}</td>
+
+
+      <td>${reg.branch}</td>
+
+
+      <td>${reg.section}</td>
+
+
+      <td>${reg.year || 'N/A'}</td>
+
+
+      <td>${event?.title || 'N/A'}</td>
+
+
+      <td>
+
+
+        <input type="number" min="0" max="100" value="${reg.score || 5}" id="score-${reg._id}"
+
+
+          style="width:90px;padding:8px 10px;border-radius:8px;font-size:14px;font-family:'Poppins',sans-serif;
+
+
+                 text-align:center;background:#ffffff;border:1.5px solid #e2e8f0;
+
+
+                 color:#1F2937;outline:none;"
+
+
+          onfocus="this.style.borderColor='#1E88E5'" onblur="this.style.borderColor='#e2e8f0'">
+
+
+      </td>
+
+
+      <td>
+
+
+        <button onclick="generateCertificate('${reg._id}')" class="btn-success"
+
+
+                title="${reg.certificateUrl ? 'Re-generate certificate' : 'Generate certificate'}">
+
+
+          ${reg.certificateUrl ? '🔄 Re-gen' : '🏅 Generate'}
+
+
+        </button>
+
+
+      </td>`;
+
+
+    tbody.appendChild(row);
+
+
+  });
+
+
+}
+
+
+
+
+
+
+
+function filterAttByPin() {
+  const query = (document.getElementById('attPinSearch')?.value || '').trim().toLowerCase();
+  const rows = document.querySelectorAll('#attendanceBody tr');
+  rows.forEach(row => {
+    if (!query) { row.style.display = ''; return; }
+    const pin = (row.cells[2]?.textContent || '').toLowerCase();
+    row.style.display = pin.includes(query) ? '' : 'none';
+  });
+}
+
+
+async function toggleAttendance(regId, attended) {
+
+
+  try {
+
+
+    const res = await fetch(`/api/registrations/attendance/${regId}`, {
+
+
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify({ attended })
+
+
+    });
+
+
+    if (!res.ok) { showPopup('❌', 'Error', `Server error ${res.status}`, 'error'); return; }
+
+
+    await loadRegistrations();
+
+
+    filterRegistrations();
+
+
+    filterAttendance();
+
+
+    showPopup(attended ? '✅' : '❌', 'Attendance Updated', attended ? 'Marked as Present' : 'Marked as Absent', 'success');
+
+
+  } catch (e) { showPopup('❌', 'Error', e.message, 'error'); }
+
+
+}
+
+
+
+
+
+async function saveAllScores() {
+
+
+  const eventId = document.getElementById('filterEventAtt').value;
+
+
+  if (!eventId) { showPopup('⚠️', 'No Event Selected', 'Please select an event first.', 'error'); return; }
+
+
+
+
+
+  const students = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId);
+
+
+  if (!students.length) { showPopup('⚠️', 'No Students', 'No attended students to save scores for.', 'error'); return; }
+
+
+
+
+
+  let ok = 0, fail = 0, invalid = [];
+
+
+  for (const reg of students) {
+
+
+    const input = document.getElementById(`score-${reg._id}`);
+
+
+    if (!input) continue;
+
+
+    const score = parseInt(input.value);
+
+
+    if (isNaN(score) || score < 0 || score > 100) { fail++; invalid.push(reg.studentName); continue; }
+
+
+    try {
+
+
+      const res = await fetch(`/api/registrations/score/${reg._id}`, {
+
+
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+
+
+        body: JSON.stringify({ score })
+
+
+      });
+
+
+      res.ok ? ok++ : fail++;
+
+
+    } catch { fail++; }
+
+
+  }
+
+
+
+
+
+  await loadRegistrations(); filterAttendance();
+
+
+  if (!fail) showPopup('✅', 'Scores Saved!', `All ${ok} scores saved successfully.`, 'success');
+
+
+  else if (ok) showPopup('⚠️', 'Partially Saved', `${ok} saved, ${fail} failed. ${invalid.length ? 'Invalid for: ' + invalid.join(', ') : ''}`, 'error');
+
+
+  else showPopup('❌', 'Save Failed', `All ${fail} saves failed.${invalid.length ? ' Invalid scores for: ' + invalid.join(', ') : ''}`, 'error');
+
+
+}
+
+
+
+
+
+async function generateCertificate(regId) {
+
+
+  showPopup('⏳', 'Generating...', 'Please wait while the certificate is being created.', 'success');
+
+
+  try {
+
+
+    const res = await fetch(`/api/certificates/generate/${regId}`, { method: 'POST' });
+
+
+    const d = await res.json();
+
+
+    if (res.ok) { showPopup('🏅', 'Certificate Generated!', 'Certificate created and student notified.', 'success'); await loadRegistrations(); filterAttendance(); }
+
+
+    else showPopup('❌', 'Failed', d.message, 'error');
+
+
+  } catch { showPopup('❌', 'Error', 'Failed to generate certificate.', 'error'); }
+
+
+}
+
+
+
+
+
+async function generateAllCertificates() {
+
+
+  const eventId = document.getElementById('filterEventAtt')?.value;
+
+
+  if (!eventId) { showPopup('⚠️', 'No Event Selected', 'Please select an event first.', 'error'); return; }
+
+
+  showPopup('⏳', 'Generating...', 'Creating certificates for all attended students...', 'success');
+
+
+  try {
+
+
+    const res = await fetch(`/api/certificates/generate-all/${eventId}`, { method: 'POST' });
+
+
+    const d = await res.json();
+
+
+    if (res.ok) { showPopup('✅', 'Done!', d.message, 'success'); await loadRegistrations(); filterAttendance(); }
+
+
+    else showPopup('❌', 'Failed', d.message, 'error');
+
+
+  } catch { showPopup('❌', 'Error', 'Failed to generate certificates.', 'error'); }
+
+
+}
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  PUBLISH & UPDATE EVENT
+
+
+// ----------------------------------------------
+
+
+async function handlePublishEvent(e) {
+
+
+  e.preventDefault();
+
+
+  const fid = currentFaculty.facultyId || currentFaculty._id;
+
+
+  const data = {
+
+
+    title:                document.getElementById('eventTitle').value,
+
+
+    description:          document.getElementById('eventDescription').value,
+
+
+    venue:                document.getElementById('eventVenue').value,
+
+
+    date:                 document.getElementById('eventDate').value,
+
+
+    time:                 document.getElementById('eventTime').value,
+
+
+    registrationDeadline: document.getElementById('eventRegistrationDeadline').value,
+
+
+    faculty:              document.getElementById('eventFaculty').value,
+
+
+    facultyPhone:         document.getElementById('eventFacultyPhone').value,
+
+
+    student:              document.getElementById('eventStudent').value,
+
+
+    studentPhone:         document.getElementById('eventStudentPhone').value,
+
+
+    publishedBy:          currentFaculty.username,
+
+
+    publishedByFacultyId: fid,
+
+
+    maxParticipants:      document.getElementById('eventMaxParticipants').value
+
+
+                          ? parseInt(document.getElementById('eventMaxParticipants').value) : null
+
+
+  };
+
+
+  try {
+
+
+    const res = await fetch('/api/events', {
+
+
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify(data)
+
+
+    });
+
+
+    const result = await res.json();
+
+
+    if (res.ok) {
+
+
+      showPopup('✅', 'Event Published!', 'Your event is now visible to students.', 'success');
+
+
+      document.getElementById('publishEventForm').reset();
+
+
+      await loadEvents(); displayEvents(); populateAllDropdowns(); showTab('home');
+
+
+    } else showPopup('❌', 'Publish Failed', result.message || 'Unknown error', 'error');
+
+
+  } catch (err) { showPopup('❌', 'Server Error', 'Failed to connect to server.', 'error'); }
+
+
+}
+
+
+
+
+
+function loadEventData() {
+
+
+  const eventId = document.getElementById('eventToUpdate').value;
+
+
+  const form = document.getElementById('updateEventForm');
+
+
+  if (!eventId) { form.style.display = 'none'; return; }
+
+
+
+
+
+  const event = allEvents.find(e => e._id === eventId);
+
+
+  if (!event) return;
+
+
+
+
+
+  document.getElementById('updateTitle').value = event.title || '';
+
+
+  document.getElementById('updateDescription').value = event.description || '';
+
+
+  document.getElementById('updateVenue').value = event.venue || '';
+
+
+  document.getElementById('updateDate').value = event.date || '';
+
+
+  document.getElementById('updateTime').value = event.time || '';
+
+
+  document.getElementById('updateFaculty').value = event.faculty || '';
+
+
+  document.getElementById('updateFacultyPhone').value = event.facultyPhone || '';
+
+
+  document.getElementById('updateStudent').value = event.student || '';
+
+
+  document.getElementById('updateStudentPhone').value = event.studentPhone || '';
+
+
+  document.getElementById('updateMaxParticipants').value = event.maxParticipants || '';
+
+
+
+
+
+  if (event.registrationDeadline) {
+
+
+    const d = new Date(event.registrationDeadline);
+
+
+    const pad = n => String(n).padStart(2, '0');
+
+
+    document.getElementById('updateRegistrationDeadline').value =
+
+
+      `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+
+  } else { document.getElementById('updateRegistrationDeadline').value = ''; }
+
+
+
+
+
+  form.style.display = 'block';
+
+
+  form.style.opacity = '0';
+
+
+  setTimeout(() => { form.style.transition = 'opacity 0.3s'; form.style.opacity = '1'; }, 10);
+
+
+  setTimeout(() => form.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+
+
+}
+
+
+
+
+
+async function handleUpdateEvent(e) {
+
+
+  e.preventDefault();
+
+
+  const eventId = document.getElementById('eventToUpdate').value;
+
+
+  const data = {
+
+
+    title:                document.getElementById('updateTitle').value,
+
+
+    description:          document.getElementById('updateDescription').value,
+
+
+    venue:                document.getElementById('updateVenue').value,
+
+
+    date:                 document.getElementById('updateDate').value,
+
+
+    time:                 document.getElementById('updateTime').value,
+
+
+    registrationDeadline: document.getElementById('updateRegistrationDeadline').value,
+
+
+    faculty:              document.getElementById('updateFaculty').value,
+
+
+    facultyPhone:         document.getElementById('updateFacultyPhone').value,
+
+
+    student:              document.getElementById('updateStudent').value,
+
+
+    studentPhone:         document.getElementById('updateStudentPhone').value,
+
+
+    maxParticipants:      document.getElementById('updateMaxParticipants').value
+
+
+                          ? parseInt(document.getElementById('updateMaxParticipants').value) : null
+
+
+  };
+
+
+  try {
+
+
+    const res = await fetch(`/api/events/${eventId}`, {
+
+
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify(data)
+
+
+    });
+
+
+    const result = await res.json();
+
+
+    if (res.ok) {
+
+
+      showPopup('✅', 'Event Updated!', 'Event version incremented. Students can register again!', 'success');
+
+
+      await loadEvents(); displayEvents(); populateAllDropdowns(); cancelUpdate();
+
+
+    } else showPopup('❌', 'Update Failed', result.message, 'error');
+
+
+  } catch { showPopup('❌', 'Server Error', 'Failed to update event.', 'error'); }
+
+
+}
+
+
+
+
+
+function cancelUpdate() {
+
+
+  document.getElementById('updateEventForm').style.display = 'none';
+
+
+  document.getElementById('eventToUpdate').value = '';
+
+
+  ['updateTitle','updateDescription','updateVenue','updateDate','updateTime',
+
+
+   'updateFaculty','updateFacultyPhone','updateStudent','updateStudentPhone','updateMaxParticipants']
+
+
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  PDF REPORT
+
+
+// ----------------------------------------------
+
+
+function downloadEventReport() {
+
+
+  const eventId = document.getElementById('filterEventReg').value;
+
+
+  if (!eventId) { showPopup('⚠️', 'No Event Selected', 'Please select an event first.', 'error'); return; }
+
+
+  const event = allEvents.find(e => e._id === eventId);
+
+
+  if (!event) { showPopup('❌', 'Error', 'Event not found.', 'error'); return; }
+
+
+  const filtered = allRegistrations.filter(r => getRegEventId(r) === eventId);
+
+
+  const rows = filtered.map((r, i) => `<tr><td>${i+1}</td><td>${r.studentName||''}</td><td>${r.pinNumber||''}</td><td>${r.branch||''}</td><td>${r.section||''}</td><td>${r.year||''}</td><td>${r.attended?'Present':'Absent'}</td><td>${r.score||0}</td></tr>`).join('');
+
+
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Report - ${event.title}</title>
+
+
+    <style>body{font-family:Arial,sans-serif;padding:30px;color:#111;}h1{font-size:22px;margin-bottom:4px;}p{font-size:13px;color:#555;margin-bottom:20px;}table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#1e3a8a;color:white;padding:10px 12px;text-align:left;}td{padding:9px 12px;border-bottom:1px solid #e5e7eb;}tr:nth-child(even)td{background:#f3f4f6;}</style>
+
+
+    </head><body>
+
+
+    <h1>📋 ${event.title} — Registration Report</h1>
+
+
+    <p>Date: ${event.date||'N/A'} | Venue: ${event.venue||'N/A'} | Total: ${filtered.length} registrations</p>
+
+
+    <table><thead><tr><th>#</th><th>Student Name</th><th>PIN</th><th>Branch</th><th>Section</th><th>Year</th><th>Attendance</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table>
+
+
+    <script>window.onload=()=>window.print();<\/script></body></html>`;
+
+
+  const win = window.open('', '_blank');
+
+
+  win.document.write(html); win.document.close();
+
+
+}
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  ANALYTICS
+
+
+// ----------------------------------------------
+
+
+function loadAnalytics() {
+
+
+  const total     = allEvents.length;
+
+
+  const totalRegs = allRegistrations.length;
+
+
+  const attended  = allRegistrations.filter(r => r.attended).length;
+
+
+  const rate      = totalRegs > 0 ? Math.round((attended / totalRegs) * 100) : 0;
+
+
+
+
+
+  document.getElementById('analyticsEvents').textContent        = total;
+
+
+  document.getElementById('analyticsRegistrations').textContent = totalRegs;
+
+
+  document.getElementById('analyticsAttended').textContent      = attended;
+
+
+  document.getElementById('analyticsRate').textContent          = rate + '%';
+
+
+
+
+
+  displayEventPerformance();
+
+
+  displayTopStudents();
+
+
+}
+
+
+
+
+
+function displayEventPerformance() {
+
+
+  const container = document.getElementById('eventPerformance');
+
+
+  if (!allEvents.length) { container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--muted);">No events published yet</p>'; return; }
+
+
+
+
+
+  const stats = allEvents.map(event => {
+
+
+    const regs     = allRegistrations.filter(r => getRegEventId(r) === event._id);
+
+
+    const attended = regs.filter(r => r.attended).length;
+
+
+    const rate     = regs.length > 0 ? Math.round((attended / regs.length) * 100) : 0;
+
+
+    return { title: event.title, registrations: regs.length, attended, rate };
+
+
+  });
+
+
+
+
+
+  container.innerHTML = `
+
+
+    <table>
+
+
+      <thead><tr>
+
+
+        <th>Event</th><th style="text-align:center;">Registrations</th>
+
+
+        <th style="text-align:center;">Attended</th><th style="text-align:center;">Attendance Rate</th>
+
+
+      </tr></thead>
+
+
+      <tbody>
+
+
+        ${stats.map(s => `<tr>
+
+
+          <td style="font-weight:500;">${s.title}</td>
+
+
+          <td style="text-align:center;"><span class="badge blue">${s.registrations}</span></td>
+
+
+          <td style="text-align:center;"><span class="badge green">${s.attended}</span></td>
+
+
+          <td style="text-align:center;">
+
+
+            <div style="display:flex;align-items:center;justify-content:center;gap:10px;">
+
+
+              <div style="flex:1;max-width:100px;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;">
+
+
+                <div style="width:${s.rate}%;height:100%;background:linear-gradient(90deg,#667eea,#764ba2);"></div>
+
+
+              </div>
+
+
+              <span style="font-weight:600;color:#818cf8;">${s.rate}%</span>
+
+
+            </div>
+
+
+          </td>
+
+
+        </tr>`).join('')}
+
+
+      </tbody>
+
+
+    </table>`;
+
+
+}
+
+
+
+
+
+function displayTopStudents() {
+
+
+  const container = document.getElementById('topStudents');
+
+
+  if (!allRegistrations.length) { container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--muted);">No registrations yet</p>'; return; }
+
+
+
+
+
+  const map = {};
+
+
+  allRegistrations.forEach(r => {
+
+
+    if (r.attended && r.score > 0) {
+
+
+      if (!map[r.pinNumber]) map[r.pinNumber] = { name: r.studentName, pin: r.pinNumber, totalScore: 0, events: 0 };
+
+
+      map[r.pinNumber].totalScore += r.score;
+
+
+      map[r.pinNumber].events++;
+
+
+    }
+
+
+  });
+
+
+
+
+
+  const top = Object.values(map).sort((a, b) => b.totalScore - a.totalScore).slice(0, 10);
+
+
+  if (!top.length) { container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--muted);">No scores assigned yet</p>'; return; }
+
+
+
+
+
+  container.innerHTML = `
+
+
+    <table>
+
+
+      <thead><tr>
+
+
+        <th>Rank</th><th>Student Name</th>
+
+
+        <th style="text-align:center;">Student ID</th>
+
+
+        <th style="text-align:center;">Events Attended</th>
+
+
+        <th style="text-align:center;">Total Score</th>
+
+
+      </tr></thead>
+
+
+      <tbody>
+
+
+        ${top.map((s, i) => `<tr>
+
+
+          <td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</td>
+
+
+          <td style="font-weight:500;">${s.name}</td>
+
+
+          <td style="text-align:center;color:var(--muted);">${s.pin}</td>
+
+
+          <td style="text-align:center;"><span class="badge blue">${s.events}</span></td>
+
+
+          <td style="text-align:center;font-size:18px;font-weight:700;color:#818cf8;">${s.totalScore}</td>
+
+
+        </tr>`).join('')}
+
+
+      </tbody>
+
+
+    </table>`;
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  FEEDBACK ANALYSIS
+
+
+// ----------------------------------------------
+
+
+function populateFeedbackEventDropdown() {
+
+
+  const sel = document.getElementById('feedbackEventSelect');
+
+
+  if (!sel) return;
+
+
+  sel.innerHTML = '<option value="">💬 Select an event to view feedback...</option>';
+
+
+  allEvents.forEach(e => { sel.innerHTML += `<option value="${e._id}">${e.title} (${e.date || 'No date'})</option>`; });
+
+
+  document.getElementById('feedbackResultsContainer').style.display = 'none';
+
+
+}
+
+
+
+
+
+function renderStars(rating) {
+
+
+  const full = Math.round(rating);
+
+
+  const filled = '<span style="color:#FFC107;">★</span>';
+  const empty   = '<span style="color:#FFC107;opacity:0.3;">★</span>';
+  return filled.repeat(full) + empty.repeat(5 - full);
+
+
+}
+
+
+
+
+
+async function loadFeedbackAnalysis() {
+
+
+  const eventId = document.getElementById('feedbackEventSelect').value;
+
+
+  const container = document.getElementById('feedbackResultsContainer');
+
+
+  if (!eventId) { container.style.display = 'none'; return; }
+
+
+
+
+
+  try {
+
+
+    const res = await fetch(`/api/feedback/event/${eventId}`);
+
+
+    if (!res.ok) throw new Error('Failed to fetch feedback');
+
+
+    const feedbacks = await res.json();
+
+
+    container.style.display = 'block';
+
+
+
+
+
+    if (!feedbacks.length) {
+
+
+      document.getElementById('fbTotalCount').textContent   = '0';
+
+
+      document.getElementById('fbAvgRating').textContent    = '—';
+
+
+      document.getElementById('fbStars').textContent        = '—';
+
+
+      document.getElementById('fbBreakdown').innerHTML      = '<p style="color:var(--muted);padding:10px 0;">No ratings yet</p>';
+
+
+      document.getElementById('fbCommentsCount').textContent = '0 Comments';
+
+
+      document.getElementById('fbCommentsBody').innerHTML   = `<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--muted);">No feedback submitted for this event yet</td></tr>`;
+
+
+      return;
+
+
+    }
+
+
+
+
+
+    const avg = feedbacks.reduce((s, f) => s + f.rating, 0) / feedbacks.length;
+
+
+    document.getElementById('fbTotalCount').textContent    = feedbacks.length;
+
+
+    document.getElementById('fbAvgRating').textContent     = avg.toFixed(1);
+
+
+    document.getElementById('fbStars').innerHTML          = renderStars(avg);
+
+
+    document.getElementById('fbCommentsCount').textContent = `${feedbacks.length} Comments`;
+
+
+
+
+
+    document.getElementById('fbBreakdown').innerHTML = [5,4,3,2,1].map(star => {
+
+
+      const count = feedbacks.filter(f => f.rating === star).length;
+
+
+      const pct   = Math.round((count / feedbacks.length) * 100);
+
+
+      return `<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+
+
+        <span style="width:90px;font-size:14px;color:#FFC107;">${'★'.repeat(star)}<span style="opacity:0.3;">${'★'.repeat(5-star)}</span> ${star}</span>
+
+
+        <div style="flex:1;background:rgba(255,255,255,0.1);border-radius:20px;height:14px;overflow:hidden;">
+
+
+          <div style="width:${pct}%;background:linear-gradient(90deg,#667eea,#764ba2);height:100%;border-radius:20px;"></div>
+
+
+        </div>
+
+
+        <span style="width:70px;font-size:13px;color:var(--muted);text-align:right;">${count} (${pct}%)</span>
+
+
+      </div>`;
+
+
+    }).join('');
+
+
+
+
+
+    document.getElementById('fbCommentsBody').innerHTML = feedbacks.map((f, i) => `
+
+
+      <tr>
+
+
+        <td>${i + 1}</td>
+
+
+        <td>${f.studentName}</td>
+
+
+        <td>${renderStars(f.rating)} (${f.rating}/5)</td>
+
+
+        <td style="max-width:300px;">${f.comment || '—'}</td>
+
+
+        <td>${new Date(f.submittedAt).toLocaleString()}</td>
+
+
+      </tr>`).join('');
+
+
+  } catch (err) { console.error('Feedback error:', err); }
+
+
+}
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  CERTIFICATES
+
+
+// ----------------------------------------------
+
+
+function filterCertificates() {
+
+
+  const eventId = document.getElementById('filterEventCert').value;
+
+
+  const tbody   = document.getElementById('certBody');
+
+
+  const count   = document.getElementById('certCount');
+
+
+  const wrap    = document.getElementById('certTableContainer');
+
+
+
+
+
+  if (!eventId) { wrap.style.display = 'none'; count.textContent = 'Select an event'; return; }
+
+
+  wrap.style.display = 'block';
+
+
+
+
+
+  const attended = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId);
+
+
+  count.textContent = `${attended.length} Students`;
+
+
+
+
+
+  if (!attended.length) {
+
+
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No attended students for this event yet</td></tr>`;
+
+
+    return;
+
+
+  }
+
+
+
+
+
+  tbody.innerHTML = '';
+
+
+  attended.forEach((reg, i) => {
+
+
+    const hasCert = !!reg.certificateUrl;
+
+
+    const row = document.createElement('tr');
+
+
+    row.id = `cert-row-${reg._id}`;
+
+
+    row.innerHTML = `
+
+
+      <td>${i + 1}</td>
+
+
+      <td>${reg.studentName}</td>
+
+
+      <td>${reg.pinNumber}</td>
+
+
+      <td>${reg.branch}</td>
+
+
+      <td>${reg.section}</td>
+
+
+      <td>${reg.year || 'N/A'}</td>
+
+
+      <td id="cert-status-${reg._id}">
+
+
+        ${hasCert
+
+
+          ? `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);padding:5px 12px;border-radius:20px;">
+
+
+               <span style="color:#4caf50;font-size:16px;">📄</span>
+
+
+               <a href="${reg.certificateUrl}" target="_blank" style="color:#4caf50;font-weight:600;font-size:13px;text-decoration:none;">Uploaded ✅ View</a>
+
+
+             </span>`
+
+
+          : `<span style="color:var(--muted);">No certificate</span>`}
+
+
+      </td>
+
+
+      <td id="cert-action-${reg._id}">
+
+
+        <label style="cursor:pointer;padding:6px 14px;background:rgba(102,126,234,0.25);border:1px solid rgba(102,126,234,0.5);border-radius:6px;font-size:12px;font-weight:600;color:white;"
+
+
+               onmouseover="this.style.background='rgba(102,126,234,0.45)'"
+
+
+               onmouseout="this.style.background='rgba(102,126,234,0.25)'">
+
+
+          📎 ${hasCert ? 'Replace' : 'Upload'}
+
+
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;"
+
+
+                 onchange="uploadCertificate('${reg._id}', this)">
+
+
+        </label>
+
+
+        ${hasCert ? `<button onclick="deleteCertificate('${reg._id}')"
+
+
+          style="margin-left:8px;padding:6px 12px;background:rgba(244,67,54,0.2);border:1px solid rgba(244,67,54,0.4);border-radius:6px;font-size:12px;font-weight:600;color:#f44336;cursor:pointer;"
+
+
+          onmouseover="this.style.background='rgba(244,67,54,0.4)'"
+
+
+          onmouseout="this.style.background='rgba(244,67,54,0.2)'">🗑️ Remove</button>` : ''}
+
+
+      </td>`;
+
+
+    tbody.appendChild(row);
+
+
+  });
+
+
+}
+
+
+
+
+
+async function uploadCertificate(regId, input) {
+
+
+  if (!input.files?.length) return;
+
+
+  const formData = new FormData();
+
+
+  formData.append('certificate', input.files[0]);
+
+
+
+
+
+  const statusEl = document.getElementById(`cert-status-${regId}`);
+
+
+  const actionEl = document.getElementById(`cert-action-${regId}`);
+
+
+  if (statusEl) statusEl.innerHTML = `<span style="color:var(--muted);">⏳ Uploading...</span>`;
+
+
+  if (actionEl) actionEl.style.opacity = '0.5';
+
+
+
+
+
+  try {
+
+
+    const res = await fetch(`/api/registrations/certificate/${regId}`, { method: 'POST', body: formData });
+
+
+    if (!res.ok) { const e = await res.json(); showPopup('❌', 'Upload Failed', e.message || 'Could not upload', 'error'); if (actionEl) actionEl.style.opacity = '1'; return; }
+
+
+    const result = await res.json();
+
+
+
+
+
+    const reg = allRegistrations.find(r => (typeof r._id === 'object' ? r._id.toString() : r._id) === regId);
+
+
+    if (reg) reg.certificateUrl = result.certificateUrl;
+
+
+
+
+
+    if (statusEl) statusEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);padding:5px 12px;border-radius:20px;"><span style="color:#4caf50;font-size:16px;">📄</span><a href="${result.certificateUrl}" target="_blank" style="color:#4caf50;font-weight:600;font-size:13px;text-decoration:none;">Uploaded ✅ View</a></span>`;
+
+
+    if (actionEl) {
+
+
+      actionEl.style.opacity = '1';
+
+
+      actionEl.innerHTML = `
+
+
+        <label style="cursor:pointer;padding:6px 14px;background:rgba(102,126,234,0.25);border:1px solid rgba(102,126,234,0.5);border-radius:6px;font-size:12px;font-weight:600;color:white;"
+
+
+               onmouseover="this.style.background='rgba(102,126,234,0.45)'" onmouseout="this.style.background='rgba(102,126,234,0.25)'">
+
+
+          📎 Replace
+
+
+          <input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="uploadCertificate('${regId}', this)">
+
+
+        </label>
+
+
+        <button onclick="deleteCertificate('${regId}')" style="margin-left:8px;padding:6px 12px;background:rgba(244,67,54,0.2);border:1px solid rgba(244,67,54,0.4);border-radius:6px;font-size:12px;font-weight:600;color:#f44336;cursor:pointer;">🗑️ Remove</button>`;
+
+
+    }
+
+
+    showPopup('✅', 'Certificate Uploaded', `Certificate for ${reg?.studentName || 'student'} uploaded.`, 'success');
+
+
+  } catch (err) { showPopup('❌', 'Upload Error', err.message, 'error'); if (actionEl) actionEl.style.opacity = '1'; }
+
+
+}
+
+
+
+
+
+async function deleteCertificate(regId) {
+
+
+  if (!confirm('Remove this certificate?')) return;
+
+
+  try {
+
+
+    const res = await fetch(`/api/registrations/certificate/${regId}`, { method: 'DELETE' });
+
+
+    if (!res.ok) { showPopup('❌', 'Error', 'Could not remove certificate', 'error'); return; }
+
+
+
+
+
+    const reg = allRegistrations.find(r => (typeof r._id === 'object' ? r._id.toString() : r._id) === regId);
+
+
+    if (reg) reg.certificateUrl = null;
+
+
+
+
+
+    const statusEl = document.getElementById(`cert-status-${regId}`);
+
+
+    const actionEl = document.getElementById(`cert-action-${regId}`);
+
+
+    if (statusEl) statusEl.innerHTML = `<span style="color:var(--muted);">No certificate</span>`;
+
+
+    if (actionEl) actionEl.innerHTML = `<label style="cursor:pointer;padding:6px 14px;background:rgba(102,126,234,0.25);border:1px solid rgba(102,126,234,0.5);border-radius:6px;font-size:12px;font-weight:600;color:white;" onmouseover="this.style.background='rgba(102,126,234,0.45)'" onmouseout="this.style.background='rgba(102,126,234,0.25)'">📎 Upload<input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;" onchange="uploadCertificate('${regId}', this)"></label>`;
+
+
+    showPopup('✅', 'Certificate Removed', 'Certificate has been removed.', 'success');
+
+
+  } catch (err) { showPopup('❌', 'Error', err.message, 'error'); }
+
+
+}
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  PROFILE
+
+
+// ----------------------------------------------
+
+
+async function loadProfile() {
+
+
+  if (!currentFaculty) return;
+
+
+  const fid = currentFaculty.facultyId || currentFaculty._id;
+
+
+  try {
+
+
+    const res = await fetch(`/api/faculty/profile/${fid}`);
+
+
+    if (!res.ok) { showPopup('⚠️', 'Profile Not Found', 'Please update your profile.', 'error'); return; }
+
+
+    const p = await res.json();
+
+
+
+
+
+    const displayName = p.fullName || p.username || 'Faculty';
+
+
+    const setEl  = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+
+
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+
+
+
+
+    document.getElementById('profileAvatarIcon').textContent = displayName.charAt(0).toUpperCase();
+
+
+    setEl('profileFullName',        p.fullName || 'Faculty Name');
+
+
+    setEl('profileUsername',        '@' + (p.username || ''));
+
+
+    setEl('profileFullNameDisplay', p.fullName);
+
+
+    setEl('profileDepartmentDisplay', p.department);
+
+
+    setEl('profileEmailDisplay',    p.email);
+
+
+    setEl('profilePhoneDisplay',    p.phone);
+
+
+    setVal('profileFullNameInput',  p.fullName);
+
+
+    setVal('profileEmail',          p.email);
+
+
+    setVal('profilePhone',          p.phone);
+
+
+    setVal('profileDepartment',     p.department);
+
+
+
+
+
+    // Sync sidebar
+
+
+    const sn = document.getElementById('sidebarFacultyName');
+
+
+    const sa = document.getElementById('sidebarAvatar');
+
+
+    if (sn) sn.textContent = displayName;
+
+
+    if (sa) sa.textContent = displayName.charAt(0).toUpperCase();
+
+
+    // Load existing signature preview
+    if (p.signatureUrl) {
+      document.getElementById('sigPreviewImg').src = p.signatureUrl;
+      document.getElementById('sigPreviewWrap').style.display = 'block';
+    } else {
+      document.getElementById('sigPreviewWrap').style.display = 'none';
+    }
+
+
+  } catch (err) { showPopup('❌', 'Error', 'Failed to load profile.', 'error'); }
+
+
+}
+
+
+let sigBase64 = null;
+
+function previewSignature(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    sigBase64 = e.target.result;
+    document.getElementById('sigNewImg').src = sigBase64;
+    document.getElementById('sigNewPreview').style.display = 'block';
+    document.getElementById('sigSaveBtn').style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function saveSignature() {
+  if (!sigBase64) return;
+  const btn = document.getElementById('sigSaveBtn');
+  btn.disabled = true; btn.textContent = '⏳ Saving…';
+  try {
+    const fid = currentFaculty.facultyId || currentFaculty._id;
+    const res = await fetch(`/api/faculty/signature/${fid}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signatureBase64: sigBase64 })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      currentFaculty.signatureUrl = data.signatureUrl;
+      localStorage.setItem('facultyData', JSON.stringify(currentFaculty));
+      document.getElementById('sigPreviewImg').src = data.signatureUrl;
+      document.getElementById('sigPreviewWrap').style.display = 'block';
+      document.getElementById('sigNewPreview').style.display = 'none';
+      document.getElementById('sigSaveBtn').style.display = 'none';
+      document.getElementById('sigFileInput').value = '';
+      sigBase64 = null;
+      showSigMsg('✅ Signature saved successfully!', 'success');
+    } else { showSigMsg(data.message || 'Failed to save.', 'error'); }
+  } catch(e) { showSigMsg('Network error.', 'error'); }
+  finally { btn.disabled = false; btn.textContent = '💾 Save Signature'; }
+}
+
+function showSigMsg(text, type) {
+  const el = document.getElementById('sigMsg');
+  el.textContent = text; el.style.display = 'block';
+  el.style.background = type === 'success' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)';
+  el.style.border = type === 'success' ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(239,68,68,0.35)';
+  el.style.color  = type === 'success' ? '#4ade80' : '#f87171';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+
+
+
+
+async function updateProfile(e) {
+
+
+  e.preventDefault();
+
+
+  const fid = currentFaculty.facultyId || currentFaculty._id;
+
+
+  const data = {
+
+
+    fullName:   document.getElementById('profileFullNameInput').value,
+
+
+    email:      document.getElementById('profileEmail').value,
+
+
+    phone:      document.getElementById('profilePhone').value,
+
+
+    department: document.getElementById('profileDepartment').value
+
+
+  };
+
+
+  try {
+
+
+    const res = await fetch(`/api/faculty/profile/${fid}`, {
+
+
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify(data)
+
+
+    });
+
+
+    const result = await res.json();
+
+
+    if (res.ok) { showPopup('✅', 'Profile Updated!', 'Your profile has been updated.', 'success'); await loadProfile(); }
+
+
+    else showPopup('❌', 'Update Failed', result.message, 'error');
+
+
+  } catch { showPopup('❌', 'Error', 'Failed to update profile.', 'error'); }
+
+
+}
+
+
+
+
+
+async function changeFacultyPassword() {
+
+
+  const current  = document.getElementById('facultyCurrentPwd').value.trim();
+
+
+  const newPwd   = document.getElementById('facultyNewPwd').value.trim();
+
+
+  const confirm  = document.getElementById('facultyConfirmPwd').value.trim();
+
+
+
+
+
+  if (!current || !newPwd || !confirm) { showPopup('⚠️', 'Missing Fields', 'Please fill in all password fields.', 'error'); return; }
+
+
+  if (newPwd.length < 6)               { showPopup('⚠️', 'Too Short', 'New password must be at least 6 characters.', 'error'); return; }
+
+
+  if (newPwd !== confirm)              { showPopup('⚠️', 'Mismatch', 'Passwords do not match.', 'error'); return; }
+
+
+
+
+
+  const fid = currentFaculty.facultyId || currentFaculty._id;
+
+
+  try {
+
+
+    const res = await fetch(`/api/faculty/change-password/${fid}`, {
+
+
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify({ currentPassword: current, newPassword: newPwd })
+
+
+    });
+
+
+    const data = await res.json();
+
+
+    if (res.ok) {
+
+
+      document.getElementById('facultyCurrentPwd').value = '';
+
+
+      document.getElementById('facultyNewPwd').value     = '';
+
+
+      document.getElementById('facultyConfirmPwd').value  = '';
+
+
+      showPopup('✅', 'Password Changed', 'Your password has been updated.', 'success');
+
+
+    } else showPopup('❌', 'Failed', data.message || 'Could not change password.', 'error');
+
+
+  } catch { showPopup('❌', 'Error', 'Network error. Please try again.', 'error'); }
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  POPUP
+
+
+// ----------------------------------------------
+
+
+function showPopup(icon, title, message, type = 'success') {
+
+
+  document.getElementById('popupIcon').textContent    = icon;
+
+
+  document.getElementById('popupTitle').textContent   = title;
+
+
+  document.getElementById('popupMessage').textContent = message;
+
+
+  const btn = document.getElementById('popupOk');
+
+
+  type === 'error' ? btn.classList.add('error') : btn.classList.remove('error');
+
+
+  document.getElementById('popupOverlay').classList.add('show');
+
+
+  document.getElementById('popupBox').classList.add('show');
+
+
+}
+
+
+
+
+
+function closePopup() {
+
+
+  document.getElementById('popupOverlay').classList.remove('show');
+
+
+  document.getElementById('popupBox').classList.remove('show');
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  LOGOUT
+
+
+// ----------------------------------------------
+
+
+function logout() {
+
+
+  if (confirm('Are you sure you want to logout?')) window.location.href = 'index.html';
+
+
+}
+
+
+
+
+
+// ----------------------------------------------
+
+
+//  NOTIFICATIONS
+
+
+// ----------------------------------------------
+
+
+let facNotifItems  = [];
+
+
+let facNotifUnread = new Set();
+
+
+let facLastSeen    = localStorage.getItem('facNotifLastSeen') || new Date(0).toISOString();
+
+
+
+
+
+function getFacultyId() {
+
+
+  try { const d = JSON.parse(localStorage.getItem('facultyData') || '{}'); return d.facultyId || d._id || ''; } catch { return ''; }
+
+
+}
+
+
+
+
+
+function facTimeAgo(dateStr) {
+
+
+  const diff = Date.now() - new Date(dateStr).getTime();
+
+
+  const m = Math.floor(diff / 60000);
+
+
+  if (m < 1)  return 'Just now';
+
+
+  if (m < 60) return `${m}m ago`;
+
+
+  const h = Math.floor(m / 60);
+
+
+  if (h < 24) return `${h}h ago`;
+
+
+  return `${Math.floor(h / 24)}d ago`;
+
+
+}
+
+
+
+
+
+async function fetchFacNotifs() {
+
+
+  const fid = getFacultyId();
+
+
+  if (!fid) return;
+
+
+  try {
+
+
+    const res = await fetch(`/api/notifications/faculty/${fid}`);
+
+
+    if (!res.ok) return;
+
+
+    facNotifItems = await res.json();
+
+
+    const lastSeen = new Date(facLastSeen);
+
+
+    facNotifUnread = new Set(facNotifItems.filter(n => new Date(n.createdAt) > lastSeen).map(n => n._id));
+
+
+    updateFacBadge();
+
+
+    renderFacNotifList();
+
+
+  } catch { /* silent */ }
+
+
+}
+
+
+
+
+
+function updateFacBadge() {
+
+
+  const badge = document.getElementById('facNotifBadge');
+
+
+  const count = facNotifUnread.size;
+
+
+  if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.style.display = 'flex'; }
+
+
+  else badge.style.display = 'none';
+
+
+}
+
+
+
+
+
+function renderFacNotifList() {
+
+
+  const list = document.getElementById('facNotifList');
+
+
+  if (!facNotifItems.length) {
+
+
+    list.innerHTML = '<div style="padding:24px;text-align:center;color:rgba(255,255,255,0.3);font-size:13px;">No notifications yet</div>';
+
+
+    return;
+
+
+  }
+
+
+  list.innerHTML = facNotifItems.slice(0, 30).map(n => {
+
+
+    const unread = facNotifUnread.has(n._id);
+
+
+    return `<div style="padding:12px 16px;display:flex;gap:10px;align-items:flex-start;
+
+
+                        border-bottom:1px solid rgba(255,255,255,0.07);
+
+
+                        background:${unread ? 'rgba(99,130,255,0.1)' : 'transparent'};
+
+
+                        border-left:${unread ? '3px solid #818cf8' : '3px solid transparent'};">
+
+
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(99,130,255,0.2);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;">🔔</div>
+
+
+      <div style="flex:1;min-width:0;">
+
+
+        <div style="font-size:13px;font-weight:600;color:black;margin-bottom:2px;">${n.title}</div>
+
+
+        <div style="font-size:12px;color:var(--muted);line-height:1.4;">${n.message}</div>
+
+
+        <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-top:3px;">${facTimeAgo(n.createdAt)}</div>
+
+
+      </div>
+
+
+    </div>`;
+
+
+  }).join('');
+
+
+}
+
+
+
+
+
+function toggleFacNotif() {
+
+
+  const dd = document.getElementById('facNotifDropdown');
+
+
+  const isOpen = dd.style.display === 'flex';
+
+
+  dd.style.display = isOpen ? 'none' : 'flex';
+
+
+  dd.style.flexDirection = 'column';
+
+
+}
+
+
+
+
+
+function facMarkAllRead() {
+
+
+  facLastSeen = new Date().toISOString();
+
+
+  localStorage.setItem('facNotifLastSeen', facLastSeen);
+
+
+  facNotifUnread.clear();
+
+
+  updateFacBadge();
+
+
+  renderFacNotifList();
+
+
+}
+
+
+
+
+
+async function facClearAll() {
+
+
+  const fid = getFacultyId();
+
+
+  try { await fetch(`/api/notifications/faculty/${encodeURIComponent(fid)}`, { method: 'DELETE' }); } catch {}
+
+
+  facNotifItems = [];
+
+
+  facNotifUnread.clear();
+
+
+  facLastSeen = new Date().toISOString();
+
+
+  localStorage.setItem('facNotifLastSeen', facLastSeen);
+
+
+  updateFacBadge();
+
+
+  renderFacNotifList();
+
+
+}
+
+
+
+
+
+document.addEventListener('click', e => {
+
+
+  const wrap = document.getElementById('facNotifWrap');
+
+
+  if (wrap && !wrap.contains(e.target)) document.getElementById('facNotifDropdown').style.display = 'none';
+
+
+});
+
+
+</script>
+
+
+
+
+
+<script>
+
+
+// ----------------------------------------------
+
+
+//  ADD EVENT DATA (inside Add Past Data tab)
+
+
+// ----------------------------------------------
+
+
+let aedSelectedEventId  = null;
+
+
+let aedSelectedStudent  = null;
+
+
+let aedIsPresent        = true;
+
+
+let aedParsedRows       = [];   // rows parsed from Excel
+
+
+let aedCreatedEventId   = null; // event created by submit
+
+
+
+
+
+// Called when Add Past Data tab is shown — show the search panel immediately
+function aedInit() {
+  document.getElementById('aedNewEventPanel').style.display = 'none';
+  document.getElementById('aedPreviewPanel').style.display  = 'block';
+  document.getElementById('aedDataTableWrap').style.display = 'none';
+  // Populate dropdown with all faculty events immediately
+  aedFilterEventSearch();
+}
+
+
+
+
+
+// Also repopulate the pdEventSelect when tab opens
+
+
+function pdInitDropdown() {
+
+
+  const sel = document.getElementById('pdEventSelect');
+
+
+  if (!sel) return;
+
+
+  sel.innerHTML = '<option value="">📋 Choose an event</option>';
+
+
+  allEvents.forEach(e => {
+
+
+    sel.innerHTML += `<option value="${e._id}">${e.title} (${e.date || 'No date'})</option>`;
+
+
+  });
+
+
+}
+
+
+
+
+
+// Toggle the inline "Add Event" form
+
+
+function aedToggleNewEventForm() {
+
+
+  const panel = document.getElementById('aedNewEventPanel');
+
+
+  const preview = document.getElementById('aedPreviewPanel');
+
+
+  const btn   = document.getElementById('aedAddEventBtn');
+
+
+  const isOpen = panel.style.display !== 'none';
+
+
+  panel.style.display   = isOpen ? 'none' : 'block';
+
+
+  // Keep search panel always visible so faculty can always browse submitted events
+  preview.style.display = 'block';
+
+
+  if (btn) btn.textContent = isOpen ? '➕ Add Event' : '❌ Cancel';
+
+
+  if (!isOpen) {
+
+
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+
+
+  }
+
+
+}
+
+
+
+
+
+// Reset the whole form back to initial state
+
+
+function aedResetForm() {
+
+
+  ['aedTitle','aedVenue','aedDesc','aedDate','aedTime',
+
+
+   'aedFaculty','aedFacultyPhone','aedStudent','aedStudentPhone']
+
+
+    .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
+
+  document.getElementById('aedExcelFile').value                     = '';
+
+
+  document.getElementById('aedFileNameDisplay').textContent          = '';
+
+
+  document.getElementById('aedPreviewPanel').style.display           = 'block';
+
+
+  document.getElementById('aedDataTableWrap').style.display          = 'none';
+
+
+  document.getElementById('aedNewEventPanel').style.display          = 'block';
+
+
+  document.getElementById('aedAddEventBtn').textContent              = '❌ Cancel';
+
+
+  document.getElementById('aedEventSearchInput').value               = '';
+
+
+  document.getElementById('aedSelectedEventBadge').style.display     = 'none';
+
+
+  document.getElementById('aedEventDropdown').style.display          = 'none';
+
+
+  aedParsedRows     = [];
+
+
+  aedCreatedEventId = null;
+
+
+}
+
+
+
+
+
+// Handle Excel / CSV file upload — parse client-side with SheetJS
+
+
+function aedHandleExcelUpload(input) {
+
+
+  if (!input.files?.length) return;
+
+
+  const file = input.files[0];
+
+
+  document.getElementById('aedFileNameDisplay').textContent = `📄 ${file.name}  (${(file.size/1024).toFixed(1)} KB)`;
+
+
+  aedParsedRows = [];
+
+
+
+
+
+  const reader = new FileReader();
+
+
+  reader.onload = e => {
+
+
+    try {
+
+
+      const wb   = XLSX.read(e.target.result, { type: 'array' });
+
+
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+
+
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+
+
+
+
+      if (!rows.length) { showPopup('⚠️', 'Empty File', 'No data found in the uploaded file.', 'error'); return; }
+
+
+
+
+
+      // Normalise column names (case-insensitive)
+
+
+      aedParsedRows = rows.map(r => {
+
+
+        const get = (...keys) => {
+
+
+          for (const k of keys) {
+
+
+            const found = Object.keys(r).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
+
+
+            if (found && r[found] !== '') return String(r[found]).trim();
+
+
+          }
+
+
+          return '';
+
+
+        };
+
+
+        return {
+
+
+          pin:      get('pin number','pin','id','student id','pin_number','roll no','roll number'),
+
+
+          name:     get('name','student name','full name'),
+
+
+          branch:   get('branch','dept','department'),
+
+
+          section:  get('section','sec'),
+
+
+          score:    get('score','marks','points'),
+
+
+          attended: get('attended','attendance','present')
+
+
+        };
+
+
+      }).filter(r => r.pin); // must have PIN
+
+
+
+
+
+      if (!aedParsedRows.length) {
+
+
+        showPopup('⚠️', 'No PIN Found', 'Could not find a "PIN Number" column. Please check your file.', 'error');
+
+
+        return;
+
+
+      }
+
+
+
+
+
+      showPopup('✅', 'File Loaded', `${aedParsedRows.length} student rows read from "${file.name}".`, 'success');
+
+
+    } catch (err) {
+
+
+      showPopup('❌', 'Parse Error', 'Could not read the file. Make sure it is a valid Excel or CSV.', 'error');
+
+
+    }
+
+
+  };
+
+
+  reader.readAsArrayBuffer(file);
+
+
+}
+
+
+
+
+
+// Submit: create event + show preview table
+
+
+async function aedSubmitEventAndData() {
+
+
+  const title = document.getElementById('aedTitle').value.trim();
+
+
+  const date  = document.getElementById('aedDate').value;
+
+
+  const time  = document.getElementById('aedTime').value;
+
+
+
+
+
+  if (!title) { showPopup('⚠️', 'Missing Title', 'Please enter an event title.', 'error'); return; }
+
+
+  if (!date)  { showPopup('⚠️', 'Missing Date',  'Please select an event date.', 'error'); return; }
+
+
+  if (!time)  { showPopup('⚠️', 'Missing Time',  'Please select an event time.', 'error'); return; }
+
+
+
+
+
+  const fid = currentFaculty.facultyId || currentFaculty._id;
+
+
+  const data = {
+
+
+    title,
+
+
+    description:          document.getElementById('aedDesc').value.trim(),
+
+
+    venue:                document.getElementById('aedVenue').value.trim(),
+
+
+    date,
+
+
+    time,
+
+
+    faculty:              document.getElementById('aedFaculty').value.trim(),
+
+
+    facultyPhone:         document.getElementById('aedFacultyPhone').value.trim(),
+
+
+    student:              document.getElementById('aedStudent').value.trim(),
+
+
+    studentPhone:         document.getElementById('aedStudentPhone').value.trim(),
+
+
+    // Past events — set deadline far in past so students can't register
+
+
+    registrationDeadline: new Date(date + 'T00:00:00').toISOString(),
+
+
+    publishedBy:          currentFaculty.username,
+
+
+    publishedByFacultyId: fid
+
+
+  };
+
+
+
+
+
+  try {
+
+
+    const res    = await fetch('/api/events', {
+
+
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+
+
+      body: JSON.stringify(data)
+
+
+    });
+
+
+    const result = await res.json();
+
+
+    if (!res.ok) { showPopup('❌', 'Create Failed', result.message || 'Unknown error', 'error'); return; }
+
+
+
+
+
+    aedCreatedEventId = result._id || result.event?._id;
+
+    // Track submitted events for the "Add Past Data" search bar (per faculty)
+    if (aedCreatedEventId) {
+      const fid = currentFaculty?.facultyId || currentFaculty?._id || 'default';
+      const storageKey = 'aedSubmittedEvents_' + fid;
+      let submitted = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      if (!submitted.includes(aedCreatedEventId)) {
+        submitted.push(aedCreatedEventId);
+        localStorage.setItem(storageKey, JSON.stringify(submitted));
+      }
+    }
+
+
+    await loadEvents();
+
+
+    displayEvents();
+
+
+    populateAllDropdowns();
+
+
+    pdInitDropdown();
+
+
+
+
+
+    // Show success popup, then reveal search panel
+
+
+    showPopup('✅', 'Event Created Successfully!', `"${title}" has been added. Now search it below and click Get Details to load the Excel data.`, 'success');
+
+
+
+
+
+    // Close form, show search panel
+
+
+    document.getElementById('aedNewEventPanel').style.display  = 'none';
+
+
+    document.getElementById('aedDataTableWrap').style.display  = 'none';
+
+
+    document.getElementById('aedPreviewPanel').style.display   = 'block';
+
+
+    document.getElementById('aedAddEventBtn').textContent      = '➕ Add Event';
+
+
+
+
+
+    // Pre-fill search with the newly created event title
+
+
+    document.getElementById('aedEventSearchInput').value = title;
+
+
+    aedFilterEventSearch();
+
+
+
+
+
+  } catch {
+
+
+    showPopup('❌', 'Server Error', 'Failed to create event. Please try again.', 'error');
+
+
+  }
+
+
+}
+
+
+
+
+
+// Filter event search dropdown — shows all faculty events (not just localStorage-tracked)
+function aedFilterEventSearch() {
+  const query    = document.getElementById('aedEventSearchInput').value.trim().toLowerCase();
+  const dropdown = document.getElementById('aedEventDropdown');
+
+  // Show all events belonging to this faculty
+  const filtered = query
+    ? allEvents.filter(e => e.title.toLowerCase().includes(query))
+    : allEvents;
+
+  if (!filtered.length) {
+    dropdown.style.display = 'block';
+    if (!allEvents.length) {
+      dropdown.innerHTML = `<div style="padding:14px 16px;color:var(--muted);font-size:13px;">
+        No events found. Use the <strong style="color:#93c5fd;">➕ Add Event</strong> button above to create a past event first.</div>`;
+    } else {
+      dropdown.innerHTML = `<div style="padding:14px 16px;color:var(--muted);font-size:13px;">No matching event found.</div>`;
+    }
+    return;
+  }
+
+  dropdown.style.display = 'block';
+  dropdown.innerHTML = filtered.map(e => `
+    <div onclick="aedSelectEvent('${e._id}','${e.title.replace(/'/g,"\\'")}','${e.date || ''}','${e.venue || ''}')"
+      style="padding:11px 16px;cursor:pointer;font-size:14px;border-bottom:1px solid rgba(255,255,255,0.05);
+             transition:background 0.15s;"
+      onmouseover="this.style.background='rgba(59,130,246,0.15)'"
+      onmouseout="this.style.background='transparent'">
+      <span style="font-weight:600;color:white;">${e.title}</span>
+      <span style="font-size:12px;color:var(--muted);margin-left:8px;">${e.date || ''}${e.venue ? ' · ' + e.venue : ''}</span>
+    </div>`).join('');
+}
+
+
+
+
+
+// Called when user picks an event from the dropdown
+
+
+function aedSelectEvent(id, title, date, venue) {
+  // Reset previous event data so Get Details loads fresh
+  if (aedCreatedEventId !== id) {
+    aedParsedRows = [];
+    document.getElementById('aedDataTableWrap').style.display = 'none';
+  }
+
+  aedCreatedEventId = id;
+  document.getElementById('aedEventSearchInput').value = title;
+  document.getElementById('aedEventDropdown').style.display = 'none';
+
+  const badge = document.getElementById('aedSelectedEventBadge');
+  badge.style.display = 'block';
+  badge.textContent   = `📌 Selected: ${title}${date ? '  |  ' + date : ''}${venue ? '  |  ' + venue : ''}`;
+
+  // Pre-fill preview header
+  document.getElementById('aedPreviewEventTitle').textContent = '📌 ' + title;
+  document.getElementById('aedPreviewEventMeta').textContent  = date + (venue ? '  |  ' + venue : '');
+}
+
+
+
+
+
+// Get Details button — load existing DB registrations + any uploaded Excel data
+async function aedGetDetails() {
+  if (!aedCreatedEventId) {
+    showPopup('⚠️', 'No Event Selected', 'Please search and select an event first.', 'error');
+    return;
+  }
+
+  document.getElementById('aedDataTableWrap').style.display = 'block';
+
+  // If no Excel was uploaded, load existing registrations from DB for this event
+  if (!aedParsedRows.length) {
+    const eventRegs = allRegistrations.filter(r => getRegEventId(r) === aedCreatedEventId);
+    if (eventRegs.length > 0) {
+      aedParsedRows = eventRegs.map(r => ({
+        pin:      r.pinNumber || '',
+        name:     r.studentName || '',
+        branch:   r.branch || '',
+        section:  r.section || '',
+        score:    r.score || 0,
+        attended: r.attended ? 'yes' : 'no',
+        _status:  ''
+      }));
+    } else {
+      // No registrations yet — show one empty row to add manually
+      aedParsedRows = [{ pin:'', name:'', branch:'', section:'', score:'0', attended:'yes', _status:'' }];
+    }
+  }
+
+  aedRenderPreviewTable();
+  setTimeout(() => document.getElementById('aedDataTableWrap').scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+
+
+
+
+
+
+
+function aedRenderPreviewTable() {
+
+
+  const tbody = document.getElementById('aedPreviewBody');
+
+
+  const count = document.getElementById('aedPreviewCount');
+
+
+
+
+
+  if (!aedParsedRows.length) {
+
+
+    // No Excel uploaded — show one empty row to add manually
+
+
+    aedParsedRows = [{ pin:'', name:'', branch:'', section:'', score:'0', attended:'yes', _status:'' }];
+
+
+  }
+
+
+
+
+
+  tbody.innerHTML = aedParsedRows.map((r, i) => {
+
+
+    const attendedVal = String(r.attended).toLowerCase();
+
+
+    const isPresent   = !attendedVal || attendedVal === 'yes' || attendedVal === 'true' || attendedVal === '1' || attendedVal === 'present';
+
+
+    return `
+
+
+    <tr id="aed-row-${i}">
+
+
+      <td>${i + 1}</td>
+
+
+      <td><input type="text" value="${r.pin}" id="aed-pin-${i}"
+
+
+          style="width:110px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,0.07);
+
+
+                 border:1px solid var(--border);color:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;"
+
+
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></td>
+
+
+      <td><input type="text" value="${r.name}" id="aed-name-${i}"
+
+
+          style="width:140px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,0.07);
+
+
+                 border:1px solid var(--border);color:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;"
+
+
+          onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"
+
+
+          placeholder="Auto-filled from DB"></td>
+
+
+      <td>${r.branch || '<span style="color:var(--muted);">—</span>'}</td>
+
+
+      <td>${r.section || '<span style="color:var(--muted);">—</span>'}</td>
+
+
+      <td>
+
+
+        <select id="aed-att-${i}"
+
+
+          style="padding:7px 10px;border-radius:8px;background:rgba(255,255,255,0.07);
+
+
+                 border:1px solid var(--border);color:white;font-size:13px;
+
+
+                 font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+
+
+          <option value="1" ${isPresent ? 'selected' : ''}>✅ Present</option>
+
+
+          <option value="0" ${!isPresent ? 'selected' : ''}>❌ Absent</option>
+
+
+        </select>
+
+
+      </td>
+
+
+      <td><input type="number" min="0" max="100" value="${r.score || 0}" id="aed-score-${i}"
+
+
+          style="width:80px;padding:7px 10px;border-radius:8px;background:rgba(255,255,255,0.07);
+
+
+                 border:1px solid var(--border);color:var(--gold);font-size:14px;font-weight:700;
+
+
+                 font-family:'Poppins',sans-serif;text-align:center;outline:none;"
+
+
+          onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'"></td>
+
+
+      <td id="aed-status-${i}" style="font-size:12px;color:var(--muted);">—</td>
+
+
+    </tr>`;
+
+
+  }).join('');
+
+
+
+
+
+  count.textContent = `${aedParsedRows.length} student${aedParsedRows.length !== 1 ? 's' : ''} ready to save`;
+
+
+}
+
+
+
+
+
+// Save all rows to DB
+
+
+async function aedSaveAllData() {
+
+
+  if (!aedCreatedEventId) { showPopup('⚠️', 'No Event', 'Event was not created yet.', 'error'); return; }
+
+
+
+
+
+  const rows = aedParsedRows.length;
+
+
+  let ok = 0, fail = 0, notFound = [];
+
+
+
+
+
+  for (let i = 0; i < rows; i++) {
+
+
+    const pin      = document.getElementById(`aed-pin-${i}`)?.value.trim();
+
+
+    const attended = document.getElementById(`aed-att-${i}`)?.value === '1';
+
+
+    const score    = parseInt(document.getElementById(`aed-score-${i}`)?.value) || 0;
+
+
+    const statusEl = document.getElementById(`aed-status-${i}`);
+
+
+
+
+
+    if (!pin) { if (statusEl) statusEl.innerHTML = '<span style="color:var(--muted);">Skipped</span>'; continue; }
+
+
+
+
+
+    if (statusEl) statusEl.innerHTML = '<span style="color:#93c5fd;">Saving…</span>';
+
+
+
+
+
+    try {
+
+
+      const res = await fetch('/api/registrations/manual', {
+
+
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+
+
+        body: JSON.stringify({ pinNumber: pin, eventId: aedCreatedEventId, attended, score })
+
+
+      });
+
+
+      const d = await res.json();
+
+
+      if (res.ok) {
+
+
+        ok++;
+
+
+        if (statusEl) statusEl.innerHTML = '<span style="color:#4ade80;font-weight:700;">✅ Saved</span>';
+
+
+      } else {
+
+
+        fail++;
+
+
+        notFound.push(pin);
+
+
+        if (statusEl) statusEl.innerHTML = `<span style="color:#f87171;font-weight:700;" title="${d.message}">❌ ${d.message?.includes('not found') ? 'PIN not found' : 'Failed'}</span>`;
+
+
+      }
+
+
+    } catch {
+
+
+      fail++;
+
+
+      if (statusEl) statusEl.innerHTML = '<span style="color:#f87171;">❌ Error</span>';
+
+
+    }
+
+
+  }
+
+
+
+
+
+  await loadRegistrations();
+
+
+  pdInitDropdown();
+
+
+
+
+
+  if (!fail) {
+
+
+    showPopup('✅', 'All Saved!', `${ok} student records saved successfully to the database.`, 'success');
+
+
+  } else if (ok) {
+
+
+    showPopup('⚠️', 'Partially Saved', `${ok} saved. ${fail} failed${notFound.length ? ' (PIN not found: ' + notFound.slice(0,3).join(', ') + (notFound.length>3?'…':'') + ')' : ''}.`, 'error');
+
+
+  } else {
+
+
+    showPopup('❌', 'Save Failed', `All ${fail} records failed. Check PIN numbers.`, 'error');
+
+
+  }
+
+
+}
+
+
+</script>
+</body>
+</html>

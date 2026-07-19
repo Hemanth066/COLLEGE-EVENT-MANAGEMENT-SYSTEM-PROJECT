@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aditya University - College Event Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --blue: #2563eb; --blue-dark: #1e40af; --gold: #f59e0b; --gold-dark: #d97706;
+      --bg: #f8fafc; --glass: rgba(37,99,235,0.05); --border: rgba(37,99,235,0.12);
+      --text: #0f172a; --muted: #64748b;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4; }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 60px;
+      height: 70px;
+      background: white;
+      border-bottom: 2px solid #e2e8f0;
+      box-shadow: 0 2px 16px rgba(37,99,235,0.08);
+      animation: slideDown 0.8s ease;
+    }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+
+    /* Left — Aditya University branding */
+    .nav-university {
+      display: flex; align-items: center; gap: 14px; min-width: 300px;
+    }
+
+    /* SVG Emblem */
+    .nav-emblem {
+      width: 52px; height: 52px; flex-shrink: 0;
+    }
+
+    /* ADITYA UNIVERSITY text */
+    .nav-university-text { line-height: 1.15; }
+    .nav-university-name {
+      font-size: 18px; font-weight: 900;
+      color: #b8860b;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+    .nav-university-sub {
+      font-size: 12px; font-weight: 700;
+      color: #b8860b;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    /* Vertical divider */
+    .nav-brand-divider {
+      width: 1.5px; height: 44px;
+      background: linear-gradient(to bottom, transparent, #c0392b, transparent);
+      flex-shrink: 0;
+      margin: 0 4px;
+    }
+
+    /* NAAC badge */
+    .nav-naac {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+    }
+    .nav-naac-accredited {
+      font-size: 9px; font-weight: 600; color: #555;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      line-height: 1;
+    }
+    .nav-naac-title {
+      font-size: 22px; font-weight: 900;
+      color: #c0392b;
+      letter-spacing: 1px;
+      line-height: 1;
+    }
+    .nav-naac-grade {
+      background: #1a4fa0; color: white;
+      font-size: 11px; font-weight: 800;
+      padding: 2px 8px; border-radius: 4px;
+      letter-spacing: 0.5px;
+      display: flex; align-items: center; gap: 2px;
+    }
+    .nav-naac-grade sup { font-size: 8px; }
+
+    /* Center — CEM System title */
+    .nav-center {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-center-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 18px; border-radius: 50px;
+      background: linear-gradient(135deg, rgba(37,99,235,0.08), rgba(30,64,175,0.05));
+      border: 1.5px solid rgba(37,99,235,0.2);
+    }
+    .nav-center-icon { font-size: 20px; }
+    .nav-center-text { font-size: 16px; font-weight: 700; color: var(--blue); letter-spacing: -0.3px; }
+    .nav-center-text span { color: var(--gold); }
+
+    /* Right — nav links */
+    .nav-links { display: flex; gap: 8px; min-width: 220px; justify-content: flex-end; }
+    .nav-link {
+      padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+      color: var(--muted); cursor: pointer; transition: all 0.3s;
+      border: 1px solid transparent; background: none;
+      font-family: 'Poppins', sans-serif;
+    }
+    .nav-link:hover { color: var(--blue); background: rgba(37,99,235,0.07); border-color: rgba(37,99,235,0.2); }
+    .nav-link.primary {
+      background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+      color: white; border-color: transparent;
+    }
+    .nav-link.primary:hover { box-shadow: 0 4px 20px rgba(37,99,235,0.4); transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 120px 40px 80px;
+      overflow: hidden;
+      /* fallback colour while video loads */
+      background: #0a1628;
+    }
+
+    /* Fullscreen video */
+    .hero-video {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      /* slight blur softens any busy footage */
+      filter: blur(1px) brightness(0.55);
+      transform: scale(1.04); /* hide blur edges */
+    }
+
+    /* Gradient overlay — dark at edges, slightly lighter centre so text pops */
+    .hero-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background:
+        radial-gradient(ellipse at center, rgba(10,22,40,0.45) 0%, rgba(10,22,40,0.72) 100%),
+        linear-gradient(180deg, rgba(10,22,40,0.6) 0%, rgba(10,22,40,0.3) 50%, rgba(10,22,40,0.65) 100%);
+    }
+
+    /* All hero content sits above the overlay */
+    .hero-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 20px; border-radius:50px;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      border:1.5px solid rgba(255,255,255,0.25);
+      font-size:13px; color: #e2e8f0; margin-bottom:32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+    .hero-badge-dot { width:8px; height:8px; background:var(--gold); border-radius:50%; animation:blink 1.5s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+    .hero h1 {
+      font-size: clamp(36px, 5.5vw, 72px);
+      font-weight: 800; line-height: 1.1; letter-spacing: -2px;
+      color: #ffffff;
+      margin-bottom: 24px;
+      animation: fadeInUp 0.8s ease 0.4s both;
+      text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px; color: rgba(226,232,240,0.88); max-width: 560px;
+      line-height: 1.7; margin-bottom: 48px;
+      animation: fadeInUp 0.8s ease 0.6s both;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .hero-btns {
+      display:flex; gap:16px; flex-wrap:wrap; justify-content:center;
+      animation: fadeInUp 0.8s ease 0.8s both;
+    }
+    .btn-hero {
+      padding:14px 30px; border-radius:12px; font-size:15px; font-weight:600;
+      cursor:pointer; transition:all 0.3s; border: none;
+      font-family: 'Poppins', sans-serif;
+    }
+    .btn-hero.primary {
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:white; box-shadow:0 6px 24px rgba(37,99,235,0.45);
+    }
+    .btn-hero.primary:hover { transform:translateY(-3px); box-shadow:0 12px 36px rgba(37,99,235,0.6); }
+    .btn-hero.secondary {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      color: #f1f5f9;
+      border: 1.5px solid rgba(255,255,255,0.25);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .btn-hero.secondary:hover { background: rgba(255,255,255,0.22); transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      position:relative; z-index:1;
+      display:flex; justify-content:center; flex-wrap:wrap; gap:0;
+      background: white;
+      border-top: 1.5px solid #e2e8f0; border-bottom: 1.5px solid #e2e8f0;
+      padding:40px 60px;
+      box-shadow: 0 4px 24px rgba(37,99,235,0.06);
+      animation: fadeIn 1s ease 1s both;
+    }
+    .stat-item {
+      flex:1; min-width:160px; text-align:center; padding:20px 30px;
+      border-right:1px solid #e2e8f0;
+    }
+    .stat-item:last-child { border-right:none; }
+    .stat-num { font-size:42px; font-weight:800; color: var(--blue); line-height:1; }
+    .stat-label { font-size:13px; color: var(--muted); margin-top:6px; }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+    /* ── FEATURES SECTION ── */
+    .section { position:relative; z-index:1; padding:100px 60px; max-width:1300px; margin:0 auto; }
+    .section-label {
+      display:inline-block; padding:6px 16px; border-radius:50px;
+      background:rgba(37,99,235,0.08); border:1.5px solid rgba(37,99,235,0.2);
+      font-size:12px; font-weight:600; color:var(--blue); letter-spacing:1px;
+      text-transform:uppercase; margin-bottom:16px;
+    }
+    .section-title { font-size:clamp(28px,4vw,48px); font-weight:700; margin-bottom:16px; color: var(--text); }
+    .section-sub { font-size:16px; color: var(--muted); max-width:500px; line-height:1.7; }
+    .features-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+      gap:24px; margin-top:60px;
+    }
+    .feature-card {
+      background: white; border:1.5px solid #e2e8f0;
+      border-radius:20px; padding:32px;
+      transition:all 0.4s cubic-bezier(0.4,0,0.2,1);
+      position:relative; overflow:hidden;
+      opacity:0; transform:translateY(40px);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .feature-card.visible { opacity:1; transform:translateY(0); }
+    .feature-card:hover { transform:translateY(-8px); border-color:rgba(37,99,235,0.35); box-shadow:0 20px 60px rgba(37,99,235,0.12); }
+    .feature-icon-wrap {
+      width:56px; height:56px; border-radius:14px; margin-bottom:20px;
+      display:flex; align-items:center; justify-content:center; font-size:26px;
+    }
+    .feature-card h3 { font-size:18px; font-weight:600; margin-bottom:10px; color: var(--text); }
+    .feature-card p { font-size:14px; color: var(--muted); line-height:1.7; }
+
+    /* ── PORTALS SECTION ── */
+    .portals-section {
+      position:relative; z-index:1;
+      background: #f1f5f9; border-top:1.5px solid #e2e8f0; border-bottom:1.5px solid #e2e8f0;
+      padding:100px 60px;
+    }
+    .portals-inner { max-width:1100px; margin:0 auto; }
+    .portals-grid { display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-top:60px; }
+    .portal-card-new {
+      border-radius:24px; padding:48px 40px;
+      border:1.5px solid #e2e8f0; position:relative; overflow:hidden;
+      transition:all 0.4s; cursor:pointer; background: white;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .portal-card-new:hover { transform:translateY(-6px); box-shadow:0 24px 60px rgba(0,0,0,0.12); }
+    .portal-card-new.faculty:hover { border-color:rgba(37,99,235,0.4); box-shadow: 0 24px 60px rgba(37,99,235,0.15); }
+    .portal-card-new.student:hover { border-color:rgba(245,158,11,0.5); box-shadow: 0 24px 60px rgba(245,158,11,0.12); }
+    .portal-card-new .shine {
+      position:absolute; top:0; left:-100%; width:100%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(37,99,235,0.04),transparent);
+      transition:left 0.6s;
+    }
+    .portal-card-new:hover .shine { left:100%; }
+    .portal-big-icon { font-size:56px; margin-bottom:24px; display:block; }
+    .portal-card-new h2 { font-size:28px; font-weight:700; margin-bottom:12px; color: var(--text); }
+    .portal-card-new p { font-size:15px; color: var(--muted); line-height:1.7; margin-bottom:32px; }
+    .portal-features { list-style:none; margin-bottom:36px; }
+    .portal-features li { font-size:14px; color: var(--muted); padding:6px 0; display:flex; align-items:center; gap:10px; }
+    .portal-features li::before { content:'✓'; color:var(--blue); font-weight:700; }
+    .portal-btn-new {
+      display:inline-flex; align-items:center; gap:8px;
+      padding:14px 28px; border-radius:12px; font-size:15px; font-weight:600;
+      cursor:pointer; transition:all 0.3s; border:none;
+      font-family: 'Poppins', sans-serif;
+    }
+    .portal-card-new.faculty .portal-btn-new { background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:white; box-shadow:0 6px 20px rgba(37,99,235,0.3); }
+    .portal-card-new.student .portal-btn-new { background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:white; box-shadow:0 6px 20px rgba(245,158,11,0.3); }
+    .portal-btn-new:hover { transform:translateY(-2px); }
+
+    /* ── HOW IT WORKS ── */
+    .steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; margin-top:60px; }
+    .step-card {
+      text-align:center; padding:36px 24px;
+      background: white; border:1.5px solid #e2e8f0; border-radius:20px;
+      opacity:0; transform:translateY(40px); transition:all 0.5s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    }
+    .step-card.visible { opacity:1; transform:translateY(0); }
+    .step-num {
+      width:52px; height:52px; border-radius:50%; margin:0 auto 20px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      display:flex; align-items:center; justify-content:center;
+      font-size:20px; font-weight:700; color: white; box-shadow:0 6px 20px rgba(37,99,235,0.3);
+    }
+    .step-card h3 { font-size:16px; font-weight:600; margin-bottom:10px; color: var(--text); }
+    .step-card p { font-size:13px; color: var(--muted); line-height:1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      position:relative; z-index:1;
+      background: white;
+      border-top:1.5px solid #e2e8f0;
+      padding:32px 60px;
+      display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    }
+    .footer-logo { display:flex; align-items:center; gap:10px; font-size:15px; font-weight:700; color: var(--text); }
+    .footer-copy { font-size:13px; color: var(--muted); }
+    .footer-links { display:flex; gap:20px; }
+    .footer-links a { font-size:13px; color: var(--muted); text-decoration:none; transition:color 0.2s; }
+    .footer-links a:hover { color: var(--blue); }
+
+    /* ── MODAL ── */
+    .modal {
+      display:none; position:fixed; inset:0; z-index:1000;
+      background:rgba(15,23,42,0.6); backdrop-filter:blur(12px);
+      justify-content:center; align-items:center;
+    }
+    .modal.active { display:flex; }
+    .modal-box {
+      background: white; border:1.5px solid #e2e8f0;
+      border-radius:24px; padding:48px 40px; width:90%; max-width:420px;
+      box-shadow:0 40px 100px rgba(0,0,0,0.2);
+      animation:slideUp 0.4s ease; position:relative;
+    }
+    @keyframes slideUp { from{opacity:0;transform:translateY(40px);} to{opacity:1;transform:translateY(0);} }
+    .modal-close {
+      position:absolute; top:18px; right:18px;
+      width:32px; height:32px; border-radius:8px;
+      background:#f1f5f9; border:1px solid #e2e8f0; color: var(--text);
+      font-size:18px; cursor:pointer; transition:all 0.2s;
+    }
+    .modal-close:hover { background:#e2e8f0; transform:rotate(90deg); }
+    .modal-icon { font-size:40px; text-align:center; margin-bottom:16px; }
+    .modal-title { font-size:26px; font-weight:700; text-align:center; margin-bottom:6px; color: var(--text); }
+    .modal-sub { font-size:14px; color: var(--muted); text-align:center; margin-bottom:32px; }
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; font-size:13px; font-weight:600; color: var(--muted); margin-bottom:8px; }
+    .form-group input {
+      width:100%; padding:14px 18px; border-radius:12px;
+      background:#f8fafc; border:1.5px solid #e2e8f0;
+      color: var(--text); font-size:15px; font-family:'Poppins',sans-serif; transition:all 0.3s;
+    }
+    .form-group input:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,99,235,0.15); background: white; }
+    .form-group input::placeholder { color:#94a3b8; }
+    .login-btn {
+      width:100%; padding:15px; border:none; border-radius:12px;
+      background:linear-gradient(135deg,var(--blue),var(--blue-dark));
+      color:white; font-size:16px; font-weight:600; cursor:pointer;
+      transition:all 0.3s; box-shadow:0 6px 20px rgba(37,99,235,0.35);
+      font-family:'Poppins',sans-serif; margin-top:8px;
+    }
+    .login-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(37,99,235,0.5); }
+
+    @media(max-width:768px) {
+      nav { padding:0 16px; }
+      .nav-center { display: none; }
+      .nav-university-sub { display: none; }
+      .nav-brand-divider { display: none; }
+      .nav-naac { display: none; }
+      .section, .portals-section { padding:60px 24px; }
+      .portals-grid { grid-template-columns:1fr; }
+      .stats-bar { padding:30px 24px; }
+      footer { padding:24px; flex-direction:column; text-align:center; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- NAVBAR -->
+<nav>
+  <!-- Left — Aditya University branding -->
+  <div class="nav-university">
+    <!-- Circular Sun Emblem (SVG) -->
+    <svg class="nav-emblem" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Outer orbit ring -->
+      <circle cx="60" cy="60" r="56" stroke="#b8860b" stroke-width="1.2" fill="none"/>
+      <!-- Orbit dots -->
+      <circle cx="60" cy="4" r="2.5" fill="#b8860b"/>
+      <circle cx="116" cy="60" r="2.5" fill="#b8860b"/>
+      <circle cx="60" cy="116" r="2.5" fill="#b8860b"/>
+      <circle cx="4" cy="60" r="2.5" fill="#b8860b"/>
+      <!-- Second ring -->
+      <circle cx="60" cy="60" r="42" stroke="#b8860b" stroke-width="0.9" fill="none" stroke-dasharray="4 3"/>
+      <!-- Third ring -->
+      <circle cx="60" cy="60" r="28" stroke="#b8860b" stroke-width="1" fill="none"/>
+      <!-- Sun center -->
+      <circle cx="60" cy="60" r="14" fill="#b8860b" opacity="0.15"/>
+      <circle cx="60" cy="60" r="10" fill="#b8860b" opacity="0.3"/>
+      <!-- Sun rays -->
+      <line x1="60" y1="46" x2="60" y2="38" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="74" x2="60" y2="82" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="46" y1="60" x2="38" y2="60" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="74" y1="60" x2="82" y2="60" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="50" y1="50" x2="44" y2="44" stroke="#b8860b" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="70" y1="70" x2="76" y2="76" stroke="#b8860b" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="70" y1="50" x2="76" y2="44" stroke="#b8860b" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="50" y1="70" x2="44" y2="76" stroke="#b8860b" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- A letter in center -->
+      <text x="60" y="65" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#b8860b">A</text>
+      <!-- Crown base at bottom -->
+      <path d="M48 80 Q60 90 72 80" stroke="#b8860b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M50 80 L50 86 Q60 92 70 86 L70 80" stroke="#b8860b" stroke-width="1" fill="#b8860b" fill-opacity="0.15"/>
+    </svg>
+
+    <!-- University Name -->
+    <div class="nav-university-text">
+      <div class="nav-university-name">Aditya</div>
+      <div class="nav-university-sub">University</div>
+    </div>
+
+    <!-- Vertical Red Divider -->
+    <div class="nav-brand-divider"></div>
+
+    <!-- NAAC Badge -->
+    <div class="nav-naac">
+      <div class="nav-naac-accredited">Accredited by</div>
+      <div class="nav-naac-title">NAAC</div>
+      <div class="nav-naac-grade">A<sup>++</sup>&nbsp;Grade</div>
+    </div>
+  </div>
+
+  <!-- Center — CEM System -->
+  <div class="nav-center">
+    <div class="nav-center-badge">
+      <span class="nav-center-icon">🎓</span>
+      <span class="nav-center-text">CEM <span>System</span></span>
+    </div>
+  </div>
+
+  <!-- Right — Nav links -->
+  <div class="nav-links">
+    <button class="nav-link" onclick="scrollTo('#features')">Features</button>
+    <button class="nav-link" onclick="scrollTo('#how')">How it Works</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+
+  <!-- Background video — place your own at public/videos/hero.mp4 for best results -->
+  <video class="hero-video" autoplay muted loop playsinline preload="auto"
+         onerror="this.style.display='none'">
+    <!-- 1st choice: your own local file -->
+    <source src="videos/hero.mp4" type="video/mp4">
+    <!-- Fallback: free Pexels stock clip (university / campus feel) -->
+    <source src="https://videos.pexels.com/video-files/3195394/3195394-uhd_2560_1440_25fps.mp4" type="video/mp4">
+  </video>
+
+  <!-- Dark gradient overlay so text stays readable -->
+  <div class="hero-overlay"></div>
+
+  <!-- Content -->
+  <div class="hero-content">
+    <div class="hero-badge"><span class="hero-badge-dot"></span> College Event Management Platform</div>
+    <h1>Manage Campus Events<br>with <span class="highlight">Confidence</span></h1>
+    <p class="hero-sub">A unified platform for faculty to publish events and students to register, attend, and earn recognition — all in one place.</p>
+    <div class="hero-btns">
+      <button class="btn-hero primary" onclick="openLogin('student')">👨‍🎓 Student Portal</button>
+      <button class="btn-hero secondary" onclick="openLogin('faculty')" style="border-color:rgba(255,255,255,0.3);">👨‍🏫 Faculty Portal</button>
+      <button class="btn-hero secondary" onclick="openLogin('hod')" style="border-color:rgba(134,239,172,0.4);color:#86efac;">🏛️ HOD Portal</button>
+      <button class="btn-hero secondary" onclick="openLogin('admin')" style="border-color:rgba(252,165,165,0.4);color:#fca5a5;">🛡️ Admin Portal</button>
+      <button class="btn-hero secondary" onclick="openLogin('dean')" style="border-color:rgba(253,211,77,0.4);color:#fcd34d;">👔 Dean Portal</button>
+    </div>
+  </div>
+
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num" data-target="500">0</div><div class="stat-label">Students Registered</div></div>
+  <div class="stat-item"><div class="stat-num" data-target="120">0</div><div class="stat-label">Events Published</div></div>
+  <div class="stat-item"><div class="stat-num" data-target="95">0</div><div class="stat-label">Attendance Rate %</div></div>
+  <div class="stat-item"><div class="stat-num" data-target="40">0</div><div class="stat-label">Faculty Members</div></div>
+</div>
+
+<!-- FEATURES -->
+<div id="features">
+<div class="section">
+  <div class="section-label">Features</div>
+  <div class="section-title">Everything you need to<br>run campus events</div>
+  <p class="section-sub">From publishing to attendance tracking and feedback — the full lifecycle in one dashboard.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(37,99,235,0.15);">📢</div>
+      <h3>Event Publishing</h3>
+      <p>Faculty can create and publish events with full details — venue, date, time, and registration dead
+lines.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(251,191,36,0.15);">📝</div>
+      <h3>Student Registration</h3>
+      <p>Students browse available events and register instantly. Confirmation is tracked in their dashboard.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(34,197,94,0.15);">✅</div>
+      <h3>Attendance Tracking</h3>
+      <p>Faculty mark attendance in real time. Students see their attended events and scores immediately.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(168,85,247,0.15);">🏆</div>
+      <h3>Score Management</h3>
+      <p>Assign scores to students who attended. Leaderboards and performance stats are auto-calculated.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(239,68,68,0.15);">💬</div>
+      <h3>Feedback System</h3>
+      <p>Students submit star ratings and comments after attending. Faculty view analytics per event.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(14,165,233,0.15);">📊</div>
+      <h3>Analytics Dashboard</h3>
+      <p>Visual reports on registrations, attendance rates, top students, and event performance trends.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon-wrap" style="background:rgba(251,191,36,0.15);">🎓</div>
+      <h3>Certificate Generation </h3>
+      <p>Faculty publish participation certificates for attended students. Students download them directly from their dashboard.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PORTALS -->
+<div class="portals-section">
+  <div class="portals-inner">
+    <div class="section-label">Portals</div>
+    <div class="section-title">Choose your portal</div>
+    <p class="section-sub">Two dedicated dashboards built for each role — no clutter, just what you need.</p>
+    <div class="portals-grid">
+      <div class="portal-card-new faculty" onclick="openLogin('faculty')">
+        <div class="shine"></div>
+        <span class="portal-big-icon">👨‍🏫</span>
+        <h2>Faculty Portal</h2>
+        <p>Full control over your events — from creation to scoring and feedback analysis.</p>
+        <ul class="portal-features">
+          <li>Publish & update events</li>
+          <li>Mark student attendance</li>
+          <li>Assign scores</li>
+          <li>View feedback analytics</li>
+          <li>Track registrations</li>
+          <li style="color:rgba(255,255,255,0.4);">🎓 Publish certificates <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:rgba(251,191,36,0.15);color:#fbbf24;">Soon</span></li>
+        </ul>
+        <button class="portal-btn-new">Access Faculty Portal →</button>
+      </div>
+      <div class="portal-card-new student" onclick="openLogin('student')">
+        <div class="shine"></div>
+        <span class="portal-big-icon">👨‍🎓</span>
+        <h2>Student Portal</h2>
+        <p>Discover events, register, track your attendance, and submit feedback — all in one place.</p>
+        <ul class="portal-features">
+          <li>Browse upcoming events</li>
+          <li>Register with one click</li>
+          <li>View attendance history</li>
+          <li>Submit event feedback</li>
+          <li>Track your scores</li>
+          <li style="color:rgba(255,255,255,0.4);">🎓 Download certificates <span style="font-size:11px;padding:2px 7px;border-radius:20px;background:rgba(251,191,36,0.15);color:#fbbf24;">Soon</span></li>
+        </ul>
+        <button class="portal-btn-new">Access Student Portal →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div id="how">
+<div class="section">
+  <div class="section-label">Process</div>
+  <div class="section-title">How it works</div>
+  <p class="section-sub">Four simple steps from event creation to feedback collection.</p>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Faculty Publishes Event</h3>
+      <p>Create an event with all details and set a registration deadline.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Students Register</h3>
+      <p>Students browse and register before the deadline from their dashboard.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>Attendance Marked</h3>
+      <p>Faculty mark present/absent during the event. Scores are assigned.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <h3>Feedback Collected</h3>
+      <p>Attended students submit ratings and comments. Faculty review analytics.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <svg width="32" height="32" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="60" cy="60" r="56" stroke="#b8860b" stroke-width="1.5" fill="none"/>
+      <circle cx="60" cy="60" r="42" stroke="#b8860b" stroke-width="1" fill="none" stroke-dasharray="4 3"/>
+      <circle cx="60" cy="60" r="28" stroke="#b8860b" stroke-width="1" fill="none"/>
+      <circle cx="60" cy="60" r="10" fill="#b8860b" opacity="0.4"/>
+      <line x1="60" y1="46" x2="60" y2="38" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="60" y1="74" x2="60" y2="82" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="46" y1="60" x2="38" y2="60" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="74" y1="60" x2="82" y2="60" stroke="#b8860b" stroke-width="1.5" stroke-linecap="round"/>
+      <text x="60" y="65" text-anchor="middle" font-family="serif" font-size="13" font-weight="bold" fill="#b8860b">A</text>
+    </svg>
+    <span style="color:#b8860b; font-weight:800; letter-spacing:0.5px;">Aditya University</span>
+  </div>
+  <div class="footer-copy">© 2026 College Event Management System · Aditya University. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it Works</a>
+  </div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-icon" id="modalIcon">🎓</div>
+    <div class="modal-title" id="loginTitle">Login</div>
+    <div class="modal-sub" id="loginSubtitle">Enter your credentials to continue</div>
+    <form onsubmit="login(event)">
+      <div class="form-group">
+        <label>User ID</label>
+        <input type="text" id="username" placeholder="Enter your user ID" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <div style="position:relative;">
+          <input type="password" id="password" placeholder="Enter your password" required>
+          <button type="button" onclick="togglePwd('password', this)"
+            style="position:absolute; right:14px; top:50%; transform:translateY(-50%);
+                   background:none; border:none; cursor:pointer; font-size:18px; color:#94a3b8;
+                   padding:0; line-height:1; transition:color 0.2s;"
+            onmouseover="this.style.color='#1e40af'"
+            onmouseout="this.style.color='#94a3b8'">👁️</button>
+        </div>
+      </div>
+      <button type="submit" class="login-btn" id="loginBtnEl">Login</button>
+    </form>
+  </div>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  // ── CANVAS PARTICLE BACKGROUND ──
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function Particle() {
+    this.x = Math.random() * W;
+    this.y = Math.random() * H;
+    this.r = Math.random() * 1.5 + 0.5;
+    this.vx = (Math.random() - 0.5) * 0.4;
+    this.vy = (Math.random() - 0.5) * 0.4;
+    this.alpha = Math.random() * 0.5 + 0.1;
+  }
+
+  for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+  function drawParticles() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(37,99,235,${p.alpha * 0.5})`;
+      ctx.fill();
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
+    });
+    // Draw connecting lines
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(37,99,235,${0.06 * (1 - dist/100)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(drawParticles);
+  }
+  drawParticles();
+
+  // ── SCROLL ANIMATIONS ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 100);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.feature-card, .step-card').forEach(el => observer.observe(el));
+
+  // ── COUNTER ANIMATION ──
+  function animateCounter(el, target) {
+    let current = 0;
+    const step = target / 60;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { el.textContent = target + (el.dataset.target == 95 ? '%' : '+'); clearInterval(timer); }
+      else el.textContent = Math.floor(current) + (el.dataset.target == 95 ? '%' : '+');
+    }, 25);
+  }
+  const statsObserver = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      document.querySelectorAll('.stat-num').forEach(el => animateCounter(el, +el.dataset.target));
+      statsObserver.disconnect();
+    }
+  }, { threshold: 0.5 });
+  statsObserver.observe(document.querySelector('.stats-bar'));
+
+  // ── SMOOTH SCROLL ──
+  function scrollTo(selector) { document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth' }); }
+
+  // ── LOGIN MODAL ──
+  let currentRole = '';
+  function openLogin(role) {
+    currentRole = role;
+    document.getElementById('modalIcon').textContent = role === 'faculty' ? '👨‍🏫' : role === 'admin' ? '🛡️' : role === 'hod' ? '🏛️' : role === 'dean' ? '👔' : '👨‍🎓';
+    document.getElementById('loginTitle').textContent = role === 'faculty' ? 'Faculty Login' : role === 'admin' ? 'Admin Login' : role === 'hod' ? 'HOD Login' : role === 'dean' ? 'Dean Login' : 'Student Login';
+    document.getElementById('loginSubtitle').textContent = role === 'faculty' ? 'Access the faculty dashboard' : role === 'admin' ? 'Access the admin panel' : role === 'hod' ? 'Access the HOD dashboard' : role === 'dean' ? 'Access the Dean dashboard' : 'Access the student dashboard';
+    document.getElementById('loginBtnEl').style.background = role === 'faculty'
+      ? 'linear-gradient(135deg,#fbbf24,#f59e0b)' : role === 'admin'
+      ? 'linear-gradient(135deg,#ef4444,#dc2626)' : role === 'hod'
+      ? 'linear-gradient(135deg,#22c55e,#16a34a)' : role === 'dean'
+      ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#2563eb,#1e40af)';
+    document.getElementById('loginBtnEl').style.color = (role === 'faculty' || role === 'dean') ? '#0a2540' : 'white';
+    document.getElementById('loginBtnEl').style.color = role === 'faculty' ? '#0a2540' : 'white';
+    document.getElementById('loginModal').classList.add('active');
+    setTimeout(() => document.getElementById('username').focus(), 100);
+  }
+  function closeModal() {
+    document.getElementById('loginModal').classList.remove('active');
+    document.getElementById('username').value = '';
+    document.getElementById('password').value = '';
+  }
+
+  function togglePwd(id, btn) {
+    const input = document.getElementById(id);
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    btn.textContent = isHidden ? '🙈' : '👁️';
+  }
+  document.getElementById('loginModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  async function login(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if (!username || !password) return alert('Please enter both username and password');
+    try {
+      const endpoint = currentRole === 'faculty' ? '/api/faculty/login' : currentRole === 'hod' ? '/api/department-head/login' : currentRole === 'admin' ? '/api/admin/login' : currentRole === 'dean' ? '/api/admin/dean/login' : '/api/student/login';
+      const res = await fetch(`${endpoint}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        if (currentRole === 'faculty') {
+          localStorage.setItem('facultyData', JSON.stringify(data.faculty));
+          localStorage.setItem('role', 'faculty');
+          window.location.href = 'facultyDashboard.html';
+        } else if (currentRole === 'hod') {
+          localStorage.setItem('departmentHeadData', JSON.stringify(data.departmentHead));
+          localStorage.setItem('role', 'department-head');
+          window.location.href = 'departmentHeadDashboard.html';
+        } else if (currentRole === 'admin') {
+          localStorage.setItem('adminData', JSON.stringify(data.admin));
+          localStorage.setItem('role', 'admin');
+          window.location.href = 'adminDashboard.html';
+        } else if (currentRole === 'dean') {
+          localStorage.setItem('deanData', JSON.stringify(data.dean));
+          localStorage.setItem('role', 'dean');
+          window.location.href = 'deanDashboard.html';
+        } else {
+          localStorage.setItem('studentData', JSON.stringify(data.student));
+          localStorage.setItem('role', 'student');
+          window.location.href = 'studentDashboard.html';
+        }
+      } else { alert(data.message || 'Login failed'); }
+    } catch (err) { alert('Server connection error. Please try again.'); }
+  }
+</script>
+</body>
+</html>
