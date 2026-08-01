@@ -9,10 +9,41 @@ function getActiveSession() {
   return null;
 }
 
-function openLogin(type) {
-  const active = getActiveSession();
-  if (active) {
-    alert(`⚠️ An active session (${active.role}) is already running on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
+function checkActiveTab() {
+  const activeSession = getActiveSession();
+  if (!activeSession) return Promise.resolve(null);
+  if (typeof BroadcastChannel === 'undefined') return Promise.resolve(activeSession.role);
+
+  return new Promise((resolve) => {
+    const channel = new BroadcastChannel('CEM_ACTIVE_TAB_CHANNEL');
+    let respondedRole = null;
+    channel.onmessage = (event) => {
+      if (event.data && event.data.type === 'PONG') {
+        respondedRole = event.data.role || activeSession.role;
+      }
+    };
+    channel.postMessage('PING');
+    setTimeout(() => {
+      channel.close();
+      if (!respondedRole) {
+        localStorage.removeItem('studentData');
+        localStorage.removeItem('facultyData');
+        localStorage.removeItem('departmentHeadData');
+        localStorage.removeItem('adminData');
+        localStorage.removeItem('deanData');
+        localStorage.removeItem('role');
+        resolve(null);
+      } else {
+        resolve(respondedRole);
+      }
+    }, 60);
+  });
+}
+
+async function openLogin(type) {
+  const activeRole = await checkActiveTab();
+  if (activeRole) {
+    alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
     return;
   }
 
@@ -27,9 +58,9 @@ function goBack() {
 }
 
 async function login() {
-  const active = getActiveSession();
-  if (active) {
-    alert(`⚠️ An active session (${active.role}) is already running on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
+  const activeRole = await checkActiveTab();
+  if (activeRole) {
+    alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
     return;
   }
 

@@ -3,6 +3,15 @@ let allEvents = [];
 let allRegistrations = [];
 let currentFaculty = null;
 
+if (typeof BroadcastChannel !== 'undefined') {
+  const sessionChannel = new BroadcastChannel('CEM_ACTIVE_TAB_CHANNEL');
+  sessionChannel.onmessage = (event) => {
+    if (event.data === 'PING') {
+      sessionChannel.postMessage({ type: 'PONG', role: 'Faculty' });
+    }
+  };
+}
+
 window.addEventListener('pageshow', (event) => {
   if (event.persisted || (!localStorage.getItem('facultyData') && !localStorage.getItem('user'))) {
     window.location.replace('index.html');

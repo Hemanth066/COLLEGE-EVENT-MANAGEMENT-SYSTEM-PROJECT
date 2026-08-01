@@ -1,3 +1,12 @@
+if (typeof BroadcastChannel !== 'undefined') {
+  const sessionChannel = new BroadcastChannel('CEM_ACTIVE_TAB_CHANNEL');
+  sessionChannel.onmessage = (event) => {
+    if (event.data === 'PING') {
+      sessionChannel.postMessage({ type: 'PONG', role: 'Department Head / HOD' });
+    }
+  };
+}
+
 window.addEventListener('pageshow', (event) => {
   if (event.persisted || !localStorage.getItem('departmentHeadData')) {
     window.location.replace('index.html');

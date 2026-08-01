@@ -2142,6 +2142,15 @@
           if (window.innerWidth <= 900) closeSidebar();
         }
 
+        if (typeof BroadcastChannel !== 'undefined') {
+          const sessionChannel = new BroadcastChannel('CEM_ACTIVE_TAB_CHANNEL');
+          sessionChannel.onmessage = (event) => {
+            if (event.data === 'PING') {
+              sessionChannel.postMessage({ type: 'PONG', role: 'Student' });
+            }
+          };
+        }
+
         window.addEventListener('pageshow', (event) => {
           if (event.persisted || !localStorage.getItem('studentData')) {
             window.location.replace('/index.html');
