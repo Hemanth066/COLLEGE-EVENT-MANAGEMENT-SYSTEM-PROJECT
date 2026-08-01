@@ -114,11 +114,11 @@ async function login() {
       }
     } else {
       if (data.isAlreadyLoggedIn) {
-        const resetSession = confirm(
-          (data.message || "⚠️ Account is already logged in on another device or tab. Please log out from the last page first before logging in!") +
-          "\n\nDid you close your last browser without logging out? Click OK to Force Clear your previous session and log in now, or Cancel to go back."
+        const forceLogin = confirm(
+          `⚠️ This account (${username}) is currently logged in on another device or browser.\n\n` +
+          `Click OK to log out the previous device and log in on this device now, or Cancel to stay here.`
         );
-        if (resetSession) {
+        if (forceLogin) {
           let forceEndpoint = "/api/student/force-logout";
           if (role === "faculty") forceEndpoint = "/api/faculty/force-logout";
           else if (role === "admin") forceEndpoint = "/api/admin/force-logout";
@@ -129,12 +129,11 @@ async function login() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, password })
           });
-          const forceData = await forceRes.json();
           if (forceRes.ok) {
-            alert(forceData.message || "Session cleared! Attempting login again...");
-            login(); // Retry login
+            login(); // Seamless retry login
           } else {
-            alert(forceData.message || "Failed to clear session.");
+            const forceData = await forceRes.json();
+            alert(forceData.message || "Failed to log out previous device session.");
           }
         }
       } else {
