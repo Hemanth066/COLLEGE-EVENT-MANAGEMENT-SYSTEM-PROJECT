@@ -19,12 +19,15 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   student.isLoggedIn = true;
+  student.sessionId = newSessionId;
   await student.save();
 
   res.json({
     message: "Student Login Successful ✅",
-    student
+    student,
+    sessionId: newSessionId
   });
 });
 
@@ -41,6 +44,7 @@ router.post("/logout", async (req, res) => {
       const student = await Student.findOne({ $or: query });
       if (student) {
         student.isLoggedIn = false;
+        student.sessionId = null;
         await student.save();
       }
     }
@@ -59,10 +63,30 @@ router.post("/force-logout", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials ❌" });
     }
     student.isLoggedIn = false;
+    student.sessionId = null;
     await student.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Verify Active Session
+router.post("/verify-session", async (req, res) => {
+  try {
+    const { id, username, sessionId } = req.body;
+    const query = [];
+    if (username) query.push({ username });
+    if (id) query.push({ _id: id });
+    if (query.length === 0) return res.json({ valid: true });
+
+    const student = await Student.findOne({ $or: query });
+    if (!student || !student.isLoggedIn || student.sessionId !== sessionId) {
+      return res.json({ valid: false, message: "Session expired or logged in on another device." });
+    }
+    res.json({ valid: true });
+  } catch (e) {
+    res.json({ valid: true });
   }
 });
 

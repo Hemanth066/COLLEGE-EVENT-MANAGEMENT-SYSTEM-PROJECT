@@ -1074,11 +1074,35 @@
       }
     });
 
+    function startDeanSessionVerification() {
+      setInterval(async () => {
+        const dData = JSON.parse(localStorage.getItem('deanData') || localStorage.getItem('user') || '{}');
+        const sessId = localStorage.getItem('sessionId');
+        if (!dData.username && !dData._id) return;
+        try {
+          const res = await fetch('/api/admin/verify-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: dData._id, username: dData.username, sessionId: sessId })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.valid === false) {
+              alert('⚠️ Your account was logged in on another device. You have been logged out.');
+              localStorage.clear();
+              window.location.replace('index.html');
+            }
+          }
+        } catch (e) {}
+      }, 4000);
+    }
+
     let currentDean = null;
     let allFacultyList = [], allCoordinatorsList = [], allStudentsList = [], allEventsList = [];
     let displayedStudents = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
+      startDeanSessionVerification();
       currentDean = JSON.parse(localStorage.getItem('deanData')) || JSON.parse(localStorage.getItem('user'));
       if (!currentDean) { window.location.replace('index.html'); return; }
 

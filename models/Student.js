@@ -15,7 +15,8 @@ const studentSchema = new mongoose.Schema({
   sem3Score:  { type: Number, default: 0 },  // 3rd Sem score from Excel
   sem4Score:  { type: Number, default: 0 },  // 4th Sem score from Excel
   eventScore: { type: Number, default: 0 },   // sum of all event registration scores
-  isLoggedIn: { type: Boolean, default: false }
+  isLoggedIn: { type: Boolean, default: false },
+  sessionId: { type: String, default: null }
 });
 
 module.exports = mongoose.model("Student", studentSchema);

@@ -1619,6 +1619,8 @@
           localStorage.removeItem('adminData');
           localStorage.removeItem('deanData');
 
+          if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
+
           if (currentRole === 'faculty') {
             localStorage.setItem('facultyData', JSON.stringify(data.faculty));
             localStorage.setItem('role', 'faculty');

@@ -13,11 +13,35 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
+function startDHSessionVerification() {
+  setInterval(async () => {
+    const dhData = JSON.parse(localStorage.getItem('departmentHeadData') || '{}');
+    const sessId = localStorage.getItem('sessionId');
+    if (!dhData.username && !dhData._id) return;
+    try {
+      const res = await fetch('/api/department-head/verify-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: dhData._id, username: dhData.username, sessionId: sessId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.valid === false) {
+          alert('⚠️ Your account was logged in on another device. You have been logged out.');
+          localStorage.clear();
+          window.location.replace('index.html');
+        }
+      }
+    } catch (e) {}
+  }, 4000);
+}
+
 let currentDepartmentHead = null;
 let allFaculty = [], allStudents = [], allEvents = [];
 let selectedFacultyId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  startDHSessionVerification();
   currentDepartmentHead = JSON.parse(localStorage.getItem('departmentHeadData'));
   if (!currentDepartmentHead) {
     window.location.replace('index.html');

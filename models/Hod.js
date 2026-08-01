@@ -8,6 +8,7 @@ const hodSchema = new mongoose.Schema({
   department:   { type: String, default: "" },
   year:         { type: String, default: "" },
   signatureUrl: { type: String, default: "" },
-  isLoggedIn:   { type: Boolean, default: false }
+  isLoggedIn:   { type: Boolean, default: false },
+  sessionId:    { type: String, default: null }
 });
 module.exports = mongoose.model("Hod", hodSchema);

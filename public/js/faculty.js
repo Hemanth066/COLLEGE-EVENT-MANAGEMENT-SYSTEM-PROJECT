@@ -18,8 +18,32 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
+function startFacultySessionVerification() {
+  setInterval(async () => {
+    const fData = JSON.parse(localStorage.getItem('facultyData') || localStorage.getItem('user') || '{}');
+    const sessId = localStorage.getItem('sessionId');
+    if (!fData.username && !fData._id) return;
+    try {
+      const res = await fetch('/api/faculty/verify-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: fData._id, username: fData.username, sessionId: sessId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.valid === false) {
+          alert('⚠️ Your account was logged in on another device. You have been logged out.');
+          localStorage.clear();
+          window.location.replace('index.html');
+        }
+      }
+    } catch (e) {}
+  }, 4000);
+}
+
 // Load data on page load
 document.addEventListener("DOMContentLoaded", async () => {
+  startFacultySessionVerification();
   // Get current faculty from localStorage - check both old and new keys
   currentFaculty = JSON.parse(localStorage.getItem("facultyData")) || JSON.parse(localStorage.getItem("user"));
   

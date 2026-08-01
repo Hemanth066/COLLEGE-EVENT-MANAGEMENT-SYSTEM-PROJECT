@@ -18,10 +18,12 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   departmentHead.isLoggedIn = true;
+  departmentHead.sessionId = newSessionId;
   await departmentHead.save();
 
-  res.json({ message: "Department Head login successful ✅", departmentHead });
+  res.json({ message: "Department Head login successful ✅", departmentHead, sessionId: newSessionId });
 });
 
 // Department Head Logout
@@ -36,6 +38,7 @@ router.post("/logout", async (req, res) => {
       const dh = await DepartmentHead.findOne({ $or: query });
       if (dh) {
         dh.isLoggedIn = false;
+        dh.sessionId = null;
         await dh.save();
       }
     }
@@ -52,10 +55,30 @@ router.post("/force-logout", async (req, res) => {
     const dh = await DepartmentHead.findOne({ username, password });
     if (!dh) return res.status(401).json({ message: "Invalid credentials ❌" });
     dh.isLoggedIn = false;
+    dh.sessionId = null;
     await dh.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Verify Active Session
+router.post("/verify-session", async (req, res) => {
+  try {
+    const { id, username, sessionId } = req.body;
+    const query = [];
+    if (username) query.push({ username });
+    if (id) query.push({ _id: id });
+    if (query.length === 0) return res.json({ valid: true });
+
+    const dh = await DepartmentHead.findOne({ $or: query });
+    if (!dh || !dh.isLoggedIn || dh.sessionId !== sessionId) {
+      return res.json({ valid: false, message: "Session expired or logged in on another device." });
+    }
+    res.json({ valid: true });
+  } catch (e) {
+    res.json({ valid: true });
   }
 });
 

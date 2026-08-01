@@ -12,7 +12,8 @@ const facultySchema = new mongoose.Schema({
   signatureUrl: { type: String, default: '' },
   isCoordinator: { type: Boolean, default: false },
   coordinatorBranch: { type: String, default: '' },
-  isLoggedIn: { type: Boolean, default: false }
+  isLoggedIn: { type: Boolean, default: false },
+  sessionId: { type: String, default: null }
 });
 
 module.exports = mongoose.model("Faculty", facultySchema);

@@ -2157,6 +2157,29 @@
           }
         });
 
+        function startSessionVerification() {
+          setInterval(async () => {
+            const sData = JSON.parse(localStorage.getItem('studentData') || '{}');
+            const sessId = localStorage.getItem('sessionId');
+            if (!sData.username && !sData._id) return;
+            try {
+              const res = await fetch('/api/student/verify-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: sData._id, username: sData.username, sessionId: sessId })
+              });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.valid === false) {
+                  alert('⚠️ Your account was logged in on another device. You have been logged out.');
+                  localStorage.clear();
+                  window.location.replace('/index.html');
+                }
+              }
+            } catch (e) {}
+          }, 4000);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
           const stored = localStorage.getItem('studentData');
           if (!stored) { window.location.replace('/index.html'); return; }
@@ -2168,6 +2191,7 @@
           refreshStudentData().then(() => {
             loadAllData();
             startNotifPolling();
+            startSessionVerification();
           });
           document.addEventListener('visibilitychange', () => { if (!document.hidden) loadAllData(); });
         });

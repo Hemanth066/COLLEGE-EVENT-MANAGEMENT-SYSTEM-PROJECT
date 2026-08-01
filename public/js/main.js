@@ -83,6 +83,8 @@ async function login() {
       localStorage.removeItem('adminData');
       localStorage.removeItem('deanData');
 
+      if (data.sessionId) localStorage.setItem('sessionId', data.sessionId);
+
       if (role === "faculty") {
         localStorage.setItem("facultyData", JSON.stringify(data.faculty));
         localStorage.setItem("role", "faculty");

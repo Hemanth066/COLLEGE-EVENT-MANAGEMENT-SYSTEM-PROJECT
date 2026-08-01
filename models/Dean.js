@@ -9,6 +9,7 @@ const deanSchema = new mongoose.Schema({
   branches:     { type: String, default: "ALL" },// e.g. "CSE, AIML" or "ALL"
   year:         { type: String, default: "ALL" },// e.g. "3" or "1, 2, 3, 4" or "ALL"
   signatureUrl: { type: String, default: "" },
-  isLoggedIn:   { type: Boolean, default: false }
+  isLoggedIn:   { type: Boolean, default: false },
+  sessionId:    { type: String, default: null }
 });
 module.exports = mongoose.model("Dean", deanSchema);

@@ -13,11 +13,35 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
+function startAdminSessionVerification() {
+  setInterval(async () => {
+    const aData = JSON.parse(localStorage.getItem('adminData') || '{}');
+    const sessId = localStorage.getItem('sessionId');
+    if (!aData.username && !aData._id) return;
+    try {
+      const res = await fetch('/api/admin/verify-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: aData._id, username: aData.username, sessionId: sessId })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.valid === false) {
+          alert('⚠️ Your account was logged in on another device. You have been logged out.');
+          localStorage.clear();
+          window.location.replace('index.html');
+        }
+      }
+    } catch (e) {}
+  }, 4000);
+}
+
 let currentAdmin = null;
 let allFaculty = [], allStudents = [], allEvents = [], allRegs = [], allCoordinators = [], allBranches = [];
 let modalMode = '', modalId = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+  startAdminSessionVerification();
   currentAdmin = JSON.parse(localStorage.getItem('adminData'));
   if (!currentAdmin) { window.location.replace('index.html'); return; }
   document.getElementById('adminName').textContent = currentAdmin.fullName || currentAdmin.username || 'Admin';
