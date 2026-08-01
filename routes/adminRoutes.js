@@ -1,5 +1,6 @@
 const express = require("express");
 const router  = express.Router();
+const mongoose = require("mongoose");
 const Admin    = require("../models/Admin");
 const Faculty  = require("../models/Faculty");
 const Student  = require("../models/Student");
@@ -35,18 +36,15 @@ router.post("/logout", async (req, res) => {
     const { username, id } = req.body;
     const query = [];
     if (username) query.push({ username });
-    if (id) query.push({ _id: id });
+    if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
 
     if (query.length > 0) {
-      const admin = await Admin.findOne({ $or: query });
-      if (admin) {
-        admin.isLoggedIn = false;
-        admin.sessionId = null;
-        await admin.save();
-      }
+      await Admin.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
+      await Dean.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
     }
     res.json({ message: "Logged out successfully ✅" });
   } catch (err) {
+    console.error("Admin/Dean logout error:", err);
     res.status(500).json({ message: "Logout error" });
   }
 });

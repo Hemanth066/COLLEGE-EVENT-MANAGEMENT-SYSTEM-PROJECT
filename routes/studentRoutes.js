@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Student = require("../models/Student");
 
 // Student Login
@@ -41,15 +42,11 @@ router.post("/logout", async (req, res) => {
     if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
 
     if (query.length > 0) {
-      const student = await Student.findOne({ $or: query });
-      if (student) {
-        student.isLoggedIn = false;
-        student.sessionId = null;
-        await student.save();
-      }
+      await Student.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
     }
     res.json({ message: "Logged out successfully ✅" });
   } catch (err) {
+    console.error("Logout error:", err);
     res.status(500).json({ message: "Logout error" });
   }
 });

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const DepartmentHead = require("../models/DepartmentHead");
 const Faculty = require("../models/Faculty");
 const Student = require("../models/Student");
@@ -32,18 +33,14 @@ router.post("/logout", async (req, res) => {
     const { username, id } = req.body;
     const query = [];
     if (username) query.push({ username });
-    if (id) query.push({ _id: id });
+    if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
 
     if (query.length > 0) {
-      const dh = await DepartmentHead.findOne({ $or: query });
-      if (dh) {
-        dh.isLoggedIn = false;
-        dh.sessionId = null;
-        await dh.save();
-      }
+      await DepartmentHead.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
     }
     res.json({ message: "Logged out successfully ✅" });
   } catch (err) {
+    console.error("DH logout error:", err);
     res.status(500).json({ message: "Logout error" });
   }
 });

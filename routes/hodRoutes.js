@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Hod = require("../models/Hod");
 const Faculty = require("../models/Faculty");
 const Student = require("../models/Student");
@@ -18,10 +19,12 @@ router.post("/login", async (req, res) => {
     });
   }
 
+  const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   hod.isLoggedIn = true;
+  hod.sessionId = newSessionId;
   await hod.save();
 
-  res.json({ message: "HOD login successful ✅", hod });
+  res.json({ message: "HOD login successful ✅", hod, sessionId: newSessionId });
 });
 
 // HOD Logout
@@ -30,17 +33,14 @@ router.post("/logout", async (req, res) => {
     const { username, id } = req.body;
     const query = [];
     if (username) query.push({ username });
-    if (id) query.push({ _id: id });
+    if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
 
     if (query.length > 0) {
-      const h = await Hod.findOne({ $or: query });
-      if (h) {
-        h.isLoggedIn = false;
-        await h.save();
-      }
+      await Hod.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
     }
     res.json({ message: "Logged out successfully ✅" });
   } catch (err) {
+    console.error("HOD logout error:", err);
     res.status(500).json({ message: "Logout error" });
   }
 });

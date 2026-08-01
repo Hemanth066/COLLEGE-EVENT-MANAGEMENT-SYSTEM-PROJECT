@@ -65,15 +65,11 @@ router.post("/logout", async (req, res) => {
     if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
 
     if (query.length > 0) {
-      const faculty = await Faculty.findOne({ $or: query });
-      if (faculty) {
-        faculty.isLoggedIn = false;
-        faculty.sessionId = null;
-        await faculty.save();
-      }
+      await Faculty.updateMany({ $or: query }, { $set: { isLoggedIn: false, sessionId: null } });
     }
     res.json({ message: "Logged out successfully ✅" });
   } catch (err) {
+    console.error("Faculty logout error:", err);
     res.status(500).json({ message: "Logout error" });
   }
 });
