@@ -31,6 +31,31 @@ router.post('/', async (req, res) => {
   }
 });
 
+// Live Registration Counts (GET /api/events/live-counts)
+router.get('/live-counts', async (req, res) => {
+  try {
+    const events = await Event.find().select('_id maxParticipants');
+    const counts = {};
+
+    await Promise.all(events.map(async (e) => {
+      const regCount = await Registration.countDocuments({ eventId: e._id });
+      const max = e.maxParticipants || 0;
+      const available = max > 0 ? Math.max(0, max - regCount) : null;
+      counts[e._id.toString()] = {
+        count: regCount,
+        maxParticipants: max,
+        availableSlots: available,
+        isFull: max > 0 && regCount >= max
+      };
+    }));
+
+    res.json(counts);
+  } catch (err) {
+    console.error('Error fetching live counts:', err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // Get All Events (for students - no filter)
 router.get('/', async (req, res) => {
   try {

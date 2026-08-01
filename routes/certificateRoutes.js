@@ -6,213 +6,322 @@ const fs       = require('fs');
 const Registration = require('../models/Registration');
 const Event    = require('../models/Event');
 const Notification = require('../models/Notification');
+const cloudinary = require('../config/cloudinary');
 
-function buildCertPDF(doc, reg, event, signaturePath, hodSignaturePath) {
-  const W = doc.page.width;
-  const H = doc.page.height;
+function buildCertPDF(doc, reg, event, signaturePath, hodSignaturePath, extraInfo = {}) {
+  const W = doc.page.width;   // 841.89
+  const H = doc.page.height;  // 595.28
   const CX = W / 2;
-  const BLUE = '#1a3a8f', ORANGE = '#e07b2a', GREEN = '#2e7d32', DARK = '#1a2a4a', GRAY = '#555555';
-  const M = 38;
 
-  // White background for certificate paper
+  const BLUE   = '#0A4B94';
+  const DARK_BLUE = '#0F4C81';
+  const ORANGE = '#E65100';
+  const GREEN  = '#1E7E34';
+  const DARK   = '#1E2937';
+  const GRAY   = '#555555';
+  const M      = 40;
+
+  // 1. Background Paper
   doc.rect(0, 0, W, H).fill('#ffffff');
-  
-  // Decorative border around certificate
-  doc.rect(10, 10, W-20, H-20).lineWidth(7).strokeColor(BLUE).stroke();
-  doc.rect(19, 19, W-38, H-38).lineWidth(1.5).strokeColor(BLUE).stroke();
-  
-  // Corner decorations
-  const cs = 24;
-  [[10,10],[W-10-cs,10],[10,H-10-cs],[W-10-cs,H-10-cs]].forEach(([x,y]) => doc.rect(x,y,cs,cs).fill(BLUE));
 
-  // Header with university branding
-  doc.fontSize(30).font('Helvetica-Bold');
+  // 2. Corner Triangles (matching template design)
+  // Top-Left Corner Fold
+  doc.polygon([0, 0], [105, 0], [0, 105]).fill(BLUE);
+  doc.polygon([0, 0], [70, 0], [0, 70]).fill('#003366');
+
+  // Top-Right Corner Fold
+  doc.polygon([W, 0], [W - 105, 0], [W, 105]).fill(BLUE);
+  doc.polygon([W, 0], [W - 70, 0], [W, 70]).fill('#003366');
+
+  // Bottom-Left Corner Fold
+  doc.polygon([0, H], [105, H], [0, H - 105]).fill(BLUE);
+  doc.polygon([0, H], [70, H], [0, H - 70]).fill('#003366');
+
+  // Bottom-Right Corner Fold
+  doc.polygon([W, H], [W - 105, H], [W, H - 105]).fill(BLUE);
+  doc.polygon([W, H], [W - 70, H], [W, H - 70]).fill('#003366');
+
+  // Outer framing border
+  doc.rect(20, 20, W - 40, H - 40).lineWidth(1.5).strokeColor(BLUE).stroke();
+
+  // 3. Header Section: Logos, Big Title & Accreditation Badges Below
+  const logoPath   = path.join(__dirname, '../public/images/aditya_logo.jpg');
+  const badgesPath = path.join(__dirname, '../public/images/accreditation_badges.png');
+
+  let headerY = 18;
+
+  // Draw Large Logo on Top Left
+  if (fs.existsSync(logoPath)) {
+    try {
+      doc.image(logoPath, 65, headerY, { height: 75 });
+    } catch(e) { console.error('Logo draw error:', e.message); }
+  }
+
+  // Big Title: ADITYA UNIVERSITY (42pt font)
+  doc.fontSize(42).font('Helvetica-Bold');
   const tA = 'ADITYA ', tU = 'UNIVERSITY';
-  const wA = doc.widthOfString(tA), wU = doc.widthOfString(tU);
-  const hdrX = CX - (wA + wU) / 2;
-  doc.fillColor(ORANGE).text(tA, hdrX, 32, { continued:true, lineBreak:false });
-  doc.fillColor(BLUE).text(tU, { lineBreak:false });
+  const wA = doc.widthOfString(tA);
+  const wU = doc.widthOfString(tU);
+  const titleX = CX - (wA + wU) / 2 + 35;
 
-  doc.fontSize(9).font('Helvetica').fillColor(GRAY)
-     .text('Aditya Nagar, ADB Road, Surampalem-533 437, Kakinada Dist, A.P. India.', M, 68, { width:W-M*2, align:'center' });
+  doc.fillColor(ORANGE).text(tA, titleX, headerY + 6, { continued: true, lineBreak: false });
+  doc.fillColor(BLUE).text(tU, { lineBreak: false });
 
-  doc.moveTo(M+20, 82).lineTo(W-M-20, 82).lineWidth(0.7).strokeColor('#bbbbbb').stroke();
+  // Accreditation Badges below Title (Enlarged 44px height)
+  if (fs.existsSync(badgesPath)) {
+    try {
+      doc.image(badgesPath, CX - 145, headerY + 62, { height: 44 });
+    } catch(e) { console.error('Badges draw error:', e.message); }
+  }
 
-  // Body — vertically centered between y=82 and y=H-100
-  let y = 188;
-  const lh = n => { y += n; };
+  // Address line under accreditation badges
+  doc.fontSize(9.5).font('Helvetica').fillColor('#333333')
+     .text('Aditya Nagar, ADB Road, Surampalem-533 437, Kakinada Dist, A.P. India.', M, headerY + 112, { width: W - M * 2, align: 'center' });
 
-  doc.fontSize(22).font('Helvetica-Oblique').fillColor(GREEN)
-     .text('Certificate of Participation', M, y, { width:W-M*2, align:'center' });
-  lh(34);
+  // Thin separator line
+  doc.moveTo(70, headerY + 128).lineTo(W - 70, headerY + 128).lineWidth(0.5).strokeColor('#cccccc').stroke();
 
-  doc.fontSize(13).font('Helvetica').fillColor(DARK)
-     .text('This certificate is presented to', M, y, { width:W-M*2, align:'center' });
-  lh(24);
+  // 4. Body Content
+  let y = headerY + 148;
 
-  const studentLine = `${reg.studentName || 'Student'} (${reg.pinNumber || '—'})`;
+  // Title: Certificate of Participation (Cursive script style)
+  doc.fontSize(28).font('Times-BoldItalic').fillColor(GREEN)
+     .text('Certificate of Participation', M, y, { width: W - M * 2, align: 'center' });
+  y += 44;
+
+  // Presented to line
+  doc.fontSize(14).font('Helvetica-Bold').fillColor(DARK_BLUE)
+     .text('This certificate is presented to', M, y, { width: W - M * 2, align: 'center' });
+  y += 30;
+
+  // Student Name (PIN)
+  const studentName = reg.studentName || 'Student';
+  const pinNum = reg.pinNumber ? `(${reg.pinNumber})` : '';
+  const fullStudentStr = `${studentName} ${pinNum}`.trim();
+  doc.fontSize(21).font('Helvetica-Bold').fillColor(ORANGE)
+     .text(fullStudentStr, M, y, { width: W - M * 2, align: 'center' });
+  y += 34;
+
+  // Event statement
+  doc.fontSize(14).font('Helvetica-Bold').fillColor(DARK_BLUE)
+     .text('for participating in the event', M, y, { width: W - M * 2, align: 'center' });
+  y += 30;
+
+  // Event Title
   doc.fontSize(20).font('Helvetica-Bold').fillColor(ORANGE)
-     .text(studentLine, M, y, { width:W-M*2, align:'center' });
-  lh(32);
+     .text(event.title || 'Event', M, y, { width: W - M * 2, align: 'center' });
+  y += 34;
 
-  doc.fontSize(13).font('Helvetica').fillColor(DARK)
-     .text('for participating in the event', M, y, { width:W-M*2, align:'center' });
-  lh(22);
+  // Department & Date line
+  const branchName = reg.branch || event.branch || 'AI&ML';
+  const deptStr = `Organized by Department of ${branchName} on`;
+  doc.fontSize(14).font('Helvetica-Bold').fillColor(DARK_BLUE)
+     .text(deptStr, M, y, { width: W - M * 2, align: 'center' });
+  y += 28;
 
-  doc.fontSize(18).font('Helvetica-Bold').fillColor(BLUE)
-     .text((event.title || 'Event').toUpperCase(), M, y, { width:W-M*2, align:'center' });
-  lh(30);
+  // Date
+  let dateFormatted = '24th Jan, 2026.';
+  if (event.date) {
+    try {
+      const d = new Date(event.date);
+      const day = d.getDate();
+      const suffix = (day >= 11 && day <= 13) ? 'th' : ['st','nd','rd'][((day % 10) - 1)] || 'th';
+      const month = d.toLocaleDateString('en-US', { month: 'short' });
+      const year = d.getFullYear();
+      dateFormatted = `${day}${suffix} ${month}, ${year}.`;
+    } catch(e) {}
+  }
+  doc.fontSize(16).font('Helvetica-Bold').fillColor(ORANGE)
+     .text(dateFormatted, M, y, { width: W - M * 2, align: 'center' });
 
-  const dept = reg.branch ? `Department of ${reg.branch}` : 'the Department';
-  const dateStr = event.date
-    ? new Date(event.date).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })
-    : '—';
-
-  doc.fontSize(13).font('Helvetica');
-  const wPre = doc.widthOfString('Organized by ');
-  doc.font('Helvetica-Bold');
-  const wMid = doc.widthOfString(dept + ' on');
-  const orgX = CX - (wPre + wMid) / 2;
-  doc.fontSize(13).font('Helvetica').fillColor(DARK).text('Organized by ', orgX, y, { continued:true, lineBreak:false });
-  doc.font('Helvetica-Bold').fillColor(ORANGE).text(dept + ' on', { lineBreak:false });
-  lh(22);
-
-  doc.fontSize(15).font('Helvetica-Bold').fillColor(BLUE)
-     .text(dateStr + '.', M, y, { width:W-M*2, align:'center' });
-
-  // Signatures section with improved layout
-  const sigY = H - 100;
-  const sigW = 160;
-  const gap  = (W - M*2 - sigW*3) / 2;
+  // 5. Signatures Section (3 Columns at bottom)
+  const sigY = H - 85;
+  const sigW = 200;
+  const gap  = (W - M * 2 - sigW * 3) / 2;
   const s1 = M, s2 = M + sigW + gap, s3 = M + (sigW + gap) * 2;
 
-  // Draw faculty signature image above the first line
+  const organizerName   = extraInfo.facultyName || event.faculty || 'Dr. M. Rama Krishna Reddy';
+  const coordinatorName = extraInfo.coordinatorName || 'Mr.M.Subrahmanyam';
+  const hodName         = extraInfo.hodName || 'Dr.M.Venkatesh';
+
+  // Draw Faculty / Organizer Signature if exists
   if (signaturePath && fs.existsSync(signaturePath)) {
     try {
-      // Improved signature positioning and sizing
-      doc.image(signaturePath, s1 + 5, sigY - 54, { fit: [sigW - 10, 50], align: 'center' });
-    } catch(e) { 
-      console.error('[Cert] Faculty sig draw error:', e.message); 
-      // Draw placeholder if signature fails
-      doc.rect(s1 + 5, sigY - 54, sigW - 10, 50).fill('#f0f0f0').stroke();
-      doc.fontSize(8).fillColor(GRAY).text('Signature Not Found', s1 + 10, sigY - 45);
-    }
-  } else {
-    // Draw placeholder if no signature
-    doc.rect(s1 + 5, sigY - 54, sigW - 10, 50).fill('#f0f0f0').stroke();
-    doc.fontSize(8).fillColor(GRAY).text('Signature Not Found', s1 + 10, sigY - 45);
+      doc.image(signaturePath, s1 + 25, sigY - 48, { fit: [sigW - 50, 42], align: 'center' });
+    } catch(e) { console.error('Organizer sig draw error:', e.message); }
   }
 
-  // Draw HOD signature image above the third line
+  // Draw HOD Signature if exists
   if (hodSignaturePath && fs.existsSync(hodSignaturePath)) {
     try {
-      doc.image(hodSignaturePath, s3 + 5, sigY - 54, { fit: [sigW - 10, 50], align: 'center' });
-    } catch(e) { 
-      console.error('[Cert] HOD sig draw error:', e.message); 
-      // Draw placeholder if signature fails
-      doc.rect(s3 + 5, sigY - 54, sigW - 10, 50).fill('#f0f0f0').stroke();
-      doc.fontSize(8).fillColor(GRAY).text('Signature Not Found', s3 + 10, sigY - 45);
-    }
-  } else {
-    // Draw placeholder if no signature
-    doc.rect(s3 + 5, sigY - 54, sigW - 10, 50).fill('#f0f0f0').stroke();
-    doc.fontSize(8).fillColor(GRAY).text('Signature Not Found', s3 + 10, sigY - 45);
+      doc.image(hodSignaturePath, s3 + 25, sigY - 48, { fit: [sigW - 50, 42], align: 'center' });
+    } catch(e) { console.error('HOD sig draw error:', e.message); }
   }
 
-  // Signature lines
-  [s1, s2, s3].forEach(x => doc.moveTo(x, sigY).lineTo(x+sigW, sigY).lineWidth(0.8).strokeColor('#444').stroke());
+  // Draw Coordinator Signature if exists in extraInfo
+  if (extraInfo.coordinatorSigPath && fs.existsSync(extraInfo.coordinatorSigPath)) {
+    try {
+      doc.image(extraInfo.coordinatorSigPath, s2 + 25, sigY - 48, { fit: [sigW - 50, 42], align: 'center' });
+    } catch(e) {}
+  }
 
-  doc.fontSize(11).font('Helvetica-Bold').fillColor(DARK);
-  doc.text(event.faculty || 'Faculty', s1, sigY+5, { width:sigW, align:'center' });
-  doc.text('Coordinator',              s2, sigY+5, { width:sigW, align:'center' });
-  doc.text('Head of the Department',   s3, sigY+5, { width:sigW, align:'center' });
+  // Names above roles
+  doc.fontSize(12).font('Helvetica-Bold').fillColor(DARK_BLUE);
+  doc.text(organizerName, s1, sigY - 12, { width: sigW, align: 'center' });
+  doc.text(coordinatorName, s2, sigY - 12, { width: sigW, align: 'center' });
+  doc.text(hodName, s3, sigY - 12, { width: sigW, align: 'center' });
 
-  doc.fontSize(9).font('Helvetica').fillColor(GRAY);
-  doc.text('Event Organiser', s1, sigY+20, { width:sigW, align:'center' });
-  doc.text('Coordinator',     s2, sigY+20, { width:sigW, align:'center' });
-  doc.text('HOD',             s3, sigY+20, { width:sigW, align:'center' });
-
-  doc.fontSize(7.5).font('Helvetica').fillColor('#aaaaaa')
-     .text(`Certificate ID: CEM-${reg._id.toString().slice(-8).toUpperCase()}   |   Issued: ${new Date().toLocaleDateString('en-IN')}`,
-           M, H-26, { width:W-M*2, align:'center' });
+  // Role Subtitles
+  doc.fontSize(10).font('Helvetica-Bold').fillColor('#0055A5');
+  doc.text('Event Organizer', s1, sigY + 4, { width: sigW, align: 'center' });
+  doc.text('Coordinator',     s2, sigY + 4, { width: sigW, align: 'center' });
+  doc.text('Head of the Department', s3, sigY + 4, { width: sigW, align: 'center' });
 }
 
 async function generateAndSave(reg, event) {
   const certDir = path.join(__dirname, '../public/certificates');
-  if (!fs.existsSync(certDir)) fs.mkdirSync(certDir, { recursive:true });
+
+  if (!fs.existsSync(certDir)) {
+    fs.mkdirSync(certDir, { recursive: true });
+  }
+
   const filename = `cert_${reg._id}_${Date.now()}.pdf`;
   const filepath = path.join(certDir, filename);
-  const certUrl  = `/certificates/${filename}`;
-  if (reg.certificateUrl) {
-    const old = path.join(__dirname, '../public', reg.certificateUrl);
-    if (fs.existsSync(old)) try { fs.unlinkSync(old); } catch(e){}
-  }
 
-  // Fetch faculty signature using publishedByFacultyId (most reliable)
-  const Faculty        = require('../models/Faculty');
+  // Fetch faculty signature & HOD signature
+  const Faculty = require('../models/Faculty');
   const DepartmentHead = require('../models/DepartmentHead');
-  let signaturePath    = null;
+
+  let signaturePath = null;
   let hodSignaturePath = null;
-  let facultyDept      = null;
+  let facultyDept = null;
+  let extraInfo = {
+    facultyName: event.faculty || 'Dr. M. Rama Krishna Reddy',
+    coordinatorName: 'Mr.M.Subrahmanyam',
+    hodName: 'Dr.M.Venkatesh'
+  };
 
   try {
-    // Look up faculty by ID first, then fallback to name fields
     let faculty = null;
+
     if (event.publishedByFacultyId) {
-      faculty = await Faculty.findById(event.publishedByFacultyId).catch(() => null)
-             || await Faculty.findOne({ facultyId: event.publishedByFacultyId }).catch(() => null);
+      faculty =
+        await Faculty.findById(event.publishedByFacultyId).catch(() => null) ||
+        await Faculty.findOne({ facultyId: event.publishedByFacultyId }).catch(() => null);
     }
+
     if (!faculty) {
-      faculty = await Faculty.findOne({ username: event.publishedBy }).catch(() => null)
-             || await Faculty.findOne({ fullName: event.faculty }).catch(() => null);
+      faculty =
+        await Faculty.findOne({ username: event.publishedBy }).catch(() => null) ||
+        await Faculty.findOne({ fullName: event.faculty }).catch(() => null);
     }
+
     if (faculty) {
-      facultyDept = faculty.department;
+      facultyDept = faculty.department || faculty.coordinatorBranch;
+      if (faculty.fullName) extraInfo.facultyName = faculty.fullName;
       if (faculty.signatureUrl) {
-        signaturePath = path.join(__dirname, '../public', faculty.signatureUrl);
-        console.log('[Cert] Faculty signature path:', signaturePath, '| exists:', fs.existsSync(signaturePath));
-      } else {
-        console.log('[Cert] Faculty found but no signatureUrl:', faculty.username);
+        signaturePath = path.join(__dirname, "../public", faculty.signatureUrl);
       }
-    } else {
-      console.log('[Cert] Faculty not found for event:', event.title);
     }
-  } catch(e) { console.error('[Cert] Faculty lookup error:', e.message); }
+  } catch (e) {
+    console.error(e);
+  }
+
+  // Fetch Event Branch Coordinator (e.g. CSE Coordinator for CSE events)
+  const eventBranch = facultyDept || event.branch || '';
+  if (eventBranch) {
+    try {
+      const coordinatorObj = await Faculty.findOne({
+        isCoordinator: true,
+        $or: [
+          { coordinatorBranch: new RegExp(`^${eventBranch}$`, 'i') },
+          { department: new RegExp(`^${eventBranch}$`, 'i') }
+        ]
+      }).catch(() => null);
+
+      if (coordinatorObj) {
+        if (coordinatorObj.fullName) extraInfo.coordinatorName = coordinatorObj.fullName;
+        if (coordinatorObj.signatureUrl) {
+          extraInfo.coordinatorSigPath = path.join(__dirname, "../public", coordinatorObj.signatureUrl);
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching coordinator signature:', e);
+    }
+  }
 
   try {
-    // Find DepartmentHead by faculty's department
     if (facultyDept) {
-      const dh = await DepartmentHead.findOne({ department: facultyDept }).catch(() => null);
-      if (dh && dh.signatureUrl) {
-        hodSignaturePath = path.join(__dirname, '../public', dh.signatureUrl);
-        console.log('[Cert] HOD signature path:', hodSignaturePath, '| exists:', fs.existsSync(hodSignaturePath));
-      } else {
-        console.log('[Cert] HOD not found or no signature for dept:', facultyDept);
+      const hod = await DepartmentHead.findOne({
+        department: facultyDept,
+      });
+
+      if (hod) {
+        if (hod.fullName) extraInfo.hodName = hod.fullName;
+        if (hod.signatureUrl) {
+          hodSignaturePath = path.join(
+            __dirname,
+            "../public",
+            hod.signatureUrl
+          );
+        }
       }
     }
-  } catch(e) { console.error('[Cert] HOD lookup error:', e.message); }
-
-  // Enhanced error handling for signature paths
-  if (signaturePath && !fs.existsSync(signaturePath)) {
-    console.warn('[Cert] Faculty signature file does not exist:', signaturePath);
-    signaturePath = null;
-  }
-  
-  if (hodSignaturePath && !fs.existsSync(hodSignaturePath)) {
-    console.warn('[Cert] HOD signature file does not exist:', hodSignaturePath);
-    hodSignaturePath = null;
+  } catch (e) {
+    console.error(e);
   }
 
+  // Generate PDF
   await new Promise((resolve, reject) => {
-    const doc = new PDFDoc({ size:'A4', layout:'landscape', margin:0 });
+    const doc = new PDFDoc({
+      size: "A4",
+      layout: "landscape",
+      margin: 0,
+    });
+
     const stream = fs.createWriteStream(filepath);
+
     doc.pipe(stream);
-    buildCertPDF(doc, reg, event, signaturePath, hodSignaturePath);
+
+    buildCertPDF(
+      doc,
+      reg,
+      event,
+      signaturePath,
+      hodSignaturePath,
+      extraInfo
+    );
+
     doc.end();
-    stream.on('finish', resolve);
-    stream.on('error', reject);
+
+    stream.on("finish", resolve);
+    stream.on("error", reject);
   });
-  return certUrl;
+
+  // Upload PDF to Cloudinary
+ // Upload PDF to Cloudinary
+const result = await cloudinary.uploader.upload(filepath, {
+  resource_type: "raw",
+  folder: "CEM_Certificates",
+  public_id: filename.replace(".pdf", ""),
+  use_filename: true,
+  unique_filename: false,
+});
+
+// Create a downloadable PDF URL
+const certUrl = cloudinary.url(result.public_id + ".pdf", {
+  resource_type: "raw",
+  secure: true,
+  flags: "attachment"
+});
+
+  // Delete local file
+  if (fs.existsSync(filepath)) {
+    fs.unlinkSync(filepath);
+  }
+
+  // Return Cloudinary URL
+  return result.secure_url;
 }
 
 router.post('/generate/:registrationId', async (req, res) => {

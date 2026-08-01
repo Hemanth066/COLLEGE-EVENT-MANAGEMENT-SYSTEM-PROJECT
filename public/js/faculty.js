@@ -1,4 +1,4 @@
-﻿// Faculty Dashboard JavaScript - Version 1.0
+// Faculty Dashboard JavaScript - Version 1.0
 let allEvents = [];
 let allRegistrations = [];
 let currentFaculty = null;
@@ -156,7 +156,7 @@ function displayEvents() {
           ${registrations.map((reg, index) => `
             <div class="registration-item">
               <strong>${index + 1}. ${reg.studentName}</strong>
-              Student ID: ${reg.pinNumber} | ${reg.branch} - Section ${reg.section}
+              Student ID: ${reg.pinNumber} | ${reg.branch}
             </div>
           `).join('')}
         </div>
@@ -198,7 +198,6 @@ function displayAllRegistrations() {
       <td>${reg.studentName}</td>
       <td>${reg.pinNumber}</td>
       <td>${reg.branch}</td>
-      <td>${reg.section}</td>
       <td>${reg.year || 'N/A'}</td>
       <td>${event?.title || 'Unknown Event'}</td>
       <td>
@@ -253,7 +252,6 @@ function displayAttendedStudents() {
       <td>${reg.studentName}</td>
       <td>${reg.pinNumber}</td>
       <td>${reg.branch}</td>
-      <td>${reg.section}</td>
       <td>${reg.year || 'N/A'}</td>
       <td>${event?.title || "N/A"}</td>
       <td><span class="badge success">${reg.score || 0}</span></td>
@@ -471,7 +469,6 @@ function filterRegistrations() {
       <td>${reg.studentName}</td>
       <td>${reg.pinNumber}</td>
       <td>${reg.branch}</td>
-      <td>${reg.section}</td>
       <td>${reg.year || 'N/A'}</td>
       <td>${event?.title || "Unknown Event"}</td>
       <td>
@@ -550,7 +547,6 @@ function filterAttendance() {
       <td>${reg.studentName}</td>
       <td>${reg.pinNumber}</td>
       <td>${reg.branch}</td>
-      <td>${reg.section}</td>
       <td>${reg.year || 'N/A'}</td>
       <td>${event?.title || "Unknown Event"}</td>
       <td><span class="badge success">${reg.score || 0}</span></td>
@@ -620,12 +616,21 @@ async function changeFacultyPassword() {
       showPopup('âŒ', 'Failed', data.message || 'Could not change password.', 'error');
     }
   } catch (err) {
-    showPopup('âŒ', 'Error', 'Network error. Please try again.', 'error');
+    showPopup('❌', 'Error', 'Network error. Please try again.', 'error');
   }
 }
 
-function logout() {
+async function logout() {
   if (confirm("Are you sure you want to logout?")) {
+    const fData = JSON.parse(localStorage.getItem('facultyData') || '{}');
+    try {
+      await fetch('/api/faculty/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: fData.username, id: fData._id, facultyId: fData.facultyId })
+      });
+    } catch (e) {}
+    localStorage.clear();
     window.location.href = "index.html";
   }
 }
@@ -744,7 +749,6 @@ function downloadEventReport() {
       <td>${reg.studentName || ''}</td>
       <td>${reg.pinNumber || ''}</td>
       <td>${reg.branch || ''}</td>
-      <td>${reg.section || ''}</td>
       <td>${reg.year || ''}</td>
       <td>${reg.attended ? 'Present' : 'Absent'}</td>
       <td>${reg.score || 0}</td>
@@ -768,7 +772,7 @@ function downloadEventReport() {
     <table>
       <thead><tr>
         <th>#</th><th>Student Name</th><th>PIN</th><th>Branch</th>
-        <th>Section</th><th>Year</th><th>Attendance</th><th>Score</th>
+        <th>Year</th><th>Attendance</th><th>Score</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -930,6 +934,33 @@ function cancelUpdate() {
   document.getElementById('updateStudentPhone').value = '';
 }
 
+function addFacultyCoord_Dashboard(name = '', phone = '') {
+  const container = document.getElementById('dashFacultyCoordsContainer');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'dash-fac-coord-item';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML = `
+    <input class="form-input dash-fac-name" type="text" placeholder="Faculty name" value="${name}">
+    <input class="form-input dash-fac-phone" type="tel" placeholder="Phone number" value="${phone}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);width:34px;height:38px;border-radius:8px;cursor:pointer;font-weight:bold;" title="Remove">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+function addStudentCoord_Dashboard(name = '', phone = '') {
+  const container = document.getElementById('dashStudentCoordsContainer');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'dash-stu-coord-item';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML = `
+    <input class="form-input dash-stu-name" type="text" placeholder="Student name" value="${name}">
+    <input class="form-input dash-stu-phone" type="tel" placeholder="Phone number" value="${phone}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);width:34px;height:38px;border-radius:8px;cursor:pointer;font-weight:bold;" title="Remove">✕</button>
+  `;
+  container.appendChild(div);
+}
 
 // Publish Event Handler
 async function handlePublishEvent(e) {
@@ -938,6 +969,32 @@ async function handlePublishEvent(e) {
   // Use _id if facultyId is not available
   const facultyIdentifier = currentFaculty.facultyId || currentFaculty._id;
   
+  const facNameEls = document.querySelectorAll('#dashFacultyCoordsContainer .dash-fac-name');
+  const facPhoneEls = document.querySelectorAll('#dashFacultyCoordsContainer .dash-fac-phone');
+  const facNames = [];
+  const facPhones = [];
+  facNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = facPhoneEls[idx] ? facPhoneEls[idx].value.trim() : '';
+    if (n) {
+      facNames.push(n);
+      if (p) facPhones.push(p);
+    }
+  });
+
+  const stuNameEls = document.querySelectorAll('#dashStudentCoordsContainer .dash-stu-name');
+  const stuPhoneEls = document.querySelectorAll('#dashStudentCoordsContainer .dash-stu-phone');
+  const stuNames = [];
+  const stuPhones = [];
+  stuNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = stuPhoneEls[idx] ? stuPhoneEls[idx].value.trim() : '';
+    if (n) {
+      stuNames.push(n);
+      if (p) stuPhones.push(p);
+    }
+  });
+
   const eventData = {
     title: document.getElementById('eventTitle').value,
     description: document.getElementById('eventDescription').value,
@@ -945,10 +1002,10 @@ async function handlePublishEvent(e) {
     date: document.getElementById('eventDate').value,
     time: document.getElementById('eventTime').value,
     registrationDeadline: document.getElementById('eventRegistrationDeadline').value,
-    faculty: document.getElementById('eventFaculty').value,
-    facultyPhone: document.getElementById('eventFacultyPhone').value,
-    student: document.getElementById('eventStudent').value,
-    studentPhone: document.getElementById('eventStudentPhone').value,
+    faculty: facNames.join(', '),
+    facultyPhone: facPhones.join(', '),
+    student: stuNames.join(', '),
+    studentPhone: stuPhones.join(', '),
     publishedBy: currentFaculty.username,
     publishedByFacultyId: facultyIdentifier,
     maxParticipants: document.getElementById('eventMaxParticipants').value
@@ -1122,7 +1179,20 @@ function showTab(tabName) {
   if (tabName === 'feedbackAnalysis') {
     populateFeedbackEventDropdown();
   }
+
+  // Load branch students when students tab is shown
+  if (tabName === 'students') {
+    console.log('Students tab opened, loading branch students...');
+    loadFacultyBranchStudents();
+  }
+
+  // Load branch events when branchEvents tab is shown
+  if (tabName === 'branchEvents') {
+    console.log('Branch events tab opened, loading branch events...');
+    loadFacultyBranchEvents();
+  }
 }
+
 
 // Load Analytics Data
 function loadAnalytics() {
@@ -1383,200 +1453,12 @@ function renderStars(rating) {
   return '⭐'.repeat(full) + '☆'.repeat(5 - full);
 }
 
-// â”€â”€â”€ CERTIFICATE MODULE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const isCompleted = ev.date && ev.date < todayStr;
+    const statusMatch = status === 'all' || (status === 'upcoming' && !isCompleted) || (status === 'completed' && isCompleted);
 
-function filterCertificates() {
-  const eventId = document.getElementById('filterEventCert').value;
-  const tbody = document.getElementById('certBody');
-  const certCount = document.getElementById('certCount');
-  const tableContainer = document.getElementById('certTableContainer');
-
-  if (!eventId) {
-    tableContainer.style.display = 'none';
-    certCount.textContent = 'Select an event';
-    return;
-  }
-
-  tableContainer.style.display = 'block';
-
-  // Only attended students
-  const attended = allRegistrations.filter(reg => {
-    const regEventId = typeof reg.eventId === 'string' ? reg.eventId : reg.eventId?._id;
-    return reg.attended && regEventId === eventId;
+    return titleMatch && statusMatch;
   });
 
-  certCount.textContent = `${attended.length} Students`;
-
-  if (!attended.length) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: #999;">
-          No attended students for this event yet
-        </td>
-      </tr>`;
-    return;
-  }
-
-  tbody.innerHTML = '';
-  attended.forEach((reg, index) => {
-    const hasCert = !!reg.certificateUrl;
-    const row = document.createElement('tr');
-    row.id = `cert-row-${reg._id}`;
-    row.innerHTML = `
-      <td>${index + 1}</td>
-      <td>${reg.studentName}</td>
-      <td>${reg.pinNumber}</td>
-      <td>${reg.branch}</td>
-      <td>${reg.section}</td>
-      <td>${reg.year || 'N/A'}</td>
-      <td id="cert-status-${reg._id}">
-        ${hasCert
-          ? `<span style="display:inline-flex; align-items:center; gap:6px; background:rgba(76,175,80,0.15); border:1px solid rgba(76,175,80,0.4); padding:5px 12px; border-radius:20px;">
-               <span style="color:#4caf50; font-size:16px;">✅</span>
-               <a href="${reg.certificateUrl}" target="_blank"
-                  style="color:#4caf50; font-weight:600; font-size:13px; text-decoration:none;">
-                 Uploaded â€” View
-               </a>
-             </span>`
-          : `<span style="color:rgba(255,255,255,0.5);">No certificate</span>`}
-      </td>
-      <td id="cert-action-${reg._id}">
-        <label style="cursor:pointer; padding:6px 14px; background:rgba(102,126,234,0.25); border:1px solid rgba(102,126,234,0.5); border-radius:6px; font-size:12px; font-weight:600; color:white; transition:0.2s;"
-               onmouseover="this.style.background='rgba(102,126,234,0.45)'"
-               onmouseout="this.style.background='rgba(102,126,234,0.25)'">
-          ${hasCert ? 'ðŸ“¤ Replace' : 'ðŸ“¤ Upload'}
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;"
-                 onchange="uploadCertificate('${reg._id}', this)">
-        </label>
-        ${hasCert ? `
-        <button onclick="deleteCertificate('${reg._id}')"
-          style="margin-left:8px; padding:6px 12px; background:rgba(244,67,54,0.2); border:1px solid rgba(244,67,54,0.4); border-radius:6px; font-size:12px; font-weight:600; color:#f44336; cursor:pointer; transition:0.2s;"
-          onmouseover="this.style.background='rgba(244,67,54,0.4)'"
-          onmouseout="this.style.background='rgba(244,67,54,0.2)'">
-          ðŸ—‘ï¸ Remove
-        </button>` : ''}
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-async function uploadCertificate(regId, input) {
-  if (!input.files || !input.files[0]) return;
-
-  const file = input.files[0];
-  const formData = new FormData();
-  formData.append('certificate', file);
-
-  // Immediately show uploading state in the row
-  const statusEl = document.getElementById(`cert-status-${regId}`);
-  const actionCell = document.getElementById(`cert-action-${regId}`);
-  if (statusEl) statusEl.innerHTML = `<span style="color:rgba(255,255,255,0.6);">â³ Uploading...</span>`;
-  if (actionCell) actionCell.style.opacity = '0.5';
-
-  try {
-    const response = await fetch(`/api/registrations/certificate/${regId}`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      showPopup('âŒ', 'Upload Failed', err.message || 'Could not upload certificate', 'error');
-      if (statusEl) statusEl.innerHTML = `<span style="color:rgba(255,255,255,0.5);">No certificate</span>`;
-      if (actionCell) actionCell.style.opacity = '1';
-      return;
-    }
-
-    const result = await response.json();
-
-    // Update in-memory registration â€” handle both string and object _id
-    const reg = allRegistrations.find(r => {
-      const id = typeof r._id === 'object' ? r._id.toString() : r._id;
-      return id === regId;
-    });
-    if (reg) reg.certificateUrl = result.certificateUrl;
-
-    // Update the status cell immediately â€” no need to re-render the whole table
-    if (statusEl) {
-      statusEl.innerHTML = `
-        <span style="display:inline-flex; align-items:center; gap:6px; background:rgba(76,175,80,0.15); border:1px solid rgba(76,175,80,0.4); padding:5px 12px; border-radius:20px;">
-          <span style="color:#4caf50; font-size:16px;">✅</span>
-          <a href="${result.certificateUrl}" target="_blank"
-             style="color:#4caf50; font-weight:600; font-size:13px; text-decoration:none;">
-            Uploaded â€” View
-          </a>
-        </span>`;
-    }
-
-    // Update action cell: keep Upload button + add Remove button
-    if (actionCell) {
-      actionCell.style.opacity = '1';
-      actionCell.innerHTML = `
-        <label style="cursor:pointer; padding:6px 14px; background:rgba(102,126,234,0.25); border:1px solid rgba(102,126,234,0.5); border-radius:6px; font-size:12px; font-weight:600; color:white; transition:0.2s;"
-               onmouseover="this.style.background='rgba(102,126,234,0.45)'"
-               onmouseout="this.style.background='rgba(102,126,234,0.25)'">
-          ðŸ“¤ Replace
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;"
-                 onchange="uploadCertificate('${regId}', this)">
-        </label>
-        <button onclick="deleteCertificate('${regId}')"
-          style="margin-left:8px; padding:6px 12px; background:rgba(244,67,54,0.2); border:1px solid rgba(244,67,54,0.4); border-radius:6px; font-size:12px; font-weight:600; color:#f44336; cursor:pointer; transition:0.2s;"
-          onmouseover="this.style.background='rgba(244,67,54,0.4)'"
-          onmouseout="this.style.background='rgba(244,67,54,0.2)'">
-          ðŸ—‘ï¸ Remove
-        </button>`;
-    }
-
-    showPopup('✅', 'Certificate Uploaded', `Certificate for ${reg?.studentName || 'student'} uploaded successfully.`, 'success');
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    showPopup('âŒ', 'Upload Error', error.message, 'error');
-    if (statusEl) statusEl.innerHTML = `<span style="color:rgba(255,255,255,0.5);">No certificate</span>`;
-    if (actionCell) actionCell.style.opacity = '1';
-  }
-}
-
-async function deleteCertificate(regId) {
-  if (!confirm('Remove this certificate?')) return;
-
-  try {
-    const response = await fetch(`/api/registrations/certificate/${regId}`, {
-      method: 'DELETE'
-    });
-
-    if (!response.ok) {
-      showPopup('âŒ', 'Error', 'Could not remove certificate', 'error');
-      return;
-    }
-
-    // Update in memory
-    const reg = allRegistrations.find(r => {
-      const id = typeof r._id === 'object' ? r._id.toString() : r._id;
-      return id === regId;
-    });
-    if (reg) reg.certificateUrl = null;
-
-    // Update status cell immediately
-    const statusEl = document.getElementById(`cert-status-${regId}`);
-    const actionCell = document.getElementById(`cert-action-${regId}`);
-
-    if (statusEl) statusEl.innerHTML = `<span style="color:rgba(255,255,255,0.5);">No certificate</span>`;
-    if (actionCell) {
-      actionCell.innerHTML = `
-        <label style="cursor:pointer; padding:6px 14px; background:rgba(102,126,234,0.25); border:1px solid rgba(102,126,234,0.5); border-radius:6px; font-size:12px; font-weight:600; color:white; transition:0.2s;"
-               onmouseover="this.style.background='rgba(102,126,234,0.45)'"
-               onmouseout="this.style.background='rgba(102,126,234,0.25)'">
-          ðŸ“¤ Upload
-          <input type="file" accept=".pdf,.png,.jpg,.jpeg" style="display:none;"
-                 onchange="uploadCertificate('${regId}', this)">
-        </label>`;
-    }
-
-    showPopup('✅', 'Certificate Removed', 'Certificate has been removed.', 'success');
-  } catch (error) {
-    console.error('Delete error:', error);
-    showPopup('âŒ', 'Error', error.message, 'error');
-  }
+  displayedFacultyBranchEvents = filtered;
+  renderFacultyBranchEvents(filtered);
 }

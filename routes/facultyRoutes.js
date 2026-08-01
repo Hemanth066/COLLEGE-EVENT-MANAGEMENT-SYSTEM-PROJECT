@@ -1,6 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const Faculty = require("../models/Faculty");
+const mongoose = require("mongoose");
+const Student = require("../models/Student");
+const Event = require("../models/Event");
+const Registration = require("../models/Registration");
+
+
+// Helper function to safely find faculty by string facultyId or ObjectId or username
+async function findFacultyByIdentifier(id) {
+  if (!id) return null;
+  let faculty = null;
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    try { faculty = await Faculty.findById(id); } catch(e) {}
+  }
+  if (!faculty) {
+    try { faculty = await Faculty.findOne({ facultyId: id }); } catch(e) {}
+  }
+  if (!faculty) {
+    try { faculty = await Faculty.findOne({ username: id }); } catch(e) {}
+  }
+  console.log(`findFacultyByIdentifier input: "${id}" -> found:`, faculty ? (faculty.fullName || faculty.username) : 'NONE');
+  return faculty;
+}
+
+
 
 // Faculty Login
 router.post("/login", async (req, res) => {
@@ -12,30 +36,69 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid Faculty Credentials ❌" });
   }
 
+  if (faculty.isLoggedIn) {
+    return res.status(400).json({
+      isAlreadyLoggedIn: true,
+      message: "⚠️ Account is already logged in on another device or tab. Please log out from the last page first before logging in!"
+    });
+  }
+
+  faculty.isLoggedIn = true;
+  await faculty.save();
+
   res.json({
     message: "Faculty Login Successful ✅",
     faculty
   });
 });
 
+// Faculty Logout
+router.post("/logout", async (req, res) => {
+  try {
+    const { username, id, facultyId } = req.body;
+    const query = [];
+    if (username) query.push({ username });
+    if (facultyId) query.push({ facultyId });
+    if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
+
+    if (query.length > 0) {
+      const faculty = await Faculty.findOne({ $or: query });
+      if (faculty) {
+        faculty.isLoggedIn = false;
+        await faculty.save();
+      }
+    }
+    res.json({ message: "Logged out successfully ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Logout error" });
+  }
+});
+
+// Force Logout
+router.post("/force-logout", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const faculty = await Faculty.findOne({ username, password });
+    if (!faculty) {
+      return res.status(401).json({ message: "Invalid credentials ❌" });
+    }
+    faculty.isLoggedIn = false;
+    await faculty.save();
+    res.json({ message: "Previous session cleared. You can now log in ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
 // Get Faculty Profile
 router.get("/profile/:facultyId", async (req, res) => {
   try {
-    console.log('Looking for faculty with ID:', req.params.facultyId);
-    
-    // Try to find by facultyId first, then by _id
-    let faculty = await Faculty.findOne({ facultyId: req.params.facultyId });
+    const faculty = await findFacultyByIdentifier(req.params.facultyId);
     
     if (!faculty) {
-      faculty = await Faculty.findById(req.params.facultyId);
-    }
-    
-    if (!faculty) {
-      console.log('Faculty not found');
       return res.status(404).json({ message: "Faculty not found" });
     }
     
-    console.log('Faculty found:', faculty.username);
     res.json(faculty);
   } catch (err) {
     console.error("Error fetching faculty profile:", err);
@@ -46,16 +109,13 @@ router.get("/profile/:facultyId", async (req, res) => {
 // Update Faculty Profile
 router.put("/profile/:facultyId", async (req, res) => {
   try {
-    console.log('Updating faculty with ID:', req.params.facultyId);
-    
-    // Try to find and update by facultyId first, then by _id
     let faculty = await Faculty.findOneAndUpdate(
       { facultyId: req.params.facultyId },
       req.body,
       { new: true }
     );
     
-    if (!faculty) {
+    if (!faculty && mongoose.Types.ObjectId.isValid(req.params.facultyId)) {
       faculty = await Faculty.findByIdAndUpdate(
         req.params.facultyId,
         req.body,
@@ -67,7 +127,6 @@ router.put("/profile/:facultyId", async (req, res) => {
       return res.status(404).json({ message: "Faculty not found" });
     }
     
-    console.log('Faculty updated:', faculty.username);
     res.json({ message: "Profile Updated Successfully", faculty });
   } catch (err) {
     console.error("Error updating faculty profile:", err);
@@ -80,8 +139,7 @@ router.put("/change-password/:facultyId", async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    let faculty = await Faculty.findOne({ facultyId: req.params.facultyId });
-    if (!faculty) faculty = await Faculty.findById(req.params.facultyId);
+    const faculty = await findFacultyByIdentifier(req.params.facultyId);
     if (!faculty) return res.status(404).json({ message: "Faculty not found" });
 
     if (faculty.password !== currentPassword) {
@@ -111,8 +169,7 @@ router.put("/signature/:facultyId", async (req, res) => {
     const sigDir = path.join(__dirname, '../public/signatures');
     if (!fs.existsSync(sigDir)) fs.mkdirSync(sigDir, { recursive: true });
 
-    let faculty = await Faculty.findOne({ facultyId: req.params.facultyId });
-    if (!faculty) faculty = await Faculty.findById(req.params.facultyId);
+    const faculty = await findFacultyByIdentifier(req.params.facultyId);
     if (!faculty) return res.status(404).json({ message: 'Faculty not found' });
 
     // Delete old signature file if exists
@@ -135,4 +192,87 @@ router.put("/signature/:facultyId", async (req, res) => {
   }
 });
 
+// ── GET STUDENTS FOR FACULTY BRANCH ─────────────────────────
+router.get("/branch-students/:facultyId", async (req, res) => {
+  try {
+    const faculty = await findFacultyByIdentifier(req.params.facultyId);
+    if (!faculty) return res.status(404).json({ message: "Faculty not found" });
+    if (!faculty.isCoordinator) return res.status(403).json({ message: "Access denied. Only coordinators can view branch students." });
+
+    const branch = (faculty.coordinatorBranch || faculty.department || "").trim();
+
+    let query = {};
+    if (branch && branch.toLowerCase() !== "all") {
+      query = { branch: new RegExp(`^${branch}$`, 'i') };
+    }
+
+    let students = await Student.find(query)
+      .select("-password")
+      .sort({ fullName: 1 });
+
+    const availableBranches = await Student.distinct('branch');
+
+    res.json({
+      department: branch,
+      students,
+      isFallbackAll: false,
+      availableBranches
+    });
+  } catch (err) {
+    console.error("Error fetching branch students:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// ── GET EVENTS FOR FACULTY BRANCH ───────────────────────────
+router.get("/branch-events/:facultyId", async (req, res) => {
+  try {
+    const faculty = await findFacultyByIdentifier(req.params.facultyId);
+    if (!faculty) return res.status(404).json({ message: "Faculty not found" });
+    if (!faculty.isCoordinator) return res.status(403).json({ message: "Access denied. Only coordinators can view branch events." });
+
+    const dept = (faculty.coordinatorBranch || faculty.department || "").trim();
+
+    let query = {};
+    if (dept && dept.toLowerCase() !== "all") {
+      const deptFacultyList = await Faculty.find({
+        $or: [
+          { department: new RegExp(`^${dept}$`, 'i') },
+          { coordinatorBranch: new RegExp(`^${dept}$`, 'i') }
+        ]
+      }, '_id');
+      const deptFacultyIds = deptFacultyList.map(f => f._id);
+      query = {
+        $or: [
+          { publishedByFacultyId: { $in: deptFacultyIds } },
+          { department: new RegExp(`^${dept}$`, 'i') },
+          { branch: new RegExp(`^${dept}$`, 'i') },
+          { targetBranch: new RegExp(`^${dept}$`, 'i') }
+        ]
+      };
+    }
+
+    let events = await Event.find(query)
+      .populate('publishedByFacultyId', 'fullName department coordinatorBranch')
+      .sort({ eventDate: -1, date: -1 });
+
+    const eventsWithStats = await Promise.all(events.map(async (ev) => {
+      const regCount = await Registration.countDocuments({ eventId: ev._id });
+      const attendedCount = await Registration.countDocuments({ eventId: ev._id, attended: true });
+      return {
+        ...ev.toObject(),
+        totalRegistrations: regCount,
+        totalAttended: attendedCount
+      };
+    }));
+
+    res.json({ department: dept || '', events: eventsWithStats, isFallbackAll: false });
+  } catch (err) {
+    console.error("Error fetching branch events:", err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
 module.exports = router;
+
+

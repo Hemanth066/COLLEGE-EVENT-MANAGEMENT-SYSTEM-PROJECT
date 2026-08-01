@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024">
   <title>Publish Event | CEM</title>
   <link rel="stylesheet" href="css/style.css">
 
@@ -119,6 +120,15 @@
         transform: translateY(0);
       }
     }
+
+    /* FIXED 1024px DESKTOP LAYOUT ENFORCEMENT */
+    html, body {
+      width: 100%;
+      min-width: 1024px;
+      overflow-x: auto;
+      margin: 0;
+      padding: 0;
+    }
   </style>
 </head>
 <body>
@@ -162,27 +172,43 @@
     </small>
   </div>
 
-  <div class="two-column">
-    <div class="form-group">
-      <label>Faculty Coordinator</label>
-      <input type="text" id="faculty">
+  <!-- Faculty Coordinator Section with Plus Icon -->
+  <div class="form-group">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <label style="margin-bottom:0;">Faculty Coordinator(s)</label>
+      <button type="button" onclick="addFacultyCoord_PublishPage()" style="background:rgba(30,136,229,0.1);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+        ➕ Add Faculty
+      </button>
     </div>
-
-    <div class="form-group">
-      <label>Faculty Phone</label>
-      <input type="tel" id="facultyPhone">
+    <div id="facultyCoordsContainer">
+      <div class="two-column faculty-coord-item" style="margin-bottom:8px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <input type="text" class="pub-faculty-name" id="faculty" placeholder="Faculty name">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <input type="tel" class="pub-faculty-phone" id="facultyPhone" placeholder="Phone number">
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="two-column">
-    <div class="form-group">
-      <label>Student Coordinator</label>
-      <input type="text" id="student">
+  <!-- Student Coordinator Section with Plus Icon -->
+  <div class="form-group">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <label style="margin-bottom:0;">Student Coordinator(s)</label>
+      <button type="button" onclick="addStudentCoord_PublishPage()" style="background:rgba(30,136,229,0.1);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+        ➕ Add Student
+      </button>
     </div>
-
-    <div class="form-group">
-      <label>Student Phone</label>
-      <input type="tel" id="studentPhone">
+    <div id="studentCoordsContainer">
+      <div class="two-column student-coord-item" style="margin-bottom:8px;">
+        <div class="form-group" style="margin-bottom:0;">
+          <input type="text" class="pub-student-name" id="student" placeholder="Student name">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <input type="tel" class="pub-student-phone" id="studentPhone" placeholder="Phone number">
+        </div>
+      </div>
     </div>
   </div>
 
@@ -197,17 +223,69 @@
 </div>
 
 <script>
+function addFacultyCoord_PublishPage(name = '', phone = '') {
+  const container = document.getElementById('facultyCoordsContainer');
+  const div = document.createElement('div');
+  div.className = 'faculty-coord-item';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" class="pub-faculty-name" placeholder="Faculty name" value="${name}">
+    <input type="tel" class="pub-faculty-phone" placeholder="Phone number" value="${phone}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);width:34px;height:40px;border-radius:8px;cursor:pointer;font-weight:bold;" title="Remove">✕</button>
+  `;
+  container.appendChild(div);
+}
+
+function addStudentCoord_PublishPage(name = '', phone = '') {
+  const container = document.getElementById('studentCoordsContainer');
+  const div = document.createElement('div');
+  div.className = 'student-coord-item';
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 34px;gap:8px;margin-bottom:8px;align-items:center;';
+  div.innerHTML = `
+    <input type="text" class="pub-student-name" placeholder="Student name" value="${name}">
+    <input type="tel" class="pub-student-phone" placeholder="Phone number" value="${phone}">
+    <button type="button" onclick="this.parentElement.remove()" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.3);width:34px;height:40px;border-radius:8px;cursor:pointer;font-weight:bold;" title="Remove">✕</button>
+  `;
+  container.appendChild(div);
+}
+
 async function publishEvent() {
+  const facultyNameEls = document.querySelectorAll('.pub-faculty-name');
+  const facultyPhoneEls = document.querySelectorAll('.pub-faculty-phone');
+  const facultyNames = [];
+  const facultyPhones = [];
+  facultyNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = facultyPhoneEls[idx] ? facultyPhoneEls[idx].value.trim() : '';
+    if (n) {
+      facultyNames.push(n);
+      if (p) facultyPhones.push(p);
+    }
+  });
+
+  const studentNameEls = document.querySelectorAll('.pub-student-name');
+  const studentPhoneEls = document.querySelectorAll('.pub-student-phone');
+  const studentNames = [];
+  const studentPhones = [];
+  studentNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = studentPhoneEls[idx] ? studentPhoneEls[idx].value.trim() : '';
+    if (n) {
+      studentNames.push(n);
+      if (p) studentPhones.push(p);
+    }
+  });
+
   const eventData = {
     title: title.value,
     description: description.value,
     venue: venue.value,
     date: date.value,
     time: time.value,
-    faculty: faculty.value,
-    facultyPhone: facultyPhone.value,
-    student: student.value,
-    studentPhone: studentPhone.value,
+    faculty: facultyNames.join(', '),
+    facultyPhone: facultyPhones.join(', '),
+    student: studentNames.join(', '),
+    studentPhone: studentPhones.join(', '),
     registrationDeadline: registrationDeadline.value
   };
 

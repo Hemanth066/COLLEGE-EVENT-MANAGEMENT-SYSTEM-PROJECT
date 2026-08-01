@@ -7,6 +7,7 @@ const hodSchema = new mongoose.Schema({
   phone:        { type: String, default: "" },
   department:   { type: String, default: "" },
   year:         { type: String, default: "" },
-  signatureUrl: { type: String, default: "" }
+  signatureUrl: { type: String, default: "" },
+  isLoggedIn:   { type: Boolean, default: false }
 });
 module.exports = mongoose.model("Hod", hodSchema);

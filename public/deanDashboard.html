@@ -1,110 +1,2017 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dean Dashboard | CEM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-    :root {
-      --bg:#F8FAFC; --sidebar-w:260px;
-      --primary:#0F4C81; --blue:#1E88E5;
-      --gold:#FFC107; --gold-dark:#FFA000;
-      --badge-bg:rgba(255,193,7,0.12); --badge-border:rgba(255,193,7,0.35); --badge-color:#b8860b;
-      --glass:#ffffff;
-      --border:#e2e8f0;
-      --text:#1F2937;
-      --muted:#6B7280;
-    }
-    body { font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; font-size:14px; }
-    
-    /* SIDEBAR */
-    .sidebar { width:var(--sidebar-w); min-height:100vh; position:fixed; left:0; top:0; background:var(--primary); border-right:none; display:flex; flex-direction:column; box-shadow:4px 0 20px rgba(15,76,129,0.15); }
-    .sidebar-profile { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; gap:12px; }
-    .sidebar-avatar { width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; color:#1F2937; box-shadow:0 4px 14px rgba(255,193,7,0.3); }
-    .sidebar-name { font-weight:700; color:white; font-size:15px; margin-bottom:2px; }
-    .sidebar-role { font-size:11px; color:rgba(255,255,255,0.75); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
-    
-    .sidebar-menu { flex:1; padding:16px 0; }
-    .menu-item { padding:14px 24px; display:flex; align-items:center; gap:12px; cursor:pointer; color:rgba(255,255,255,0.65); font-weight:500; border-left:3px solid transparent; transition:all 0.2s; }
-    .menu-item:hover, .menu-item.active { color:white; background:rgba(255,255,255,0.1); border-left-color:var(--gold); }
-    .menu-item.active { font-weight:600; background:rgba(255,193,7,0.15); }
-    
-    .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,0.12); }
-    .logout-btn { width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.25); background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.9); font-weight:600; cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.2s; }
-    .logout-btn:hover { background:rgba(255,255,255,0.18); }
+  <meta name="viewport" content="width=1024">
+  <title>Dean Dashboard | College Event Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- PDF generation libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-    /* MAIN */
-    .main-content { margin-left:var(--sidebar-w); flex:1; padding:32px; }
-    .top-bar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,rgba(30,136,229,0.08),rgba(15,76,129,0.04)); border:1px solid rgba(30,136,229,0.18); border-radius:18px; padding:24px 32px; margin-bottom:32px; }
-    .top-bar-title { font-size:28px; font-weight:800; color:var(--primary); display:flex; align-items:center; gap:12px; }
-    
-    .card { background:var(--glass); border:1.5px solid var(--border); border-radius:16px; padding:32px; text-align:center; box-shadow:0 2px 12px rgba(15,76,129,0.06); }
-    .card h2 { font-size:22px; color:var(--primary); margin-bottom:12px; }
-    .card p { color:var(--muted); line-height:1.6; }
-    .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:24px; text-align:left; }
-    .info-item { background:#F8FAFC; padding:16px; border-radius:12px; border:1.5px solid var(--border); }
-    .info-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
-    .info-val { font-size:15px; font-weight:600; color:var(--text); }
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #F8FAFC;
+      --sidebar-w: 260px;
+      --primary: #0F4C81;
+      --blue: #1E88E5;
+      --blue-dark: #0f4c81;
+      --gold: #FFC107;
+      --gold-dark: #FFA000;
+      --badge-bg: rgba(255, 193, 7, 0.12);
+      --badge-border: rgba(255, 193, 7, 0.35);
+      --badge-color: #b8860b;
+      --glass: #ffffff;
+      --border: #e2e8f0;
+      --text: #1F2937;
+      --muted: #6B7280;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      font-size: 14px;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background: var(--primary);
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(15, 76, 129, 0.15);
+      z-index: 100;
+    }
+
+    .sidebar-profile {
+      padding: 24px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: #1F2937;
+      box-shadow: 0 4px 14px rgba(255, 193, 7, 0.3);
+    }
+
+    .sidebar-name {
+      font-weight: 700;
+      color: white;
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+
+    .sidebar-role {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.75);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      padding: 16px 0;
+    }
+
+    .menu-item {
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 500;
+      border-left: 4px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .menu-item:hover,
+    .menu-item.active {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border-left-color: var(--gold);
+    }
+
+    .menu-item.active {
+      font-weight: 600;
+      background: rgba(255, 193, 7, 0.15);
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 32px;
+      width: calc(100% - var(--sidebar-w));
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, rgba(30, 136, 229, 0.08), rgba(15, 76, 129, 0.04));
+      border: 1px solid rgba(30, 136, 229, 0.18);
+      border-radius: 18px;
+      padding: 24px 32px;
+      margin-bottom: 32px;
+    }
+
+    .top-bar-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* TAB CONTENT PANELS */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 14px rgba(15, 76, 129, 0.05);
+      transition: all 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 76, 129, 0.12);
+    }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* TABLES & CARDS */
+    .card-panel {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 12px rgba(15, 76, 129, 0.04);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .input-field,
+    .select-field {
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      background: #ffffff;
+      color: var(--text);
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus,
+    .select-field:focus {
+      border-color: var(--blue);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text);
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* BUTTONS & BADGES */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--blue), var(--primary));
+      color: white;
+      box-shadow: 0 4px 14px rgba(30, 136, 229, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(30, 136, 229, 0.45);
+    }
+
+    .btn-success {
+      background: #16a34a;
+      color: white;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pill-blue {
+      background: rgba(30, 136, 229, 0.12);
+      color: var(--blue);
+    }
+
+    .pill-green {
+      background: rgba(34, 197, 94, 0.12);
+      color: #16a34a;
+    }
+
+    .pill-gold {
+      background: rgba(255, 193, 7, 0.15);
+      color: #b8860b;
+    }
+
+    /* EVENTS GRID */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .event-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 10px rgba(15, 76, 129, 0.05);
+    }
+
+    /* FIXED 1024px DESKTOP LAYOUT ENFORCEMENT */
+    html,
+    body {
+      width: 100%;
+      min-width: 1024px;
+      overflow-x: auto;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar {
+      left: 0 !important;
+      width: var(--sidebar-w) !important;
+      position: fixed !important;
+      display: flex !important;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-w) !important;
+      width: calc(100% - var(--sidebar-w)) !important;
+      min-width: calc(1024px - var(--sidebar-w)) !important;
+      box-sizing: border-box !important;
+    }
   </style>
 </head>
+
 <body>
 
-<div class="sidebar">
-  <div class="sidebar-profile">
-    <div class="sidebar-avatar">D</div>
+  <!-- Toast Popup Container -->
+  <div id="deanToast" style="position:fixed;top:28px;right:28px;z-index:99999;display:none;align-items:center;gap:12px;background:#ffffff;border:1.5px solid var(--border);border-left:4px solid #16a34a;padding:14px 22px;border-radius:14px;box-shadow:0 10px 30px rgba(15,76,129,0.18);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);opacity:0;transform:translateY(-10px);">
+    <span id="deanToastIcon" style="font-size:22px;">✅</span>
     <div>
-      <div class="sidebar-name" id="profileName">Dean Name</div>
-      <div class="sidebar-role">Dean Portal</div>
+      <div id="deanToastTitle" style="font-weight:700;font-size:14px;color:var(--primary);">Refreshed!</div>
+      <div id="deanToastMsg" style="font-size:12px;color:var(--muted);">Analytics table updated successfully</div>
     </div>
   </div>
-  <div class="sidebar-menu">
-    <div class="menu-item active"><span>🏠</span><span>Dashboard</span></div>
-  </div>
-  <div class="sidebar-footer">
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-  </div>
-</div>
 
-<div class="main-content">
-  <div class="top-bar">
-    <div class="top-bar-title"><span>👔</span> Welcome, <span id="welcomeName">Dean</span></div>
-    <div style="color:var(--badge-color);font-weight:600;background:var(--badge-bg);border:1px solid var(--badge-border);padding:6px 14px;border-radius:20px;font-size:12px;">Dean Dashboard</div>
-  </div>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar" id="sidebarAvatar">D</div>
+      <div>
+        <div class="sidebar-name" id="profileName">Dean Name</div>
+        <div class="sidebar-role">Dean Portal</div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h2>Dean Information</h2>
-    <p>Welcome to the Dean administrative portal.<br>Below are your current assigned details.</p>
-    <div class="info-grid">
-      <div class="info-item"><div class="info-label">Full Name</div><div class="info-val" id="iName">—</div></div>
-      <div class="info-item"><div class="info-label">Faculty / Division</div><div class="info-val" id="iFac">—</div></div>
-      <div class="info-item"><div class="info-label">Year Allocated</div><div class="info-val" id="iYear">—</div></div>
-      <div class="info-item"><div class="info-label">Email</div><div class="info-val" id="iEmail">—</div></div>
+    <div class="sidebar-menu">
+      <div class="menu-item active" onclick="showTab('home', this)">
+        <span>🏠</span><span>Home</span>
+      </div>
+      <div class="menu-item" onclick="showTab('analysis', this)">
+        <span>📊</span><span>Overall Analysis</span>
+      </div>
+      <div class="menu-item" onclick="showTab('faculty', this)">
+        <span>👨‍🏫</span><span>Faculties</span>
+      </div>
+      <div class="menu-item" onclick="showTab('coordinators', this)">
+        <span>⭐</span><span>Coordinators</span>
+      </div>
+      <div class="menu-item" onclick="showTab('students', this)">
+        <span>🎓</span><span>Students</span>
+      </div>
+      <div class="menu-item" onclick="showTab('events', this)">
+        <span>📅</span><span>Events</span>
+      </div>
+      <div class="menu-item" onclick="showTab('profile', this)">
+        <span>👤</span><span>Profile</span>
+      </div>
+    </div>
+
     </div>
   </div>
-</div>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const dean = JSON.parse(localStorage.getItem('deanData'));
-    if (!dean) { window.location.href = 'index.html'; return; }
-    
-    document.getElementById('profileName').textContent = dean.fullName || dean.username;
-    document.getElementById('welcomeName').textContent = dean.fullName || dean.username;
-    
-    document.getElementById('iName').textContent = dean.fullName || '—';
-    document.getElementById('iFac').textContent = dean.faculty || '—';
-    document.getElementById('iYear').textContent = dean.year || '—';
-    document.getElementById('iEmail').textContent = dean.email || '—';
-  });
+  <!-- MAIN CONTENT AREA -->
+  <div class="main-content">
 
-  function logout() {
-    localStorage.removeItem('deanData');
-    localStorage.removeItem('role');
-    window.location.href = 'index.html';
-  }
-</script>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div class="top-bar-title">
+        <span>👔</span> Welcome, <span id="welcomeName">Dean</span>
+      </div>
+      <div>
+        <button onclick="logout()" class="btn btn-danger"
+          style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:10px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.1);color:#ef4444;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='#ef4444';this.style.color='#ffffff';"
+          onmouseout="this.style.background='rgba(239,68,68,0.1)';this.style.color='#ef4444';">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: HOME (DASHBOARD OVERVIEW) -->
+    <div id="home" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="statFacultyCount">0</div>
+          <div class="stat-label">Total Faculty</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statCoordinatorCount">0</div>
+          <div class="stat-label">Branch Coordinators</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statStudentCount">0</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statEventCount">0</div>
+          <div class="stat-label">Total Events</div>
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">📊 Students Breakdown by Branch</div>
+        </div>
+        <div id="branchBreakdownGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">🏢 Dean Academic Information</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left;">
+          <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);font-weight:600;">FULL NAME</div>
+            <div style="font-size:16px;font-weight:700;color:var(--primary);" id="iName">—</div>
+          </div>
+          <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);font-weight:600;">FACULTY / DIVISION</div>
+            <div style="font-size:16px;font-weight:700;color:var(--primary);" id="iFac">—</div>
+          </div>
+          <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);font-weight:600;">ALLOCATED YEAR GROUP</div>
+            <div style="font-size:16px;font-weight:700;color:var(--primary);" id="iYear">—</div>
+          </div>
+          <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);font-weight:600;">EMAIL ADDRESS</div>
+            <div style="font-size:16px;font-weight:700;color:var(--primary);" id="iEmail">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1.5: OVERALL ANALYSIS -->
+    <div id="analysis" class="tab-content">
+      <!-- Header Banner -->
+      <div
+        style="background:linear-gradient(135deg, #0F4C81 0%, #1E88E5 100%);border-radius:20px;padding:28px 32px;color:white;margin-bottom:28px;box-shadow:0 8px 24px rgba(15,76,129,0.2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;">
+        <div>
+          <h2 style="font-size:24px;font-weight:800;margin-bottom:4px;color:white;">📊 Institutional Overall Analysis
+          </h2>
+          <p style="font-size:13px;opacity:0.9;color:white;">Comprehensive academic participation, department metrics,
+            and NAAC accreditation analytics.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button onclick="exportDeanNaacReportPDF()" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+            📊 Export NAAC/NBA Report (PDF)
+          </button>
+          <button onclick="exportDeanNaacExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+            📥 Export Data (Excel)
+          </button>
+          <button onclick="loadOverallAnalysis(true)" class="btn"
+            style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);padding:10px 18px;border-radius:10px;font-weight:700;font-size:13px;">
+            🔄 Refresh Analytics
+          </button>
+        </div>
+      </div>
+
+      <!-- ASSIGNED YEAR FILTER BAR -->
+      <div class="card-panel" style="margin-bottom:24px;padding:18px 24px;background:white;border-radius:16px;border:1px solid var(--border);box-shadow:0 2px 10px rgba(15,76,129,0.04);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">🎓</span>
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--primary);">Filter by Academic Year</div>
+              <div style="font-size:12px;color:var(--muted);" id="anYearFilterSubtitle">Showing analytics & tables for assigned student years</div>
+            </div>
+          </div>
+          <div id="anYearButtonsContainer" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <!-- Dynamic Year Filter Buttons will be rendered here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Row -->
+      <div class="stats-grid" style="margin-bottom:28px;">
+        <div class="stat-card" style="border-left:4px solid #1E88E5;">
+          <div class="stat-num" id="anTotalStudents">0</div>
+          <div class="stat-label">Total Enrolled Students</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #16a34a;">
+          <div class="stat-num" id="anTotalScoreSum">0</div>
+          <div class="stat-label">Cumulative Score Points</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #FFC107;">
+          <div class="stat-num" id="anAvgScorePerStudent">0</div>
+          <div class="stat-label">Avg Points / Student</div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #8b5cf6;">
+          <div class="stat-num" id="anActiveBranchCount">0</div>
+          <div class="stat-label">Active Academic Branches</div>
+        </div>
+      </div>
+
+      <!-- 2 Column Layout: Branch Breakdown & Leaderboard -->
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;margin-bottom:28px;">
+
+        <!-- Left: Branch Wise Analytics & Progress Bars -->
+        <div class="card-panel" style="margin-bottom:0;">
+          <div class="card-header">
+            <div class="card-title">🏢 Department & Branch Activity Distribution</div>
+          </div>
+          <div id="anBranchBarsContainer" style="display:flex;flex-direction:column;gap:18px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Right: Top Performing Honor Roll -->
+        <div class="card-panel" style="margin-bottom:0;">
+          <div class="card-header">
+            <div class="card-title">🏆 Top Performing Honor Roll</div>
+          </div>
+          <div id="anHonorRollContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Branch Score Range Analysis Matrix Table -->
+      <div class="card-panel" style="margin-top:24px;">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div class="card-title">📈 Student Score Range Distribution Matrix</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">
+              Distribution of students by score ranges (0, 1–10, 11–50, 51–100, 101–150, &gt;150 pts) across assigned branches.
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button onclick="refreshScoreMatrixTable()" class="btn" style="background:#f1f5f9;color:var(--primary);border:1px solid var(--border);font-size:12px;padding:8px 14px;">
+              🔄 Refresh Table
+            </button>
+            <button onclick="downloadScoreMatrixCSV()" class="btn btn-success" style="font-size:12px;padding:8px 14px;">
+              📥 Download CSV
+            </button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Branch</th>
+                <th style="text-align:center;">0 pts</th>
+                <th style="text-align:center;">1 - 10 pts</th>
+                <th style="text-align:center;">11 - 50 pts</th>
+                <th style="text-align:center;">51 - 100 pts</th>
+                <th style="text-align:center;">101 - 150 pts</th>
+                <th style="text-align:center;">&gt; 150 pts</th>
+                <th style="text-align:center;">Total Students</th>
+              </tr>
+            </thead>
+            <tbody id="anScoreMatrixBody">
+              <tr>
+                <td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Loading matrix analysis...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TAB 2: FACULTIES -->
+    <div id="faculty" class="tab-content">
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">👨‍🏫 All Department Faculties</div>
+          <div class="filter-bar">
+            <input type="text" id="facultySearch" placeholder="🔍 Search faculty..." class="input-field"
+              oninput="filterFaculty()">
+            <select id="facultyDeptFilter" class="select-field" onchange="filterFaculty()">
+              <option value="">All Departments</option>
+              <option value="CSE">CSE</option>
+              <option value="AIML">AIML</option>
+              <option value="DS">DS</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="EEE">EEE</option>
+              <option value="MECH">MECH</option>
+              <option value="CIVIL">CIVIL</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Faculty Name</th>
+              <th>Username</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="facultyTableBody">
+            <tr>
+              <td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">Loading faculty members...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: COORDINATORS -->
+    <div id="coordinators" class="tab-content">
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">⭐ Assign Branch Coordinator</div>
+        </div>
+        <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+          <select id="coordFacultySelect" class="select-field" style="min-width:240px;">
+            <option value="">-- Select Faculty Member --</option>
+          </select>
+          <select id="coordBranchSelect" class="select-field" style="min-width:180px;">
+            <option value="">-- Select Branch --</option>
+            <option value="CSE">CSE</option>
+            <option value="AIML">AIML</option>
+            <option value="DS">DS</option>
+            <option value="IT">IT</option>
+            <option value="ECE">ECE</option>
+            <option value="EEE">EEE</option>
+            <option value="MECH">MECH</option>
+            <option value="CIVIL">CIVIL</option>
+          </select>
+          <button onclick="assignCoordinator()" class="btn btn-primary">⭐ Assign Coordinator</button>
+        </div>
+        <div id="coordMsg" style="margin-top:12px;font-size:13px;display:none;padding:10px 14px;border-radius:8px;">
+        </div>
+      </div>
+
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">⭐ Active Branch Coordinators</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Branch</th>
+              <th>Coordinator Name</th>
+              <th>Username</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="coordinatorsTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">Loading coordinators...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: STUDENTS -->
+    <div id="students" class="tab-content">
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">🎓 All Enrolled Students</div>
+          <div class="filter-bar">
+            <input type="text" id="studentSearch" placeholder="🔍 Search name or PIN..." class="input-field"
+              oninput="filterStudents()">
+            <select id="studentBranchFilter" class="select-field" onchange="filterStudents()">
+              <option value="">All Branches</option>
+              <option value="CSE">CSE</option>
+              <option value="AIML">AIML</option>
+              <option value="DS">DS</option>
+              <option value="IT">IT</option>
+              <option value="ECE">ECE</option>
+              <option value="EEE">EEE</option>
+              <option value="MECH">MECH</option>
+              <option value="CIVIL">CIVIL</option>
+            </select>
+            <select id="studentYearFilter" class="select-field" onchange="filterStudents()">
+              <option value="">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+              <option value="4">Year 4</option>
+            </select>
+            <input type="number" id="studentScoreFilter" min="0" placeholder="Max Score" class="input-field"
+              style="width:110px;" oninput="filterStudents()">
+            <button onclick="downloadStudentsCSV()" class="btn btn-success">📥 Download CSV</button>
+          </div>
+        </div>
+        <div id="studentCountLabel" style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:600;"></div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Student Name</th>
+              <th>Student ID / PIN</th>
+              <th>Branch</th>
+              <th>Year</th>
+              <th>Total Score</th>
+            </tr>
+          </thead>
+          <tbody id="studentsTableBody">
+            <tr>
+              <td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">Loading student records...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 5: EVENTS -->
+    <div id="events" class="tab-content">
+      <div class="card-panel">
+        <div class="card-header">
+          <div class="card-title">📅 College Events</div>
+          <div class="filter-bar">
+            <input type="text" id="eventSearch" placeholder="🔍 Search event title or host..." class="input-field"
+              oninput="filterEvents()">
+          </div>
+        </div>
+        <div id="eventsGrid" class="events-grid">
+          <!-- Loaded dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: PROFILE -->
+    <div id="profile" class="tab-content">
+      <!-- Top Banner Header -->
+      <div
+        style="background:linear-gradient(135deg, #0F4C81 0%, #1E88E5 100%);border-radius:20px;padding:32px;color:white;margin-bottom:28px;box-shadow:0 8px 24px rgba(15,76,129,0.25);position:relative;overflow:hidden;">
+        <div
+          style="position:absolute;right:-20px;top:-20px;font-size:140px;opacity:0.08;user-select:none;pointer-events:none;">
+          👔</div>
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div
+            style="width:84px;height:84px;border-radius:20px;background:linear-gradient(135deg, #FFC107, #FFA000);display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:#1F2937;box-shadow:0 8px 20px rgba(255,193,7,0.4);border:3px solid rgba(255,255,255,0.4);"
+            id="profileBannerAvatar">
+            D
+          </div>
+          <div>
+            <h2 style="font-size:26px;font-weight:800;margin-bottom:6px;color:white;" id="profileBannerName">Dean Name
+            </h2>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span
+                style="background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">👔
+                Executive Dean</span>
+              <span
+                style="background:rgba(255,193,7,0.25);color:#ffeb3b;border:1px solid rgba(255,235,59,0.4);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;"
+                id="profileBannerFaculty">School of Engineering</span>
+              <span
+                style="background:rgba(34,197,94,0.25);color:#4ade80;border:1px solid rgba(74,222,128,0.4);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">Active
+                Account ✅</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2-Column Grid Layout -->
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px;">
+
+        <!-- LEFT COLUMN: Profile Info & Signature -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+
+          <!-- Card 1: Account Information -->
+          <div class="card-panel" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">👤 Account & Personal Details</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:18px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <label style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">FULL
+                    NAME</label>
+                  <input type="text" id="deanEditName" class="input-field" style="width:100%;font-weight:600;">
+                </div>
+                <div>
+                  <label
+                    style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">USERNAME
+                    (READ ONLY)</label>
+                  <input type="text" id="deanEditUsername" class="input-field"
+                    style="width:100%;background:#F1F5F9;color:var(--muted);cursor:not-allowed;" readonly>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <label
+                    style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">EMAIL
+                    ADDRESS</label>
+                  <input type="email" id="deanEditEmail" class="input-field" style="width:100%;">
+                </div>
+                <div>
+                  <label
+                    style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">PHONE
+                    NUMBER</label>
+                  <input type="text" id="deanEditPhone" class="input-field" style="width:100%;">
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div>
+                  <label
+                    style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">FACULTY /
+                    DIVISION</label>
+                  <input type="text" id="deanEditFaculty" class="input-field" style="width:100%;">
+                </div>
+                <div>
+                  <label
+                    style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">ALLOCATED
+                    ACADEMIC YEAR</label>
+                  <input type="text" id="deanEditYear" class="input-field" style="width:100%;">
+                </div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <button onclick="updateDeanProfile()" class="btn btn-primary" style="padding:12px 24px;font-size:14px;">
+                  💾 Save Profile Changes
+                </button>
+              </div>
+              <div id="deanProfileMsg"
+                style="display:none;padding:12px 16px;border-radius:10px;font-size:13px;font-weight:600;"></div>
+            </div>
+          </div>
+
+          <!-- Card 2: Digital Signature -->
+          <div class="card-panel" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">✍️ Digital Signature for Reports</div>
+            </div>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+              Upload your official digital signature (PNG/JPEG format). This signature will automatically appear on
+              generated NAAC / NBA Accreditation PDF reports.
+            </p>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <input type="file" id="deanSigFileInput" accept="image/png,image/jpeg"
+                onchange="previewDeanSignature(event)" class="input-field" style="padding:10px;">
+
+              <div id="deanSigPreviewWrap"
+                style="display:none;background:#F8FAFC;padding:16px;border-radius:12px;border:1.5px dashed var(--border);text-align:center;">
+                <div
+                  style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">
+                  Signature Document Preview</div>
+                <img id="deanSigPreviewImg"
+                  style="max-height:110px;object-fit:contain;border-radius:6px;background:white;padding:8px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+              </div>
+
+              <div>
+                <button id="deanSigSaveBtn" onclick="saveDeanSignature()" class="btn btn-success"
+                  style="display:none;padding:10px 20px;">
+                  💾 Save Signature
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Security & Access Info -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+
+          <!-- Card 3: Change Password -->
+          <div class="card-panel" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">🔒 Security & Password</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label
+                  style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">CURRENT
+                  PASSWORD</label>
+                <div style="position:relative;">
+                  <input type="password" id="deanCurrentPwd" class="input-field" style="width:100%;padding-right:40px;"
+                    placeholder="••••••••">
+                  <span onclick="togglePwdVisibility('deanCurrentPwd', this)"
+                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.6;">👁️</span>
+                </div>
+              </div>
+
+              <div>
+                <label style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">NEW
+                  PASSWORD</label>
+                <div style="position:relative;">
+                  <input type="password" id="deanNewPwd" class="input-field" style="width:100%;padding-right:40px;"
+                    placeholder="At least 6 characters">
+                  <span onclick="togglePwdVisibility('deanNewPwd', this)"
+                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.6;">👁️</span>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  style="font-weight:600;font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">CONFIRM NEW
+                  PASSWORD</label>
+                <div style="position:relative;">
+                  <input type="password" id="deanConfirmPwd" class="input-field" style="width:100%;padding-right:40px;"
+                    placeholder="Re-enter new password">
+                  <span onclick="togglePwdVisibility('deanConfirmPwd', this)"
+                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;opacity:0.6;">👁️</span>
+                </div>
+              </div>
+
+              <div style="margin-top:6px;">
+                <button onclick="changeDeanPassword()" class="btn btn-primary"
+                  style="width:100%;justify-content:center;padding:12px;">
+                  🔑 Update Password
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Access & Role Summary -->
+          <div class="card-panel" style="margin-bottom:0;">
+            <div class="card-header">
+              <div class="card-title">🛡️ System Privilege Summary</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div
+                style="display:flex;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border-radius:10px;border:1px solid var(--border);">
+                <span style="color:var(--muted);font-weight:600;font-size:13px;">Administrative Role</span>
+                <span style="font-weight:700;color:var(--primary);">Executive Dean</span>
+              </div>
+              <div
+                style="display:flex;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border-radius:10px;border:1px solid var(--border);">
+                <span style="color:var(--muted);font-weight:600;font-size:13px;">Assigned Scope</span>
+                <span style="font-weight:700;color:var(--blue);">All Departments</span>
+              </div>
+              <div
+                style="display:flex;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border-radius:10px;border:1px solid var(--border);">
+                <span style="color:var(--muted);font-weight:600;font-size:13px;">NAAC Reporting</span>
+                <span style="font-weight:700;color:#16a34a;">Authorized ✅</span>
+              </div>
+              <div
+                style="display:flex;justify-content:space-between;padding:10px 14px;background:#F8FAFC;border-radius:10px;border:1px solid var(--border);">
+                <span style="color:var(--muted);font-weight:600;font-size:13px;">Session Status</span>
+                <span style="font-weight:700;color:#16a34a;">Online Now 🟢</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    let currentDean = null;
+    let allFacultyList = [], allCoordinatorsList = [], allStudentsList = [], allEventsList = [];
+    let displayedStudents = [];
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      currentDean = JSON.parse(localStorage.getItem('deanData')) || JSON.parse(localStorage.getItem('user'));
+      if (!currentDean) { window.location.href = 'index.html'; return; }
+
+      updateDeanUI(currentDean);
+      await loadStats();
+      await loadFacultyData();
+      await loadCoordinatorsData();
+      await loadStudentsData();
+      await loadEventsData();
+      loadProfileData();
+    });
+
+    function isStudentAllowedForDean(s, dean) {
+      if (!dean) return true;
+
+      // Check Assigned Branches
+      const deanBranchesStr = (dean.branches || 'ALL').trim();
+      if (deanBranchesStr && deanBranchesStr.toUpperCase() !== 'ALL') {
+        const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase());
+        const studentBranch = (s.branch || '').trim().toUpperCase();
+        if (studentBranch && !allowedBranches.includes(studentBranch)) {
+          return false;
+        }
+      }
+
+      // Check Assigned Years
+      const deanYearStr = String(dean.year || 'ALL').trim();
+      if (deanYearStr && deanYearStr.toUpperCase() !== 'ALL') {
+        const allowedYears = deanYearStr.split(',').map(y => y.trim().toLowerCase());
+        const sYr = String(s.year || '').trim().toLowerCase();
+        const sDigit = sYr.replace(/[^0-9]/g, '');
+
+        const matchesAnyYear = allowedYears.some(yVal => {
+          const yDigit = yVal.replace(/[^0-9]/g, '');
+          if (sYr === yVal) return true;
+          if (sDigit && yDigit && sDigit === yDigit) return true;
+          return false;
+        });
+
+        if (!matchesAnyYear) return false;
+      }
+
+      return true;
+    }
+
+    function populateDeanFilterDropdowns(dean) {
+      if (!dean) return;
+
+      const allBranchesList = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIML', 'DS', 'MCA', 'MBA'];
+      const allYearsList = ['1', '2', '3', '4'];
+
+      // 1. Populate Student Branch Filter
+      const branchFilter = document.getElementById('studentBranchFilter');
+      if (branchFilter) {
+        const rawBranches = (dean.branches || 'ALL').trim();
+        if (rawBranches.toUpperCase() === 'ALL') {
+          branchFilter.innerHTML = `<option value="">All Branches</option>` +
+            allBranchesList.map(b => `<option value="${b}">${b}</option>`).join('');
+        } else {
+          const allowedBranches = rawBranches.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+          branchFilter.innerHTML = `<option value="">All Assigned Branches</option>` +
+            allowedBranches.map(b => `<option value="${b}">${b}</option>`).join('');
+        }
+      }
+
+      // 2. Populate Student Year Filter
+      const yearFilter = document.getElementById('studentYearFilter');
+      if (yearFilter) {
+        const rawYears = String(dean.year || 'ALL').trim();
+        if (rawYears.toUpperCase() === 'ALL') {
+          yearFilter.innerHTML = `<option value="">All Years</option>` +
+            allYearsList.map(y => `<option value="${y}">Year ${y}</option>`).join('');
+        } else {
+          const allowedYears = rawYears.split(',').map(y => y.trim().replace(/[^0-9]/g, '')).filter(Boolean);
+          yearFilter.innerHTML = `<option value="">All Assigned Years</option>` +
+            allowedYears.map(y => `<option value="${y}">Year ${y}</option>`).join('');
+        }
+      }
+    }
+
+    function updateDeanUI(d) {
+      const name = d.fullName || d.username || 'Dean';
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('welcomeName').textContent = name;
+      document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+
+      document.getElementById('iName').textContent = d.fullName || '—';
+      document.getElementById('iFac').textContent = d.faculty || '—';
+      document.getElementById('iYear').textContent = `${d.branches || 'All Branches'} (Years: ${d.year || 'All Years'})`;
+      document.getElementById('iEmail').textContent = d.email || '—';
+
+      populateDeanFilterDropdowns(d);
+    }
+
+    function showTab(tabId, menuItemEl) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+      if (menuItemEl) menuItemEl.classList.add('active');
+
+      if (tabId === 'events') loadEventsData();
+      if (tabId === 'home') loadStats();
+      if (tabId === 'analysis') loadOverallAnalysis();
+      if (tabId === 'students') loadStudentsData();
+      if (tabId === 'faculty') loadFacultyData();
+      if (tabId === 'coordinators') loadCoordinatorsData();
+    }
+
+    let deanToastTimer = null;
+    let selectedAnalysisYear = 'ALL';
+
+    function renderAnalysisYearButtons(dean) {
+      const container = document.getElementById('anYearButtonsContainer');
+      if (!container) return;
+
+      let allowedYears = [];
+      const rawYears = String(dean?.year || 'ALL').trim();
+
+      if (rawYears.toUpperCase() === 'ALL') {
+        allowedYears = ['1', '2', '3', '4'];
+      } else {
+        allowedYears = rawYears
+          .split(',')
+          .map(y => y.trim().replace(/[^0-9]/g, ''))
+          .filter(Boolean);
+        allowedYears = Array.from(new Set(allowedYears)).sort();
+      }
+
+      const yearButtons = [
+        { value: 'ALL', label: 'All Assigned Years' },
+        ...allowedYears.map(y => ({
+          value: y,
+          label: y === '1' ? '1st Year' : y === '2' ? '2nd Year' : y === '3' ? '3rd Year' : y === '4' ? '4th Year' : `Year ${y}`
+        }))
+      ];
+
+      container.innerHTML = yearButtons.map(btn => {
+        const isActive = selectedAnalysisYear === btn.value;
+        const activeStyle = isActive
+          ? 'background: linear-gradient(135deg, var(--blue), var(--primary)); color: white; border: 1px solid var(--primary); box-shadow: 0 4px 12px rgba(15,76,129,0.3); font-weight:700;'
+          : 'background: #f8fafc; color: var(--text); border: 1px solid var(--border); font-weight: 600; opacity: 0.85;';
+
+        return `
+          <button onclick="setAnalysisYearFilter('${btn.value}')" class="btn" style="${activeStyle} padding: 8px 16px; border-radius: 10px; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+            ${isActive ? '✅ ' : ''}${btn.label}
+          </button>`;
+      }).join('');
+    }
+
+    function setAnalysisYearFilter(yrVal) {
+      selectedAnalysisYear = yrVal;
+      renderAnalysisYearButtons(currentDean);
+      loadOverallAnalysis(false);
+
+      const yrText = yrVal === 'ALL' ? 'All Assigned Years' : (yrVal === '1' ? '1st Year' : yrVal === '2' ? '2nd Year' : yrVal === '3' ? '3rd Year' : yrVal === '4' ? '4th Year' : `Year ${yrVal}`);
+      showDeanToast('🎓', `Filtered by ${yrText}`, `Analytics & table updated for ${yrText}.`);
+    }
+
+    function showDeanToast(icon, title, msg, autoHide = true) {
+      const toast = document.getElementById('deanToast');
+      if (!toast) return;
+      if (deanToastTimer) clearTimeout(deanToastTimer);
+
+      document.getElementById('deanToastIcon').textContent = icon || '✅';
+      document.getElementById('deanToastTitle').textContent = title || 'Refreshed!';
+      document.getElementById('deanToastMsg').textContent = msg || 'Data updated successfully';
+
+      toast.style.display = 'flex';
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+
+      if (autoHide) {
+        deanToastTimer = setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateY(-10px)';
+          setTimeout(() => { toast.style.display = 'none'; }, 300);
+        }, 2500);
+      }
+    }
+
+    async function loadOverallAnalysis(isManualRefresh = false) {
+      if (isManualRefresh) {
+        showDeanToast('⏳', 'Refreshing Analytics...', 'Fetching latest student records from database, please wait...', false);
+      }
+      try {
+        renderAnalysisYearButtons(currentDean);
+
+        let allowedDeanStudents = [];
+        const res = await fetch('/api/admin/students');
+        if (res.ok) {
+          const raw = await res.json();
+          allStudentsList = raw.filter(s => isStudentAllowedForDean(s, currentDean));
+          allowedDeanStudents = [...allStudentsList];
+        }
+        if (!allFacultyList || !allFacultyList.length) {
+          const resF = await fetch('/api/admin/faculty');
+          if (resF.ok) allFacultyList = await resF.json();
+        }
+
+        // Apply Year Filter for Analysis view
+        let filteredAnalysisStudents = allowedDeanStudents;
+        if (selectedAnalysisYear !== 'ALL') {
+          const targetDigit = String(selectedAnalysisYear).replace(/[^0-9]/g, '');
+          filteredAnalysisStudents = allowedDeanStudents.filter(s => {
+            const sYr = String(s.year || '').trim().toLowerCase();
+            const sDigit = sYr.replace(/[^0-9]/g, '');
+            return sYr === String(selectedAnalysisYear).toLowerCase() || (sDigit && targetDigit && sDigit === targetDigit);
+          });
+        }
+
+        const subtitleEl = document.getElementById('anYearFilterSubtitle');
+        if (subtitleEl) {
+          const yrText = selectedAnalysisYear === 'ALL' ? 'all assigned student years' : (selectedAnalysisYear === '1' ? '1st Year students' : selectedAnalysisYear === '2' ? '2nd Year students' : selectedAnalysisYear === '3' ? '3rd Year students' : selectedAnalysisYear === '4' ? '4th Year students' : `Year ${selectedAnalysisYear} students`);
+          subtitleEl.textContent = `Showing metrics & matrix table for ${yrText} (${filteredAnalysisStudents.length} students)`;
+        }
+
+        const totalStudents = (filteredAnalysisStudents || []).length;
+        let cumulativeScore = 0;
+        let activeStudents = 0;
+
+        const branchStats = {};
+        const yearStats = { 'Year 1': 0, 'Year 2': 0, 'Year 3': 0, 'Year 4': 0, 'Other': 0 };
+
+        (filteredAnalysisStudents || []).forEach(s => {
+          const score = (s.score || 0) + (s.eventScore || 0);
+          cumulativeScore += score;
+          if (score > 0) activeStudents++;
+
+          const b = (s.branch || 'OTHER').trim().toUpperCase();
+          if (!branchStats[b]) {
+            branchStats[b] = { count: 0, totalScore: 0 };
+          }
+          branchStats[b].count++;
+          branchStats[b].totalScore += score;
+
+          const yrStr = String(s.year || '').trim();
+          if (yrStr.includes('1')) yearStats['Year 1']++;
+          else if (yrStr.includes('2')) yearStats['Year 2']++;
+          else if (yrStr.includes('3')) yearStats['Year 3']++;
+          else if (yrStr.includes('4')) yearStats['Year 4']++;
+          else yearStats['Other']++;
+        });
+
+        document.getElementById('anTotalStudents').textContent = totalStudents;
+        document.getElementById('anTotalScoreSum').textContent = cumulativeScore;
+        document.getElementById('anAvgScorePerStudent').textContent = totalStudents ? Math.round(cumulativeScore / totalStudents) : 0;
+        document.getElementById('anActiveBranchCount').textContent = Object.keys(branchStats).length;
+
+        // Render Branch Progress Bars
+        const branchContainer = document.getElementById('anBranchBarsContainer');
+        const maxBranchCount = Math.max(...Object.values(branchStats).map(b => b.count), 1);
+        branchContainer.innerHTML = Object.entries(branchStats)
+          .sort((a, b) => b[1].count - a[1].count)
+          .map(([b, data]) => {
+            const pct = Math.round((data.count / maxBranchCount) * 100);
+            const avgScore = data.count ? Math.round(data.totalScore / data.count) : 0;
+            return `
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px;">
+                  <span><strong style="color:var(--primary);">${b}</strong> (${data.count} Students)</span>
+                  <span style="color:var(--muted);">${data.totalScore} pts Total · Avg: ${avgScore} pts</span>
+                </div>
+                <div style="width:100%;height:10px;background:#F1F5F9;border-radius:10px;overflow:hidden;">
+                  <div style="width:${pct}%;height:100%;background:linear-gradient(90deg, #1E88E5, #0F4C81);border-radius:10px;"></div>
+                </div>
+              </div>`;
+          }).join('');
+
+        // Render Top 5 Honor Roll
+        const sortedStudents = [...(filteredAnalysisStudents || [])]
+          .sort((a, b) => ((b.score || 0) + (b.eventScore || 0)) - ((a.score || 0) + (a.eventScore || 0)))
+          .slice(0, 5);
+
+        const honorContainer = document.getElementById('anHonorRollContainer');
+        if (!sortedStudents.length) {
+          honorContainer.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);">No student records for selected filter</div>';
+        } else {
+          const medals = ['🥇', '🥈', '🥉', '⭐', '⭐'];
+          honorContainer.innerHTML = sortedStudents.map((s, idx) => {
+            const tot = (s.score || 0) + (s.eventScore || 0);
+            return `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#F8FAFC;border-radius:12px;margin-bottom:10px;border:1px solid var(--border);">
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <span style="font-size:20px;">${medals[idx]}</span>
+                  <div>
+                    <div style="font-weight:700;color:var(--primary);font-size:14px;">${s.fullName || s.username || 'Student'}</div>
+                    <div style="font-size:11px;color:var(--muted);">${s.branch || '—'} · Year ${s.year || '—'} · PIN: ${s.pinNumber || s.studentId || '—'}</div>
+                  </div>
+                </div>
+                <div style="font-size:16px;font-weight:800;color:#16a34a;">${tot} pts</div>
+              </div>`;
+          }).join('');
+        }
+
+        // Render Score Range Matrix Table
+        const matrixMap = {};
+        const deanBranchesRaw = (currentDean?.branches || 'ALL').trim();
+        let deanBranches = [];
+        if (deanBranchesRaw.toUpperCase() !== 'ALL') {
+          deanBranches = deanBranchesRaw.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+        } else {
+          const uniqueBranches = new Set((filteredAnalysisStudents || []).map(s => (s.branch || 'OTHER').trim().toUpperCase()));
+          deanBranches = Array.from(uniqueBranches).sort();
+        }
+
+        deanBranches.forEach(b => {
+          matrixMap[b] = { r0: 0, r1_10: 0, r11_50: 0, r51_100: 0, r101_150: 0, r150_plus: 0, total: 0 };
+        });
+
+        (filteredAnalysisStudents || []).forEach(s => {
+          const b = (s.branch || 'OTHER').trim().toUpperCase();
+          if (!matrixMap[b]) {
+            matrixMap[b] = { r0: 0, r1_10: 0, r11_50: 0, r51_100: 0, r101_150: 0, r150_plus: 0, total: 0 };
+          }
+          const score = (s.score || 0) + (s.eventScore || 0);
+          matrixMap[b].total++;
+          if (score === 0) matrixMap[b].r0++;
+          else if (score >= 1 && score <= 10) matrixMap[b].r1_10++;
+          else if (score >= 11 && score <= 50) matrixMap[b].r11_50++;
+          else if (score >= 51 && score <= 100) matrixMap[b].r51_100++;
+          else if (score >= 101 && score <= 150) matrixMap[b].r101_150++;
+          else if (score > 150) matrixMap[b].r150_plus++;
+        });
+
+        let grandR0 = 0, grandR1_10 = 0, grandR11_50 = 0, grandR51_100 = 0, grandR101_150 = 0, grandR150_plus = 0, grandTotal = 0;
+
+        const tbodyMatrix = document.getElementById('anScoreMatrixBody');
+        if (tbodyMatrix) {
+          const rowsHtml = Object.keys(matrixMap).sort().map(b => {
+            const row = matrixMap[b];
+            grandR0 += row.r0;
+            grandR1_10 += row.r1_10;
+            grandR11_50 += row.r11_50;
+            grandR51_100 += row.r51_100;
+            grandR101_150 += row.r101_150;
+            grandR150_plus += row.r150_plus;
+            grandTotal += row.total;
+
+            return `
+              <tr>
+                <td><strong style="color:#000000;font-weight:700;">${b}</strong></td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r0}</td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r1_10}</td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r11_50}</td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r51_100}</td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r101_150}</td>
+                <td style="text-align:center;color:#000000;font-weight:600;font-size:14px;">${row.r150_plus}</td>
+                <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${row.total}</td>
+              </tr>`;
+          }).join('');
+
+          const footerHtml = `
+            <tr style="background:#f1f5f9;font-weight:700;border-top:2px solid var(--border);">
+              <td style="color:#000000;font-weight:800;">TOTALS</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR0}</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR1_10}</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR11_50}</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR51_100}</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR101_150}</td>
+              <td style="text-align:center;color:#000000;font-weight:800;font-size:15px;">${grandR150_plus}</td>
+              <td style="text-align:center;color:#000000;font-weight:900;font-size:16px;">${grandTotal}</td>
+            </tr>`;
+
+          tbodyMatrix.innerHTML = rowsHtml + footerHtml;
+        }
+
+        // Year Distribution Grid (Safely checked)
+        const yearGrid = document.getElementById('anYearDistributionGrid');
+        if (yearGrid) {
+          yearGrid.innerHTML = Object.entries(yearStats)
+            .filter(([k, v]) => v > 0 || k.startsWith('Year'))
+            .map(([yName, count]) => `
+              <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:var(--primary);">${count}</div>
+                <div style="font-size:12px;font-weight:600;color:var(--muted);">${yName}</div>
+              </div>`).join('');
+        }
+
+        const activePct = totalStudents ? Math.round((activeStudents / totalStudents) * 100) : 0;
+        const activePartRateEl = document.getElementById('anActivePartRate');
+        if (activePartRateEl) activePartRateEl.textContent = `${activePct}% Active`;
+
+        const facCount = (allFacultyList || []).length;
+        const ratio = facCount > 0 ? `1 : ${Math.round(totalStudents / facCount)}` : `1 : ${totalStudents}`;
+        const facStudentRatioEl = document.getElementById('anFacStudentRatio');
+        if (facStudentRatioEl) facStudentRatioEl.textContent = ratio;
+
+        if (isManualRefresh) {
+          showDeanToast('✅', 'Analytics Refreshed!', 'Institutional analytics & metrics updated successfully.');
+        }
+      } catch (e) {
+        console.error('Overall Analysis error:', e);
+        if (isManualRefresh) {
+          showDeanToast('⚠️', 'Refresh Error', 'Failed to refresh analytics. Please try again.');
+        }
+      }
+    }
+
+    async function refreshScoreMatrixTable() {
+      showDeanToast('⏳', 'Refreshing Matrix Table...', 'Updating score range distribution matrix, please wait...', false);
+      try {
+        const res = await fetch('/api/admin/students');
+        if (res.ok) {
+          const raw = await res.json();
+          allStudentsList = raw.filter(s => isStudentAllowedForDean(s, currentDean));
+        }
+        await loadOverallAnalysis(false);
+        showDeanToast('📈', 'Table Refreshed! ✅', 'Score range distribution matrix updated with latest student data.');
+      } catch (e) {
+        console.error('Refresh matrix error:', e);
+        showDeanToast('⚠️', 'Refresh Error', 'Failed to refresh matrix table. Please try again.');
+      }
+    }
+
+    function downloadScoreMatrixCSV() {
+      const tbody = document.getElementById('anScoreMatrixBody');
+      if (!tbody) return;
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      if (!rows.length) return;
+
+      const headers = ['Branch', '0 pts', '1-10 pts', '11-50 pts', '51-100 pts', '101-150 pts', '> 150 pts', 'Total Students'];
+      const csvData = [headers.join(',')];
+
+      rows.forEach(tr => {
+        const cells = Array.from(tr.querySelectorAll('td')).map(td => `"${td.textContent.trim().replace(/"/g, '""')}"`);
+        if (cells.length === 8) {
+          csvData.push(cells.join(','));
+        }
+      });
+
+      const csvContent = csvData.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dean_score_range_matrix_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/admin/stats');
+        if (!res.ok) return;
+        const s = await res.json();
+        document.getElementById('statFacultyCount').textContent = s.faculty || 0;
+        document.getElementById('statStudentCount').textContent = s.students || 0;
+        document.getElementById('statEventCount').textContent = s.events || 0;
+
+        // Load branch breakdown
+        const resStud = await fetch('/api/admin/students');
+        if (resStud.ok) {
+          const students = await resStud.json();
+          const branchMap = {};
+          students.forEach(st => {
+            const b = (st.branch || 'OTHER').trim().toUpperCase();
+            branchMap[b] = (branchMap[b] || 0) + 1;
+          });
+
+          const grid = document.getElementById('branchBreakdownGrid');
+          grid.innerHTML = Object.entries(branchMap).sort().map(([b, cnt]) => `
+            <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div style="font-size:24px;font-weight:800;color:var(--primary);">${cnt}</div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted);">${b}</div>
+            </div>`).join('');
+        }
+      } catch (e) { console.error('Stats error:', e); }
+    }
+
+    async function loadFacultyData() {
+      try {
+        const res = await fetch('/api/admin/faculty');
+        allFacultyList = await res.json();
+        renderFacultyTable(allFacultyList);
+
+        // Populate coordinator select dropdown
+        const sel = document.getElementById('coordFacultySelect');
+        sel.innerHTML = '<option value="">-- Select Faculty Member --</option>' +
+          allFacultyList.map(f => `<option value="${f._id}">${f.fullName || f.username} (${f.department || 'No Dept'})</option>`).join('');
+      } catch (e) { console.error('Faculty load error:', e); }
+    }
+
+    function renderFacultyTable(list) {
+      const tbody = document.getElementById('facultyTableBody');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No faculty records found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map((f, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${f.fullName || '—'}</strong></td>
+          <td>${f.username || '—'}</td>
+          <td><span class="pill pill-blue">${f.department || '—'}</span></td>
+          <td>${f.email || '—'}</td>
+          <td>${f.phone || '—'}</td>
+          <td>${f.isCoordinator ? `<span class="pill pill-gold">⭐ Coordinator (${f.coordinatorBranch || f.department})</span>` : '<span style="color:var(--muted);font-size:12px;">Faculty</span>'}</td>
+        </tr>`).join('');
+    }
+
+    function filterFaculty() {
+      const q = document.getElementById('facultySearch').value.toLowerCase().trim();
+      const d = document.getElementById('facultyDeptFilter').value.toLowerCase().trim();
+      const filtered = allFacultyList.filter(f => {
+        const matchQ = !q || (f.fullName || '').toLowerCase().includes(q) || (f.username || '').toLowerCase().includes(q) || (f.email || '').toLowerCase().includes(q);
+        const matchD = !d || (f.department || '').toLowerCase() === d;
+        return matchQ && matchD;
+      });
+      renderFacultyTable(filtered);
+    }
+
+    async function loadCoordinatorsData() {
+      try {
+        const res = await fetch('/api/admin/coordinators');
+        allCoordinatorsList = await res.json();
+        document.getElementById('statCoordinatorCount').textContent = allCoordinatorsList.length;
+        renderCoordinatorsTable(allCoordinatorsList);
+      } catch (e) { console.error('Coordinators load error:', e); }
+    }
+
+    function renderCoordinatorsTable(list) {
+      const tbody = document.getElementById('coordinatorsTableBody');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">No coordinators assigned yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map(c => `
+        <tr>
+          <td><span class="pill pill-gold">⭐ ${c.coordinatorBranch || c.department}</span></td>
+          <td><strong>${c.fullName || '—'}</strong></td>
+          <td>${c.username || '—'}</td>
+          <td>${c.department || '—'}</td>
+          <td>${c.email || '—'}</td>
+          <td><button onclick="removeCoordinator('${c._id}')" class="btn btn-danger" style="padding:4px 10px;font-size:12px;">❌ Remove Role</button></td>
+        </tr>`).join('');
+    }
+
+    async function assignCoordinator() {
+      const facultyId = document.getElementById('coordFacultySelect').value;
+      const branch = document.getElementById('coordBranchSelect').value;
+      const msg = document.getElementById('coordMsg');
+
+      if (!facultyId || !branch) {
+        msg.style.display = 'block'; msg.style.background = 'rgba(239,68,68,0.12)'; msg.style.color = '#dc2626';
+        msg.textContent = '⚠️ Please select both a faculty member and a branch.';
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin/coordinators', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ facultyId, branch })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.style.display = 'block'; msg.style.background = 'rgba(34,197,94,0.12)'; msg.style.color = '#16a34a';
+          msg.textContent = '✅ ' + data.message;
+          await loadCoordinatorsData();
+          await loadFacultyData();
+        } else {
+          msg.style.display = 'block'; msg.style.background = 'rgba(239,68,68,0.12)'; msg.style.color = '#dc2626';
+          msg.textContent = '❌ ' + (data.message || 'Failed to assign');
+        }
+      } catch (e) { alert('Network error'); }
+    }
+
+    async function removeCoordinator(id) {
+      if (!confirm('Remove coordinator role from this faculty member?')) return;
+      try {
+        const res = await fetch(`/api/admin/coordinators/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await loadCoordinatorsData();
+          await loadFacultyData();
+        }
+      } catch (e) { alert('Network error'); }
+    }
+
+    async function loadStudentsData() {
+      try {
+        const res = await fetch('/api/admin/students');
+        const raw = await res.json();
+        allStudentsList = raw.filter(s => isStudentAllowedForDean(s, currentDean));
+        document.getElementById('statStudentCount').textContent = allStudentsList.length;
+        filterStudents();
+      } catch (e) { console.error('Students load error:', e); }
+    }
+
+    function renderStudentsTable(list) {
+      const tbody = document.getElementById('studentsTableBody');
+      document.getElementById('studentCountLabel').textContent = `Showing ${list.length} of ${allStudentsList.length} total enrolled students`;
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">No student records found</td></tr>';
+        return;
+      }
+      tbody.innerHTML = list.map((s, i) => {
+        const totalScore = (s.score || 0) + (s.eventScore || 0);
+        return `
+          <tr>
+            <td>${i + 1}</td>
+            <td><strong>${s.fullName || s.username || '—'}</strong></td>
+            <td><code>${s.studentId || s.pinNumber || '—'}</code></td>
+            <td><span class="pill pill-blue">${s.branch || '—'}</span></td>
+            <td>${s.year || '—'}</td>
+            <td><strong style="color:var(--primary);">${totalScore}</strong></td>
+          </tr>`;
+      }).join('');
+    }
+
+    function filterStudents() {
+      const q = document.getElementById('studentSearch').value.toLowerCase().trim();
+      const b = document.getElementById('studentBranchFilter').value.toLowerCase().trim();
+      const y = document.getElementById('studentYearFilter')?.value.trim() || '';
+      const scoreVal = document.getElementById('studentScoreFilter')?.value;
+
+      displayedStudents = allStudentsList.filter(s => {
+        const totalScore = (s.score || 0) + (s.eventScore || 0);
+
+        const matchQ = !q ||
+          (s.fullName || '').toLowerCase().includes(q) ||
+          (s.studentId || '').toLowerCase().includes(q) ||
+          (s.pinNumber || '').toLowerCase().includes(q) ||
+          (s.username || '').toLowerCase().includes(q);
+
+        const matchB = !b || (s.branch || '').toLowerCase() === b;
+
+        let matchY = true;
+        if (y) {
+          const sYr = String(s.year || '').trim().toLowerCase();
+          const selYr = y.toLowerCase();
+          const sDigit = sYr.replace(/[^0-9]/g, '');
+          const selDigit = selYr.replace(/[^0-9]/g, '');
+          matchY = (sYr === selYr) || (sDigit && selDigit && sDigit === selDigit);
+        }
+
+        const matchScore = (scoreVal === '' || scoreVal == null) ? true : (totalScore <= Number(scoreVal));
+
+        return matchQ && matchB && matchY && matchScore;
+      });
+
+      renderStudentsTable(displayedStudents);
+    }
+
+    function downloadStudentsCSV() {
+      const source = displayedStudents.length ? displayedStudents : allStudentsList;
+      if (!source.length) return;
+      const header = ['#', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
+      const rows = source.map((s, i) => [
+        i + 1,
+        s.fullName || s.username || '',
+        s.studentId || s.pinNumber || '',
+        s.branch || '',
+        s.year || '',
+        (s.score || 0) + (s.eventScore || 0)
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+
+      const csv = [header.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `dean_students_export_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function loadEventsData() {
+      try {
+        const res = await fetch('/api/admin/events');
+        allEventsList = await res.json();
+        renderEventsGrid(allEventsList);
+      } catch (e) { console.error('Events load error:', e); }
+    }
+
+    function renderEventsGrid(list) {
+      const grid = document.getElementById('eventsGrid');
+      if (!list.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">No events found</div>';
+        return;
+      }
+      grid.innerHTML = list.map(ev => `
+        <div class="event-card">
+          <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px;">${ev.title}</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">${ev.description || 'No description'}</div>
+          <div style="font-size:12px;display:flex;flex-direction:column;gap:4px;">
+            <div>📅 <strong>Date:</strong> ${ev.date || 'TBA'} ${ev.time ? '@ ' + ev.time : ''}</div>
+            <div>📍 <strong>Venue:</strong> ${ev.venue || 'TBA'}</div>
+            <div>👤 <strong>Host:</strong> ${ev.faculty || 'Faculty'}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    function filterEvents() {
+      const q = document.getElementById('eventSearch').value.toLowerCase().trim();
+      const filtered = allEventsList.filter(e =>
+        (e.title || '').toLowerCase().includes(q) ||
+        (e.faculty || '').toLowerCase().includes(q) ||
+        (e.venue || '').toLowerCase().includes(q)
+      );
+      renderEventsGrid(filtered);
+    }
+
+    // PROFILE TAB LOGIC
+    function loadProfileData() {
+      const d = currentDean;
+      if (!d) return;
+
+      const name = d.fullName || d.username || 'Dean';
+      const avatarEl = document.getElementById('profileBannerAvatar');
+      const bannerNameEl = document.getElementById('profileBannerName');
+      const bannerFacEl = document.getElementById('profileBannerFaculty');
+      if (avatarEl) avatarEl.textContent = name.charAt(0).toUpperCase();
+      if (bannerNameEl) bannerNameEl.textContent = name;
+      if (bannerFacEl) bannerFacEl.textContent = d.faculty || 'School of Engineering';
+
+      const uEl = document.getElementById('deanEditUsername');
+      const nEl = document.getElementById('deanEditName');
+      const eEl = document.getElementById('deanEditEmail');
+      const pEl = document.getElementById('deanEditPhone');
+      const fEl = document.getElementById('deanEditFaculty');
+      const yEl = document.getElementById('deanEditYear');
+
+      if (uEl) uEl.value = d.username || '';
+      if (nEl) nEl.value = d.fullName || '';
+      if (eEl) eEl.value = d.email || '';
+      if (pEl) pEl.value = d.phone || '';
+      if (fEl) fEl.value = d.faculty || '';
+      if (yEl) yEl.value = d.year || '';
+
+      if (d.signatureUrl) {
+        const sigImg = document.getElementById('deanSigPreviewImg');
+        const sigWrap = document.getElementById('deanSigPreviewWrap');
+        if (sigImg) sigImg.src = d.signatureUrl;
+        if (sigWrap) sigWrap.style.display = 'block';
+      }
+    }
+
+    function togglePwdVisibility(inputId, btnEl) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      if (el.type === 'password') {
+        el.type = 'text';
+        if (btnEl) btnEl.textContent = '🙈';
+      } else {
+        el.type = 'password';
+        if (btnEl) btnEl.textContent = '👁️';
+      }
+    }
+
+    async function updateDeanProfile() {
+      const fullName = document.getElementById('deanEditName').value.trim();
+      const email = document.getElementById('deanEditEmail').value.trim();
+      const phone = document.getElementById('deanEditPhone').value.trim();
+      const faculty = document.getElementById('deanEditFaculty').value.trim();
+      const year = document.getElementById('deanEditYear')?.value.trim() || '';
+      const msg = document.getElementById('deanProfileMsg');
+
+      if (!fullName) return alert('Please enter your full name');
+
+      try {
+        const res = await fetch(`/api/admin/dean/profile/${currentDean._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, phone, faculty, year })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentDean = { ...currentDean, ...data.dean };
+          localStorage.setItem('deanData', JSON.stringify(currentDean));
+          updateDeanUI(currentDean);
+          loadProfileData();
+          if (msg) {
+            msg.style.display = 'block'; msg.style.background = 'rgba(34,197,94,0.12)'; msg.style.color = '#16a34a';
+            msg.textContent = '✅ Profile updated successfully!';
+            setTimeout(() => msg.style.display = 'none', 4000);
+          }
+        } else { alert(data.message || 'Update failed'); }
+      } catch (e) { alert('Network error'); }
+    }
+
+    async function changeDeanPassword() {
+      const currentPassword = document.getElementById('deanCurrentPwd').value.trim();
+      const newPassword = document.getElementById('deanNewPwd').value.trim();
+      const confirmPassword = document.getElementById('deanConfirmPwd').value.trim();
+
+      if (!currentPassword || !newPassword || !confirmPassword) return alert('Please fill in all password fields');
+      if (newPassword.length < 6) return alert('New password must be at least 6 characters');
+      if (newPassword !== confirmPassword) return alert('Passwords do not match');
+
+      try {
+        const res = await fetch(`/api/admin/dean/change-password/${currentDean._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword, newPassword })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('deanCurrentPwd').value = '';
+          document.getElementById('deanNewPwd').value = '';
+          document.getElementById('deanConfirmPwd').value = '';
+          alert('✅ Password changed successfully!');
+        } else { alert('❌ ' + (data.message || 'Failed')); }
+      } catch (e) { alert('Network error'); }
+    }
+
+    let deanSigBase64 = null;
+    function previewDeanSignature(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        deanSigBase64 = e.target.result;
+        document.getElementById('deanSigPreviewImg').src = deanSigBase64;
+        document.getElementById('deanSigPreviewWrap').style.display = 'block';
+        document.getElementById('deanSigSaveBtn').style.display = 'inline-flex';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function saveDeanSignature() {
+      if (!deanSigBase64) return;
+      const btn = document.getElementById('deanSigSaveBtn');
+      btn.disabled = true; btn.textContent = '⏳ Saving…';
+
+      try {
+        const res = await fetch(`/api/admin/dean/signature/${currentDean._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signatureBase64: deanSigBase64 })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentDean.signatureUrl = data.signatureUrl;
+          localStorage.setItem('deanData', JSON.stringify(currentDean));
+          document.getElementById('deanSigSaveBtn').style.display = 'none';
+          alert('✅ Signature saved successfully!');
+        } else { alert('❌ ' + (data.message || 'Failed')); }
+      } catch (e) { alert('Network error'); }
+      finally { btn.disabled = false; btn.textContent = '💾 Save Signature'; }
+    }
+
+    async function logout() {
+      const dData = JSON.parse(localStorage.getItem('deanData') || localStorage.getItem('user') || '{}');
+      try {
+        await fetch('/api/department-head/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: dData.username, id: dData._id })
+        });
+      } catch (e) {}
+      localStorage.removeItem('deanData');
+      localStorage.removeItem('role');
+      window.location.href = 'index.html';
+    }
+
+    async function exportDeanNaacReportPDF() {
+      const dean = JSON.parse(localStorage.getItem('deanData') || localStorage.getItem('user') || '{}');
+      const deanId = dean._id || dean.id || '';
+      if (!deanId) return alert('Session expired. Please log in again.');
+
+      try {
+        const res = await fetch(`/api/admin/dean/naac-report/${deanId}`);
+        if (!res.ok) throw new Error('Failed to fetch NAAC report data from server');
+        const data = await res.json();
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert('PDF generation library is loading. Please try again in 2 seconds.');
+          return;
+        }
+
+        const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
+        doc.setFillColor(15, 76, 129);
+        doc.rect(0, 0, 210, 32, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.text('NAAC / NBA ACCREDITATION SUMMARY REPORT', 14, 16);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Scope: ${data.department || 'All Departments'} | Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 25);
+
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Executive Summary Stats', 14, 42);
+
+        const s = data.summary || {};
+        const summaryData = [
+          ['Total Faculty Members', String(s.totalFaculty || 0), 'Total Events Conducted', String(s.totalEvents || 0)],
+          ['Total Registrations', String(s.totalRegistrations || 0), 'Total Attended Students', String(s.totalAttended || 0)],
+          ['Overall Attendance %', String(s.overallAttendanceRate || '0%'), 'Avg Student Rating', `${s.overallAvgRating || 'N/A'} / 5.0`],
+          ['External Certs Verified', String(s.otherCertificatesVerified || 0), 'Total Feedbacks Received', String(s.totalFeedbackCount || 0)]
+        ];
+
+        doc.autoTable({
+          startY: 46,
+          head: [['Metric', 'Value', 'Metric', 'Value']],
+          body: summaryData,
+          theme: 'grid',
+          headStyles: { fillColor: [15, 76, 129], textColor: 255, fontStyle: 'bold' },
+          styles: { fontSize: 9 }
+        });
+
+        const finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 90) + 12;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('All Events Accreditation Summary', 14, finalY);
+
+        const eventRows = (data.events || []).length > 0
+          ? data.events.map((e, idx) => [
+            idx + 1,
+            e.title || 'Untitled',
+            e.category || 'General',
+            e.date || 'N/A',
+            e.facultyName || 'Faculty',
+            e.registered || 0,
+            e.attended || 0,
+            e.attendanceRate || '0%',
+            e.avgRating || 'N/A'
+          ])
+          : [['-', 'No events recorded', '-', '-', '-', '-', '-', '-', '-']];
+
+        doc.autoTable({
+          startY: finalY + 4,
+          head: [['#', 'Event Title', 'Category', 'Date', 'Host', 'Reg', 'Att', 'Rate', 'Rating']],
+          body: eventRows,
+          theme: 'striped',
+          headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
+          styles: { fontSize: 8 }
+        });
+
+        doc.save(`Dean_NAAC_Accreditation_Report.pdf`);
+      } catch (err) {
+        alert('PDF Export error: ' + err.message);
+      }
+    }
+
+    function exportDeanNaacExcel() {
+      const dean = JSON.parse(localStorage.getItem('deanData') || localStorage.getItem('user') || '{}');
+      const deanId = dean._id || dean.id || '';
+      if (!deanId) return alert('Session expired. Please log in again.');
+      window.location.href = `/api/admin/dean/export-excel/${deanId}`;
+    }
+  </script>
 
 </body>
+
 </html>

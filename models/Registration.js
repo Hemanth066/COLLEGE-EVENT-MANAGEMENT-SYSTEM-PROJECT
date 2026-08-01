@@ -1,4 +1,4 @@
-﻿const mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const registrationSchema = new mongoose.Schema({
   studentName: {
@@ -10,10 +10,6 @@ const registrationSchema = new mongoose.Schema({
     required: true
   },
   branch: {
-    type: String,
-    required: true
-  },
-  section: {
     type: String,
     required: true
   },

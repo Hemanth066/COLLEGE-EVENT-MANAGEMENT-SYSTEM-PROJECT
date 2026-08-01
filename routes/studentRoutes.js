@@ -12,10 +12,58 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid Student Credentials ❌" });
   }
 
+  if (student.isLoggedIn) {
+    return res.status(400).json({
+      isAlreadyLoggedIn: true,
+      message: "⚠️ Account is already logged in on another device or tab. Please log out from the last page first before logging in!"
+    });
+  }
+
+  student.isLoggedIn = true;
+  await student.save();
+
   res.json({
     message: "Student Login Successful ✅",
     student
   });
+});
+
+// Student Logout
+router.post("/logout", async (req, res) => {
+  try {
+    const { username, id, studentId } = req.body;
+    const query = [];
+    if (username) query.push({ username });
+    if (studentId) query.push({ studentId });
+    if (id && mongoose.Types.ObjectId.isValid(id)) query.push({ _id: id });
+
+    if (query.length > 0) {
+      const student = await Student.findOne({ $or: query });
+      if (student) {
+        student.isLoggedIn = false;
+        await student.save();
+      }
+    }
+    res.json({ message: "Logged out successfully ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Logout error" });
+  }
+});
+
+// Force Logout (Clear Session)
+router.post("/force-logout", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const student = await Student.findOne({ username, password });
+    if (!student) {
+      return res.status(401).json({ message: "Invalid credentials ❌" });
+    }
+    student.isLoggedIn = false;
+    await student.save();
+    res.json({ message: "Previous session cleared. You can now log in ✅" });
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
 });
 
 // Search student by PIN (for faculty "Add Past Data" feature)
@@ -36,7 +84,6 @@ router.get("/search/:pin", async (req, res) => {
         fullName: student.fullName || student.username,
         pinNumber: student.pinNumber || student.studentId,
         branch:   student.branch,
-        section:  student.section,
         year:     student.year,
         email:    student.email
       }

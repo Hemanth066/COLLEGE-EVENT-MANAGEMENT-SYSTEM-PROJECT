@@ -34,6 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   await loadEvents();
   await loadMyRegistrations();
+  await loadStudentPastEvents();
   displayEvents();
 });
 
@@ -117,7 +118,7 @@ function displayEvents(eventsToShow) {
       return `
         <div class="event-card">
           <div class="event-card-top">
-            <div class="event-title">📌 ${event.title}${event.version > 1 ? ` <span style="font-size:11px;color:var(--gold);">(v${event.version})</span>` : ''}</div>
+            <div class="event-title">📌 ${event.title}</div>
             <div class="event-badges">
               ${isRegistered ? '<span class="badge badge-registered">✅ Registered</span>' : '<span class="badge badge-pending">Open</span>'}
             </div>
@@ -125,7 +126,7 @@ function displayEvents(eventsToShow) {
           <div class="event-card-body">
             <div class="event-meta">
               <div class="meta-item"><div class="meta-icon">📍</div>${event.venue || 'TBA'}</div>
-              <div class="meta-item"><div class="meta-icon">📅</div>${event.date || 'TBA'}</div>
+              <div class="meta-item"><div class="meta-icon">🗓️</div>${event.date || 'TBA'}</div>
               <div class="meta-item"><div class="meta-icon">🕐</div>${event.time || 'TBA'}</div>
               ${event.branch ? `<div class="meta-item"><div class="meta-icon">🎓</div>${event.branch}</div>` : ''}
             </div>
@@ -164,12 +165,8 @@ function showEventDetails(event, isRegistered) {
   document.getElementById('modalStudent').textContent = event.student || "N/A";
   document.getElementById('modalStudentPhone').textContent = event.studentPhone || "N/A";
   
-  // Show version badge if version > 1
   const versionBadge = document.getElementById('modalVersion');
-  if (event.version > 1) {
-    versionBadge.textContent = `Updated - Version ${event.version}`;
-    versionBadge.style.display = 'inline-block';
-  } else {
+  if (versionBadge) {
     versionBadge.style.display = 'none';
   }
   
@@ -279,14 +276,14 @@ async function displayMyRegistrations() {
 
     regHTML += `
       <div class="registration-card" id="card-${eventIdStr}">
-        <h4>📌 ${eventTitle} ${eventVer > 1 ? `<span style="font-size:12px;color:#fbbf24;">(v${eventVer})</span>` : ''}</h4>
+        <h4>📌 ${eventTitle}</h4>
         <p><strong>Your Details:</strong></p>
         <p>Name: ${reg.studentName}</p>
         <p>Student ID: ${reg.pinNumber}</p>
         <p>Branch: ${reg.branch} | Section: ${reg.section}</p>
         <p><strong>Event Details:</strong></p>
         <p>📍 Venue: ${eventVenue}</p>
-        <p>📅 Date: ${eventDate} | 🕐 Time: ${eventTime}</p>
+        <p>🗓️ Date: ${eventDate} | 🕐 Time: ${eventTime}</p>
         <span class="badge">✅ Registered${reg.attended ? ' & Attended' : ''}</span>
         ${reg.score ? `<span class="badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;border:1px solid rgba(251,191,36,0.3);margin-left:6px;">🏆 Score: ${reg.score}</span>` : ''}
         ${feedbackSection}
@@ -395,8 +392,16 @@ function showTab(tabName) {
   }
 }
 
-function logout() {
+async function logout() {
   if (confirm("Are you sure you want to logout?")) {
+    const sData = JSON.parse(localStorage.getItem('studentData') || '{}');
+    try {
+      await fetch('/api/student/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: sData.username, id: sData._id, studentId: sData.studentId })
+      });
+    } catch (e) {}
     localStorage.clear();
     window.location.href = "index.html";
   }
@@ -443,8 +448,8 @@ function displayScores() {
     scoresHTML += `
       <div class="score-card">
         <div class="score-info">
-          <h4>📌 ${title} ${version > 1 ? `<span style="font-size:12px;color:var(--gold);">(v${version})</span>` : ''}</h4>
-          <p>📅 ${date} | 🕐 ${time}</p>
+          <h4>📌 ${title}</h4>
+          <p>🗓️ ${date} | 🕐 ${time}</p>
           <p>📍 ${venue}</p>
           <span class="badge" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);">✅ Attended</span>
           ${score === 0 ? `<span class="badge" style="background:rgba(255,255,255,0.06);color:var(--muted);border:1px solid var(--border);margin-left:6px;">Score pending</span>` : ''}
@@ -484,6 +489,132 @@ function displayScores() {
   // Update the home tab total score counter as well
   const totalScoreEl = document.getElementById('totalScore');
   if (totalScoreEl) totalScoreEl.textContent = totalScore;
+}
+
+// ── COMPLETED PAST EVENTS FOR STUDENT ──
+let myCompletedPastEvents = [];
+
+window.switchRegSubTab = function(type) {
+  const regBtn = document.getElementById('regSubTabRegisteredBtn');
+  const compBtn = document.getElementById('regSubTabCompletedBtn');
+  const regSec = document.getElementById('regSectionRegistered');
+  const compSec = document.getElementById('regSectionCompleted');
+
+  if (type === 'completed') {
+    if (regBtn) {
+      regBtn.style.background = 'rgba(255,255,255,0.8)';
+      regBtn.style.color = 'var(--muted)';
+      regBtn.style.border = '1px solid var(--border)';
+      regBtn.style.boxShadow = 'none';
+    }
+    if (compBtn) {
+      compBtn.style.background = 'linear-gradient(135deg, #16a34a, #15803d)';
+      compBtn.style.color = 'white';
+      compBtn.style.border = 'none';
+      compBtn.style.boxShadow = '0 4px 15px rgba(22,163,74,0.35)';
+    }
+    if (regSec) regSec.style.display = 'none';
+    if (compSec) compSec.style.display = 'block';
+  } else {
+    if (compBtn) {
+      compBtn.style.background = 'rgba(255,255,255,0.8)';
+      compBtn.style.color = 'var(--muted)';
+      compBtn.style.border = '1px solid var(--border)';
+      compBtn.style.boxShadow = 'none';
+    }
+    if (regBtn) {
+      regBtn.style.background = 'linear-gradient(135deg,var(--blue),var(--blue-dark))';
+      regBtn.style.color = 'white';
+      regBtn.style.border = 'none';
+      regBtn.style.boxShadow = '0 4px 15px rgba(59,130,246,0.35)';
+    }
+    if (compSec) compSec.style.display = 'none';
+    if (regSec) regSec.style.display = 'block';
+  }
+};
+
+async function loadStudentPastEvents() {
+  const pin = currentUser?.pinNumber || currentUser?.studentId || currentUser?.username;
+  if (!pin) return;
+  try {
+    const res = await fetch(`/api/past-events/student/${encodeURIComponent(pin)}`);
+    if (res.ok) {
+      myCompletedPastEvents = await res.json();
+      displayStudentCompletedEvents();
+    }
+  } catch (err) {
+    console.error("Error loading completed past events:", err);
+  }
+}
+
+function displayStudentCompletedEvents() {
+  const tbody = document.getElementById("studentCompletedEventsBody");
+  const countEl = document.getElementById("pastEventCount");
+  const badgeEl = document.getElementById("regSubTabBadge");
+  if (!tbody) return;
+
+  if (countEl) countEl.textContent = `${myCompletedPastEvents.length} completed events`;
+  if (badgeEl) badgeEl.textContent = myCompletedPastEvents.length;
+
+  if (!myCompletedPastEvents.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);"><div style="font-size:24px;margin-bottom:6px;">🎓</div>No completed events participation recorded yet</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = myCompletedPastEvents.map((evt, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong style="color:var(--blue-dark);">${evt.title}</strong></td>
+      <td>${evt.venue || '—'}</td>
+      <td>${evt.date || '—'}</td>
+      <td>${evt.time || '—'}</td>
+      <td><span class="badge badge-registered" style="background:rgba(34,197,94,0.15);color:#16a34a;border:1px solid rgba(34,197,94,0.3);">Completed</span></td>
+      <td>
+        <button onclick="openStudentPastEventModal('${evt._id}')" class="uc-action" style="padding:6px 14px;font-size:12px;width:auto;display:inline-flex;align-items:center;gap:4px;">
+          👁️ View Details
+        </button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openStudentPastEventModal(eventId) {
+  const evt = myCompletedPastEvents.find(e => String(e._id) === String(eventId));
+  if (!evt) return;
+
+  const part = evt.participantInfo || {};
+  const studentName = part.studentName || currentUser.fullName || currentUser.username || 'Student';
+  const rollNumber = part.rollNumber || currentUser.pinNumber || '—';
+  const dept = part.department || currentUser.branch || '—';
+
+  const modalHtml = `
+    <div style="padding:10px;">
+      <h2 style="color:var(--blue-dark);margin-bottom:6px;">📌 ${evt.title}</h2>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;">
+        📍 <strong>Venue:</strong> ${evt.venue} &nbsp;|&nbsp; 🗓️ <strong>Date:</strong> ${evt.date} &nbsp;|&nbsp; ⏰ <strong>Time:</strong> ${evt.time}
+      </div>
+
+      <div style="background:rgba(30,136,229,0.06);border:1px solid rgba(30,136,229,0.2);padding:14px;border-radius:12px;margin-bottom:18px;">
+        <h4 style="margin-bottom:8px;color:var(--blue-dark);">👨‍🏫 Faculty & Student Coordinators</h4>
+        <div style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><strong>Faculty Coordinator:</strong> ${evt.facultyCoordinator} (📞 ${evt.facultyPhone})</div>
+          <div><strong>Student Coordinator:</strong> ${evt.studentCoordinator} (📞 ${evt.studentPhone})</div>
+        </div>
+      </div>
+
+      <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);padding:14px;border-radius:12px;margin-bottom:10px;">
+        <h4 style="margin-bottom:8px;color:#16a34a;">🎓 Participant Details</h4>
+        <div style="font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><strong>Student Name:</strong> ${studentName}</div>
+          <div><strong>Roll / PIN Number:</strong> ${rollNumber}</div>
+          <div><strong>Department:</strong> ${dept}</div>
+          <div><strong>Participation Status:</strong> <span style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;">Completed</span></div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  showPopup('📜', 'Completed Event Details', modalHtml, 'info');
 }
 
 // Show popup notification

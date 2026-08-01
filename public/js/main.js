@@ -55,7 +55,33 @@ async function login() {
         window.location.href = "studentDashboard.html";
       }
     } else {
-      alert(data.message || "Login failed");
+      if (data.isAlreadyLoggedIn) {
+        const resetSession = confirm(
+          (data.message || "⚠️ Account is already logged in on another device or tab. Please log out from the last page first before logging in!") +
+          "\n\nDid you close your last browser without logging out? Click OK to Force Clear your previous session and log in now, or Cancel to go back."
+        );
+        if (resetSession) {
+          let forceEndpoint = "/api/student/force-logout";
+          if (role === "faculty") forceEndpoint = "/api/faculty/force-logout";
+          else if (role === "admin") forceEndpoint = "/api/admin/force-logout";
+          else if (role === "hod" || role === "department-head") forceEndpoint = "/api/department-head/force-logout";
+
+          const forceRes = await fetch(forceEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+          });
+          const forceData = await forceRes.json();
+          if (forceRes.ok) {
+            alert(forceData.message || "Session cleared! Attempting login again...");
+            login(); // Retry login
+          } else {
+            alert(forceData.message || "Failed to clear session.");
+          }
+        }
+      } else {
+        alert(data.message || "Login failed");
+      }
     }
   } catch (error) {
     console.error("Login error:", error);

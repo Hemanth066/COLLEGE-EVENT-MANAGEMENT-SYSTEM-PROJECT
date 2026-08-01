@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
@@ -62,7 +62,6 @@ router.post('/manual', async (req, res) => {
         studentName:  student.fullName || student.username,
         pinNumber:    student.pinNumber || student.studentId,
         branch:       student.branch   || '',
-        section:      student.section  || '',
         year:         student.year     || '',
         eventId,
         eventVersion: event.version || 1,
@@ -105,9 +104,9 @@ router.post('/manual', async (req, res) => {
 // Register for Event
 router.post('/', async (req, res) => {
   try {
-    const { studentName, pinNumber, branch, section, year, eventId } = req.body;
+    const { studentName, pinNumber, branch, year, eventId } = req.body;
     
-    console.log('Registration request:', { studentName, pinNumber, branch, section, year, eventId });
+    console.log('Registration request:', { studentName, pinNumber, branch, year, eventId });
     
     // Get event to check version
     const event = await Event.findById(eventId);
@@ -148,7 +147,6 @@ router.post('/', async (req, res) => {
       studentName,
       pinNumber,
       branch,
-      section,
       year,
       eventId,
       eventVersion: event.version || 1,
@@ -275,6 +273,53 @@ router.put('/attendance/:id', async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Bulk Update Attendance
+router.put('/attendance-bulk', async (req, res) => {
+  try {
+    const { updates } = req.body; // Array of { id, attended }
+    if (!Array.isArray(updates) || !updates.length) {
+      return res.status(400).json({ message: 'No attendance updates provided' });
+    }
+
+    const bulkOps = updates.map(item => ({
+      updateOne: {
+        filter: { _id: item.id },
+        update: { $set: { attended: Boolean(item.attended) } }
+      }
+    }));
+
+    await Registration.bulkWrite(bulkOps);
+
+    // Create notifications asynchronously for students whose status changed to Present
+    try {
+      const presentItemIds = updates.filter(u => u.attended).map(u => u.id);
+      if (presentItemIds.length) {
+        const updatedRegs = await Registration.find({ _id: { $in: presentItemIds } });
+        for (const reg of updatedRegs) {
+          const event = await Event.findById(reg.eventId);
+          if (event) {
+            await Notification.create({
+              type: 'attendance',
+              title: '✅ Attendance Marked',
+              message: `Your attendance for "${event.title}" has been marked as Present.`,
+              eventId: event._id,
+              eventTitle: event.title,
+              pinNumber: reg.pinNumber
+            });
+          }
+        }
+      }
+    } catch (notifErr) {
+      console.log('Bulk notification failed:', notifErr.message);
+    }
+
+    res.json({ message: 'Attendance updated successfully for all students ✅' });
+  } catch (err) {
+    console.error('Bulk attendance error:', err);
+    res.status(500).json({ message: 'Server Error: ' + err.message });
   }
 });
 

@@ -30,6 +30,8 @@ const studentSchema = new mongoose.Schema({
   section:      String,
   year:         String,
   score:        { type: Number, default: 0 },
+  sem3Score:    { type: Number, default: 0 },
+  sem4Score:    { type: Number, default: 0 },
   profileImage: { type: String, default: 'https://ui-avatars.com/api/?name=Student&background=fbbf24&color=0a2540&size=200' }
 });
 const Student = mongoose.model('Student', studentSchema);

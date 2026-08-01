@@ -29,7 +29,7 @@ async function loadStats() {
     document.getElementById('statStudents').textContent = stats.totalStudents;
     document.getElementById('statEvents').textContent = stats.totalEvents;
     
-    let detail = stats.studentsByBranch.map(b => `${b._id.branch}/${b._id.section}: ${b.count}`).join(', ');
+    let detail = stats.studentsByBranch.map(b => `${b._id.branch}: ${b.count}`).join(', ');
     document.getElementById('statStudentsDetail').textContent = detail || 'No data';
     document.getElementById('facultyCount').textContent = `${stats.totalFaculty} faculty in department`;
     document.getElementById('studentCount').textContent = `${stats.totalStudents} students (Year ${stats.year})`;
@@ -199,7 +199,6 @@ function renderStudents(list) {
       <td>${s.fullName || s.username || '—'}</td>
       <td>${s.studentId || s.pinNumber || '—'}</td>
       <td>${s.branch || '—'}</td>
-      <td>${s.section || '—'}</td>
       <td>${s.year || '—'}</td>
       <td><strong style="color:var(--blue-dark);">${totalScore}</strong></td>
     </tr>`;
@@ -237,7 +236,7 @@ function filterStudentsList() {
   const countEl = document.getElementById('studentCount');
   if (countEl) {
     countEl.textContent = threshold !== null
-      ? `${filtered.length} students with score ≤ ${threshold}`
+      ? `${filtered.length} students (Max Score: ${threshold})`
       : `${filtered.length} of ${allStudents.length} students`;
   }
 
@@ -262,7 +261,7 @@ function downloadStudentsCSV() {
   const maxScore = document.getElementById('scoreFilter')?.value;
   const threshold = maxScore !== '' ? Number(maxScore) : null;
 
-  const header = ['#', 'Student Name', 'Student ID', 'Branch', 'Section', 'Year', 'Score'];
+  const header = ['#', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
   const rows = source.map((s, i) => {
     const totalScore = (s.score || 0) + (s.eventScore || 0);
     return [
@@ -270,7 +269,6 @@ function downloadStudentsCSV() {
       s.fullName || s.username || '',
       s.studentId || s.pinNumber || '',
       s.branch || '',
-      s.section || '',
       s.year || '',
       totalScore
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');

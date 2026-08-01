@@ -24,11 +24,26 @@ app.use(express.static("public", {
   }
 }));
 
-// MongoDB Connection
+// MongoDB Connection with Local Fallback
 const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/CEM";
-mongoose.connect(MONGO_URI)
-.then(() => console.log("MongoDB Connected ✅"))
-.catch(err => console.log(err));
+const LOCAL_URI = "mongodb://127.0.0.1:27017/CEM";
+
+async function connectDB() {
+  try {
+    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+    console.log("MongoDB Connected ✅ (Atlas/Primary)");
+  } catch (err) {
+    console.warn("Primary MongoDB Connection failed. Trying local fallback...");
+    try {
+      await mongoose.connect(LOCAL_URI, { serverSelectionTimeoutMS: 5000 });
+      console.log("MongoDB Connected ✅ (Local Fallback)");
+    } catch (localErr) {
+      console.error("Failed to connect to MongoDB:", localErr.message);
+    }
+  }
+}
+connectDB();
+
 
 // Import Routes
 const facultyRoutes = require("./routes/facultyRoutes");
@@ -39,7 +54,9 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const departmentHeadRoutes = require("./routes/departmentHeadRoutes");
-const certificateRoutes = require("./routes/certificateRoutes");
+const certificateRoutes    = require("./routes/certificateRoutes");
+const otherCertRoutes      = require("./routes/otherCertRoutes");
+const pastEventRoutes      = require("./routes/pastEventRoutes");
 
 console.log("Routes imported successfully");
 
@@ -51,8 +68,35 @@ app.use("/api/registrations", registrationRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/admin", adminRoutes);
+
+// Public GET /api/branches endpoint for dynamic branch dropdowns across all portals
+app.get("/api/branches", async (_req, res) => {
+  try {
+    const Branch = require("./models/Branch");
+    const count = await Branch.countDocuments();
+    if (count === 0) {
+      const defaults = [
+        { name: "CSE", code: "11", description: "Computer Science and Engineering" },
+        { name: "AIML", code: "66", description: "Artificial Intelligence and Machine Learning" },
+        { name: "DS", code: "67", description: "Data Science" },
+        { name: "IT", code: "12", description: "Information Technology" },
+        { name: "ECE", code: "04", description: "Electronics and Communication Engineering" },
+        { name: "EEE", code: "02", description: "Electrical and Electronics Engineering" },
+        { name: "MECH", code: "03", description: "Mechanical Engineering" },
+        { name: "CIVIL", code: "01", description: "Civil Engineering" }
+      ];
+      await Branch.insertMany(defaults);
+    }
+    const branches = await Branch.find().sort({ name: 1 });
+    res.json(branches);
+  } catch (e) {
+    res.status(500).json({ message: "Error fetching branches: " + e.message });
+  }
+});
 app.use("/api/department-head", departmentHeadRoutes);
 app.use("/api/certificates", certificateRoutes);
+app.use("/api/other-certs",  otherCertRoutes);
+app.use("/api/past-events",  pastEventRoutes);
 
 console.log("Routes registered:");
 console.log("  - /api/faculty");

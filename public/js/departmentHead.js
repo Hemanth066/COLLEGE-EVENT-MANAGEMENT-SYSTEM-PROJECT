@@ -29,7 +29,7 @@ async function loadStats() {
     document.getElementById('statStudents').textContent = stats.totalStudents;
     document.getElementById('statEvents').textContent = stats.totalEvents;
     
-    let detail = stats.studentsByBranch.map(b => `${b._id.branch}/${b._id.section}: ${b.count}`).join(', ');
+    let detail = stats.studentsByBranch.map(b => `${b._id.branch}: ${b.count}`).join(', ');
     document.getElementById('statStudentsDetail').textContent = detail || 'No data';
     document.getElementById('facultyCount').textContent = `${stats.totalFaculty} faculty in department`;
     document.getElementById('studentCount').textContent = `${stats.totalStudents} students (Year ${stats.year})`;
@@ -155,7 +155,15 @@ function viewEvent(id) {
   // Navigate to event details or modal
 }
 
-function logout() {
+async function logout() {
+  const dhData = JSON.parse(localStorage.getItem('departmentHeadData') || '{}');
+  try {
+    await fetch('/api/department-head/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: dhData.username, id: dhData._id })
+    });
+  } catch (e) {}
   localStorage.removeItem('departmentHeadData');
   localStorage.removeItem('role');
   window.location.href = 'index.html';

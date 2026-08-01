@@ -1,961 +1,1813 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=1024">
   <title>HOD Dashboard | CEM</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <!-- PDF generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <style>
-    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     :root {
-      --bg:#F8FAFC; --sidebar-w:260px;
-      --primary:#0F4C81;
-      --green:#2E7D32; --green-dark:#1b5e20;
-      --blue:#1E88E5; --blue-dark:#0F4C81;
-      --gold:#FFC107;
-      --glass:#ffffff;
-      --border:#e2e8f0;
-      --text:#1F2937;
-      --muted:#6B7280;
+      --bg: #F8FAFC;
+      --sidebar-w: 260px;
+      --primary: #0F4C81;
+      --green: #2E7D32;
+      --green-dark: #1b5e20;
+      --blue: #1E88E5;
+      --blue-dark: #0F4C81;
+      --gold: #FFC107;
+      --glass: #ffffff;
+      --border: #e2e8f0;
+      --text: #1F2937;
+      --muted: #6B7280;
     }
-    html, body {
-      font-family:'Poppins',sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      min-height:100vh;
-      overflow-x:hidden;
-      overflow-y:auto !important;
-    }
+
+    html,
     body {
-      display:block !important;
-      align-items:unset !important;
-      justify-content:unset !important;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      overflow-y: auto !important;
     }
-    body::before, body::after { display:none !important; }
+
+    body {
+      display: block !important;
+      align-items: unset !important;
+      justify-content: unset !important;
+    }
+
+    body::before,
+    body::after {
+      display: none !important;
+    }
+
     /* SIDEBAR */
-    .sidebar { width:var(--sidebar-w); min-height:100vh; position:fixed; left:0; top:0; z-index:200;
-               background:var(--primary); border-right:none;
-               display:flex; flex-direction:column;
-               box-shadow:4px 0 20px rgba(15,76,129,0.15); }
-    .sidebar-profile { padding:20px; border-bottom:1px solid rgba(255,255,255,0.12);
-                       display:flex; align-items:center; gap:12px; }
-    .sidebar-avatar { width:46px; height:46px; border-radius:14px; flex-shrink:0;
-                      background:rgba(255,255,255,0.2);
-                      display:flex; align-items:center; justify-content:center;
-                      font-size:22px; font-weight:700; color:white;
-                      border:2px solid rgba(255,255,255,0.3); }
-    .sidebar-name { font-weight:700; color:white; font-size:14px; margin-bottom:2px;
-                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px; }
-    .sidebar-role { font-size:10px; color:var(--gold); font-weight:700;
-                    text-transform:uppercase; letter-spacing:0.8px; }
-    .sidebar-menu { flex:1; padding:12px 0; overflow-y:auto; }
-    .menu-item { padding:12px 24px; display:flex; align-items:center; gap:12px; cursor:pointer;
-                 color:rgba(255,255,255,0.65); font-weight:500; font-size:14px;
-                 border-left:3px solid transparent; transition:all 0.2s; }
-    .menu-item:hover  { color:white; background:rgba(255,255,255,0.1); border-left-color:var(--gold); }
-    .menu-item.active { color:white; background:rgba(255,255,255,0.15); border-left-color:var(--gold); font-weight:600; }
-    .menu-item .icon  { font-size:18px; width:22px; text-align:center; }
-    .sidebar-footer { padding:16px 24px; border-top:1px solid rgba(255,255,255,0.12); }
-    .logout-btn { width:100%; padding:11px; border-radius:10px; border:1px solid rgba(255,255,255,0.2);
-                  background:rgba(255,255,255,0.08); color:rgba(255,255,255,0.85); font-size:14px; font-weight:600;
-                  cursor:pointer; font-family:'Poppins',sans-serif; transition:all 0.2s;
-                  display:flex; align-items:center; justify-content:center; gap:8px; }
-    .logout-btn:hover { background:rgba(239,68,68,0.25); border-color:rgba(239,68,68,0.5); color:#fca5a5; }
+    .sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 200;
+      background: var(--primary);
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 4px 0 20px rgba(15, 76, 129, 0.15);
+    }
+
+    .sidebar-profile {
+      padding: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sidebar-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 700;
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .sidebar-name {
+      font-weight: 700;
+      color: white;
+      font-size: 14px;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 160px;
+    }
+
+    .sidebar-role {
+      font-size: 10px;
+      color: var(--gold);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .sidebar-menu {
+      flex: 1;
+      padding: 12px 0;
+      overflow-y: auto;
+    }
+
+    .menu-item {
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.65);
+      font-weight: 500;
+      font-size: 14px;
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .menu-item:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+      border-left-color: var(--gold);
+    }
+
+    .menu-item.active {
+      color: white;
+      background: rgba(255, 255, 255, 0.15);
+      border-left-color: var(--gold);
+      font-weight: 600;
+    }
+
+    .menu-item .icon {
+      font-size: 18px;
+      width: 22px;
+      text-align: center;
+    }
+
+    .sidebar-footer {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .logout-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+    }
 
     /* MAIN */
     .main-content {
-  margin-left: var(--sidebar-w);
-  min-height: 100vh;
-  padding: 28px;
-}
-    .tab-content { display:none; }
-    .tab-content.active { display:block; animation:fadeUp 0.35s ease; }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      padding: 28px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeUp 0.35s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     /* TOP BAR */
-    .top-bar { display:flex; align-items:center; justify-content:space-between;
-               background:linear-gradient(135deg,var(--primary),var(--blue));
-               border-radius:20px; padding:22px 32px; margin-bottom:28px;
-               box-shadow:0 4px 20px rgba(15,76,129,0.2); }
-    .top-bar-title { font-size:28px; font-weight:900; letter-spacing:-0.5px; color:white; }
-    .top-bar-badge { background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3);
-                     color:white; padding:8px 18px; border-radius:20px; font-size:13px; font-weight:600; }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, var(--primary), var(--blue));
+      border-radius: 20px;
+      padding: 22px 32px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 20px rgba(15, 76, 129, 0.2);
+    }
+
+    .top-bar-title {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+
+    .top-bar-badge {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
 
     /* STAT CARDS */
-    .stats-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-bottom:28px; max-width:800px; }
-    .stat-card { background:white; border:1px solid var(--border); border-radius:16px;
-                 padding:22px 20px; transition:all 0.2s;
-                 box-shadow:0 2px 8px rgba(15,76,129,0.06); }
-    .stat-card:hover { border-color:rgba(30,136,229,0.3); transform:translateY(-2px); box-shadow:0 8px 24px rgba(15,76,129,0.1); }
-    .stat-icon { font-size:28px; margin-bottom:10px; }
-    .stat-value { font-size:34px; font-weight:800; margin-bottom:4px; }
-    .stat-label { font-size:12px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.5px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+      max-width: 800px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 20px;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(15, 76, 129, 0.06);
+    }
+
+    .stat-card:hover {
+      border-color: rgba(30, 136, 229, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(15, 76, 129, 0.1);
+    }
+
+    .stat-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
     /* TABLE */
-    .table-box { background:white; border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px;
-                 box-shadow:0 2px 8px rgba(15,76,129,0.06); }
-    .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px; }
-    .table-header h3 { font-size:17px; font-weight:700; color:var(--blue-dark); }
-    .count-badge { font-size:12px; color:var(--green); background:rgba(46,125,50,0.1);
-                   border:1px solid rgba(46,125,50,0.2); padding:4px 12px; border-radius:20px; font-weight:600; }
-    table { width:100%; border-collapse:collapse; }
-    th { padding:11px 14px; text-align:left; font-size:11px; font-weight:700; color:var(--muted);
-         text-transform:uppercase; letter-spacing:0.6px; background:#f8fafc;
-         border-bottom:1px solid var(--border); }
-    td { padding:12px 14px; font-size:13px; color:var(--text); border-bottom:1px solid #f1f5f9; }
-    tr:hover td { background:#f8fafc; }
-    tr:last-child td { border-bottom:none; }
+    .table-box {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(15, 76, 129, 0.06);
+    }
 
-    .search-input { padding:9px 14px; border-radius:10px; border:1px solid var(--border);
-                    background:#f8fafc; color:var(--text); font-size:13px;
-                    font-family:'Poppins',sans-serif; outline:none; width:220px; }
-    .search-input:focus { border-color:var(--blue); }
-    .search-input::placeholder { color:var(--muted); }
-    select.search-input option { background:white; color:var(--text); }
+    .table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
 
-    .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
-    .badge-green { background:rgba(46,125,50,0.1); color:#2E7D32; border:1px solid rgba(46,125,50,0.25); }
-    .badge-blue  { background:rgba(30,136,229,0.12); color:#1E88E5; border:1px solid rgba(30,136,229,0.25); }
-    .badge-gold  { background:rgba(255,193,7,0.15); color:#d97706; border:1px solid rgba(255,193,7,0.3); }
-    .no-data { text-align:center; padding:50px; color:var(--muted); font-size:14px; }
+    .table-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--blue-dark);
+    }
+
+    .count-badge {
+      font-size: 12px;
+      color: var(--green);
+      background: rgba(46, 125, 50, 0.1);
+      border: 1px solid rgba(46, 125, 50, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 11px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      background: #f8fafc;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text);
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    tr:hover td {
+      background: #f8fafc;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .search-input {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      width: 220px;
+    }
+
+    .search-input:focus {
+      border-color: var(--blue);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
+    select.search-input option {
+      background: white;
+      color: var(--text);
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-green {
+      background: rgba(46, 125, 50, 0.1);
+      color: #2E7D32;
+      border: 1px solid rgba(46, 125, 50, 0.25);
+    }
+
+    .badge-blue {
+      background: rgba(30, 136, 229, 0.12);
+      color: #1E88E5;
+      border: 1px solid rgba(30, 136, 229, 0.25);
+    }
+
+    .badge-gold {
+      background: rgba(255, 193, 7, 0.15);
+      color: #d97706;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 50px;
+      color: var(--muted);
+      font-size: 14px;
+    }
 
     /* EVENT CARDS */
-    .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
-    .event-card { background:white; border:1px solid var(--border); border-radius:16px;
-                  padding:20px; transition:all 0.25s;
-                  box-shadow:0 2px 8px rgba(15,76,129,0.06); }
-    .event-card:hover { border-color:rgba(30,136,229,0.35); transform:translateY(-3px);
-                        box-shadow:0 12px 40px rgba(15,76,129,0.12); }
-    .event-card-title { font-size:15px; font-weight:700; margin-bottom:8px; color:var(--blue-dark); }
-    .event-meta { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-    .event-meta-item { font-size:11px; color:var(--muted); display:flex; align-items:center; gap:4px; }
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .event-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      transition: all 0.25s;
+      box-shadow: 0 2px 8px rgba(15, 76, 129, 0.06);
+    }
+
+    .event-card:hover {
+      border-color: rgba(30, 136, 229, 0.35);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(15, 76, 129, 0.12);
+    }
+
+    .event-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--blue-dark);
+    }
+
+    .event-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .event-meta-item {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* =========================================================
+   MOBILE RESPONSIVE
+   ========================================================= */
+
+    .mobile-menu-btn,
+    .hamburger-btn {
+      display: none !important;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .hamburger-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Tablet */
+    @media (max-width:1024px) {
+
+      :root {
+        --sidebar-w: 240px;
+      }
+
+      .main-content {
+        padding: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        min-width: 800px;
+      }
+
+      .profile-grid,
+      .form-grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-stats {
+        flex-wrap: wrap;
+      }
+
+    }
+
+    /* Small Phones */
+
+    @media (max-width:480px) {
+
+      .main-content {
+        padding: 10px;
+      }
+
+      #emTitle {
+        font-size: 20px !important;
+      }
+
+      .content-header h1 {
+        font-size: 20px;
+      }
+
+      .hero-select {
+        font-size: 14px;
+        padding: 14px 45px 14px 18px;
+      }
+
+      .form-input {
+        font-size: 14px;
+      }
+
+      .btn-primary {
+        padding: 12px;
+        font-size: 14px;
+      }
+
+      /* Mobile Topbar */
+      .mobile-topbar {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 60px;
+        background: #0F4C81;
+        color: white;
+        z-index: 995;
+        padding: 0 16px;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 14px rgba(15, 76, 129, 0.2);
+      }
+
+      .mobile-topbar-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .mobile-menu-toggle {
+        background: rgba(255, 255, 255, 0.18);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        font-size: 22px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mobile-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 998;
+      }
+
+      .mobile-backdrop.active {
+        display: block;
+      }
+
+      @media screen and (max-width: 900px) {
+        .mobile-topbar {
+          display: flex !important;
+        }
+
+        .sidebar {
+          left: -280px !important;
+          width: 280px !important;
+          z-index: 999 !important;
+          transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+          box-shadow: 8px 0 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .sidebar.mobile-open,
+        .sidebar.show {
+          left: 0 !important;
+        }
+
+        .main-content {
+          margin-left: 0 !important;
+          width: 100% !important;
+          padding: 76px 14px 28px 14px !important;
+        }
+
+        .top-bar {
+          padding: 16px 20px !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 12px !important;
+        }
+
+        .top-bar-title {
+          font-size: 20px !important;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr !important;
+          gap: 12px !important;
+        }
+
+        .table-box,
+        .table-container {
+          padding: 16px 12px !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+          min-width: 650px !important;
+        }
+
+        th,
+        td {
+          padding: 10px 10px !important;
+          font-size: 13px !important;
+        }
+
+        .events-grid,
+        .form-grid {
+          grid-template-columns: 1fr !important;
+          gap: 12px !important;
+        }
+
+        .search-input {
+          width: 100% !important;
+        }
+      }
+
+    /* FIXED 1024px DESKTOP LAYOUT ENFORCEMENT */
+    html,
+    body {
+      width: 100%;
+      min-width: 1024px;
+      overflow-x: auto;
+      margin: 0;
+      padding: 0;
+    }
+
+    .mobile-topbar,
+    .mobile-backdrop,
+    .mobile-menu-toggle,
+    .mobile-menu-btn,
+    .hamburger-btn {
+      display: none !important;
+    }
+
+    .sidebar {
+      left: 0 !important;
+      transform: none !important;
+      width: var(--sidebar-w) !important;
+      position: fixed !important;
+      display: flex !important;
+    }
+
+    .main-content {
+      margin-left: var(--sidebar-w) !important;
+      width: calc(100% - var(--sidebar-w)) !important;
+      max-width: calc(100% - var(--sidebar-w)) !important;
+      min-width: calc(1024px - var(--sidebar-w)) !important;
+      box-sizing: border-box !important;
+    }
   </style>
 </head>
+
 <body>
-
-<!-- Sidebar -->
-<div class="sidebar">
-  <div class="sidebar-profile">
-    <div class="sidebar-avatar" id="sidebarAvatar">H</div>
-    <div>
-      <div class="sidebar-name" id="profileName">Loading...</div>
-      <div class="sidebar-role">HOD Portal</div>
+  <!-- MOBILE TOPBAR HEADER -->
+  <div class="mobile-topbar">
+    <div class="mobile-topbar-title">
+      <span>👔</span> HOD Portal
     </div>
+    <button class="mobile-menu-toggle" onclick="toggleHodSidebar(event)">☰</button>
   </div>
-  <div class="sidebar-menu">
-    <div class="menu-item active" onclick="showTab('dashboard',this)">
-      <span class="icon">📊</span><span>Dashboard</span>
-    </div>
-    <div class="menu-item" onclick="showTab('faculty',this)">
-      <span class="icon">👨‍🏫</span><span>Faculty Members</span>
-    </div>
-    <div class="menu-item" onclick="showTab('students',this)">
-      <span class="icon">🎓</span><span>Students</span>
-    </div>
-    <div class="menu-item" onclick="showTab('events',this)">
-      <span class="icon">📅</span><span>Events</span>
-    </div>
-    <div class="menu-item" onclick="showTab('profile',this)">
-      <span class="icon">👤</span><span>My Profile</span>
-    </div>
-  </div>
-  <div class="sidebar-footer">
-    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
-  </div>
-</div>
-
-<!-- Main Content -->
-<div class="main-content">
-
-  <!-- TOP BAR -->
-  <div class="top-bar">
-    <div>
-      <div class="top-bar-title">�️ HOD Dashboard</div>
-      <div style="font-size:13px;color:#86efac;margin-top:4px;">
-        Dept: <strong id="deptName">—</strong> &nbsp;|&nbsp; Year Group: <strong id="yearName">—</strong>
+  <div class="mobile-backdrop" id="hodMobileBackdrop" onclick="toggleHodSidebar(event)"></div>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar" id="sidebarAvatar">H</div>
+      <div>
+        <div class="sidebar-name" id="profileName">Loading...</div>
+        <div class="sidebar-role">HOD Portal</div>
       </div>
     </div>
-    <div class="top-bar-badge" id="welcomeBadge">Loading...</div>
-  </div>
-
-  <!-- DASHBOARD TAB -->
-  <div id="dashboard" class="tab-content active">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">👨‍🏫</div>
-        <div class="stat-value" style="color:var(--blue);" id="statFaculty">—</div>
-        <div class="stat-label">Faculty Members</div>
+    <div class="sidebar-menu">
+      <div class="menu-item active" onclick="showTab('dashboard',this)">
+        <span class="icon">📊</span><span>Dashboard</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">🎓</div>
-        <div class="stat-value" style="color:var(--green);" id="statStudents">—</div>
-        <div class="stat-label">Total Students</div>
+      <div class="menu-item" onclick="showTab('faculty',this)">
+        <span class="icon">👨‍🏫</span><span>Faculty Members</span>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">📅</div>
-        <div class="stat-value" style="color:var(--gold);" id="statEvents">—</div>
-        <div class="stat-label">Events Published</div>
+      <div class="menu-item" onclick="showTab('students',this)">
+        <span class="icon">🎓</span><span>Students</span>
+      </div>
+      <div class="menu-item" onclick="showTab('events',this)">
+        <span class="icon">📅</span><span>Events</span>
+      </div>
+      <div class="menu-item" onclick="showTab('profile',this)">
+        <span class="icon">👤</span><span>My Profile</span>
       </div>
     </div>
-
   </div>
 
-  <!-- FACULTY TAB -->
-  <div id="faculty" class="tab-content">
-    <div class="table-box">
-      <div class="table-header">
-        <h3>👨‍🏫 Department Faculty</h3>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="count-badge" id="facultyCount">0 faculty</span>
-          <input class="search-input" placeholder="🔍 Search..." oninput="filterFaculty(this.value)">
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div>
+          <div class="top-bar-title">🏛️ HOD Dashboard</div>
+          <div style="font-size:13px;color:#86efac;margin-top:4px;">
+            Dept: <strong id="deptName">—</strong> &nbsp;|&nbsp; Year Group: <strong id="yearName">—</strong>
+          </div>
         </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>#</th><th>Name</th><th>Username</th><th>Email</th><th>Phone</th></tr></thead>
-          <tbody id="facultyBody">
-            <tr><td colspan="5" class="no-data">Loading...</td></tr>
-          </tbody>
-        </table>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="top-bar-badge" id="welcomeBadge">Loading...</div>
+        <button onclick="logout()" title="Logout"
+          style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;border:1px solid rgba(239,68,68,0.4);background:rgba(239,68,68,0.25);color:white;font-weight:700;font-size:13px;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.background='#ef4444';this.style.borderColor='#ef4444';"
+          onmouseout="this.style.background='rgba(239,68,68,0.25)';this.style.borderColor='rgba(239,68,68,0.4)';">🚪
+          Logout</button>
       </div>
     </div>
-  </div>
 
-  <!-- STUDENTS TAB -->
-  <div id="students" class="tab-content">
-    <div class="table-box">
-      <div class="table-header">
-        <h3>🎓 Students</h3>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <span class="count-badge" id="studentCount">0 students</span>
-          <input class="search-input" placeholder="🔍 Search name/ID..." oninput="filterStudents(this.value)">
-          <select class="search-input" id="filterSec" onchange="filterStudents()" style="width:130px;">
-            <option value="">All Sections</option>
-             <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option>
-          </select>
-          <select class="search-input" id="filterYr" onchange="filterStudents()" style="width:120px;">
-            <option value="">All Years</option>
-            <option>2</option><option>3</option><option>4</option>
-          </select>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <span style="font-size:12px;color:var(--muted);white-space:nowrap;">Score ≤</span>
-            <input type="number" id="scoreFilter" min="0" placeholder="e.g. 10"
-              style="width:80px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);
-                     background:#f8fafc;color:var(--text);font-size:13px;font-family:'Poppins',sans-serif;outline:none;"
-              onfocus="this.style.borderColor='var(--blue)'"
-              onblur="this.style.borderColor='var(--border)'"
-              oninput="filterStudents()">
+    <!-- DASHBOARD TAB -->
+    <div id="dashboard" class="tab-content active">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">👨‍🏫</div>
+          <div class="stat-value" style="color:var(--blue);" id="statFaculty">—</div>
+          <div class="stat-label">Faculty Members</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-value" style="color:var(--green);" id="statStudents">—</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" style="color:var(--gold);" id="statEvents">—</div>
+          <div class="stat-label">Events Published</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FACULTY TAB -->
+    <div id="faculty" class="tab-content">
+      <div class="table-box">
+        <div class="table-header">
+          <h3>👨‍🏫 Department Faculty</h3>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="count-badge" id="facultyCount">0 faculty</span>
+            <input class="search-input" placeholder="🔍 Search..." oninput="filterFaculty(this.value)">
           </div>
-          <button onclick="clearStudentFilters()"
-            style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+              </tr>
+            </thead>
+            <tbody id="facultyBody">
+              <tr>
+                <td colspan="5" class="no-data">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENTS TAB -->
+    <div id="students" class="tab-content">
+      <div class="table-box">
+        <div class="table-header">
+          <h3>🎓 Students</h3>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span class="count-badge" id="studentCount">0 students</span>
+            <input class="search-input" placeholder="🔍 Search name/ID..." oninput="filterStudents(this.value)">
+            <select class="search-input" id="filterYr" onchange="filterStudents()" style="width:120px;">
+              <option value="">All Years</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <label for="scoreFilter" style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;">Max
+                Score:</label>
+              <input type="number" id="scoreFilter" min="0" placeholder="Max"
+                style="width:85px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);
+                     background:#f8fafc;color:var(--text);font-size:13px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'"
+                onblur="this.style.borderColor='var(--border)'" oninput="filterStudents()">
+            </div>
+            <button onclick="clearStudentFilters()" style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);
                    background:#f8fafc;color:var(--muted);font-size:12px;font-weight:600;
                    cursor:pointer;font-family:'Poppins',sans-serif;">✕ Clear</button>
+          </div>
         </div>
-      </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead><tr><th>#</th><th>Name</th><th>Student ID</th><th>Year</th><th>Section</th><th>Score</th></tr></thead>
-          <tbody id="studentsBody">
-            <tr><td colspan="6" class="no-data">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="studentDownloadWrap" style="display:none;margin-top:20px;text-align:right;">
-        <button onclick="downloadStudentsPDF()"
-          style="padding:10px 24px;border:none;border-radius:10px;
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Student ID</th>
+                <th>Year</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody id="studentsBody">
+              <tr>
+                <td colspan="5" class="no-data">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="studentDownloadWrap" style="display:none;margin-top:20px;text-align:right;">
+          <button onclick="downloadStudentsPDF()" style="padding:10px 24px;border:none;border-radius:10px;
                  background:linear-gradient(135deg,#e53935,#b71c1c);
                  color:white;font-size:13px;font-weight:600;cursor:pointer;
                  font-family:'Poppins',sans-serif;box-shadow:0 4px 14px rgba(229,57,53,0.35);
-                 transition:all 0.2s;"
-          onmouseover="this.style.transform='translateY(-1px)'"
-          onmouseout="this.style.transform='translateY(0)'">
-          📄 Download PDF
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- EVENTS TAB -->
-  <div id="events" class="tab-content">
-    <div class="table-box">
-      <div class="table-header">
-        <h3>📅 Events by Department Faculty</h3>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span class="count-badge" id="eventsCount">0 events</span>
-          <input class="search-input" placeholder="🔍 Search events..." oninput="filterEvents(this.value)">
+                 transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.transform='translateY(0)'">
+            📄 Download PDF
+          </button>
         </div>
       </div>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Title</th>
-              <th>Date</th>
-              <th>Venue</th>
-              <th>Published By</th>
-              <th>Registered</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody id="eventsBody">
-            <tr><td colspan="7" class="no-data">Loading...</td></tr>
-          </tbody>
-        </table>
-      </div>
     </div>
 
-    <!-- Detail Panel -->
-    <div id="eventDetailPanel" style="display:none;">
-      <div class="table-box" style="border-color:rgba(30,136,229,0.3);">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-          <h3 id="detailEventTitle" style="font-size:16px;font-weight:700;color:var(--blue-dark);">—</h3>
-          <div style="display:flex;gap:8px;">
-            <button onclick="switchDetail('analysis')" id="btnAnalysis"
-              style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,193,7,0.4);
+    <!-- EVENTS TAB -->
+    <div id="events" class="tab-content">
+      <div class="table-box">
+        <div class="table-header">
+          <h3>📅 Events by Department Faculty</h3>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="count-badge" id="eventsCount">0 events</span>
+            <input class="search-input" placeholder="🔍 Search events..." oninput="filterEvents(this.value)">
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Published By</th>
+                <th>Registered</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="eventsBody">
+              <tr>
+                <td colspan="7" class="no-data">Loading...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Detail Panel -->
+      <div id="eventDetailPanel" style="display:none;">
+        <div class="table-box" style="border-color:rgba(30,136,229,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 id="detailEventTitle" style="font-size:16px;font-weight:700;color:var(--blue-dark);">—</h3>
+            <div style="display:flex;gap:8px;">
+              <button onclick="switchDetail('analysis')" id="btnAnalysis" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,193,7,0.4);
                      background:rgba(255,193,7,0.1);color:#d97706;font-family:'Poppins',sans-serif;
                      font-size:12px;font-weight:600;cursor:pointer;">📊 Analysis</button>
-            <button onclick="closeDetail()"
-              style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
+              <button onclick="closeDetail()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
                      color:#dc2626;padding:6px 14px;border-radius:8px;cursor:pointer;
                      font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;">✕ Close</button>
+            </div>
           </div>
-        </div>
 
-        <!-- Tabs inside panel -->
-        <div style="display:flex;gap:8px;margin-bottom:18px;">
-          <button onclick="switchDetail('regs')" id="btnRegs"
-            style="padding:8px 18px;border-radius:8px;border:1px solid rgba(30,136,229,0.4);
+          <!-- Tabs inside panel -->
+          <div style="display:flex;gap:8px;margin-bottom:18px;">
+            <button onclick="switchDetail('regs')" id="btnRegs" style="padding:8px 18px;border-radius:8px;border:1px solid rgba(30,136,229,0.4);
                    background:rgba(30,136,229,0.12);color:#1E88E5;font-family:'Poppins',sans-serif;
                    font-size:13px;font-weight:600;cursor:pointer;">👥 Registered Students</button>
-          <button onclick="switchDetail('fb')" id="btnFb"
-            style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);
+            <button onclick="switchDetail('fb')" id="btnFb" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);
                    background:#f8fafc;color:var(--muted);font-family:'Poppins',sans-serif;
                    font-size:13px;font-weight:600;cursor:pointer;">💬 Feedback</button>
-        </div>
-
-        <!-- Registrations sub-table -->
-        <div id="detailRegs">
-          <div style="overflow-x:auto;">
-            <table>
-              <thead><tr><th>#</th><th>Student Name</th><th>Student ID</th><th>Attended</th><th>Score</th></tr></thead>
-              <tbody id="regsDetailBody"><tr><td colspan="5" class="no-data">Loading...</td></tr></tbody>
-            </table>
           </div>
-        </div>
 
-        <!-- Feedback sub-table -->
-        <div id="detailFb" style="display:none;">
-          <div style="overflow-x:auto;">
-            <table>
-              <thead><tr><th>#</th><th>Student</th><th>Rating</th><th>Comment</th><th>Date</th></tr></thead>
-              <tbody id="fbDetailBody"><tr><td colspan="5" class="no-data">Loading...</td></tr></tbody>
-            </table>
+          <!-- Registrations sub-table -->
+          <div id="detailRegs">
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Attended</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody id="regsDetailBody">
+                  <tr>
+                    <td colspan="5" class="no-data">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
-        <!-- Analysis sub-panel -->
-        <div id="detailAnalysis" style="display:none;">
-          <div style="overflow-x:auto;">
-            <table>
-              <thead>
-                <tr>
-                  <th>Branch</th>
-                  <th style="text-align:center;">Registered</th>
-                  <th style="text-align:left;">Bar</th>
-                </tr>
-              </thead>
-              <tbody id="analysisBody"><tr><td colspan="3" class="no-data">Loading...</td></tr></tbody>
-            </table>
+          <!-- Feedback sub-table -->
+          <div id="detailFb" style="display:none;">
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="fbDetailBody">
+                  <tr>
+                    <td colspan="5" class="no-data">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div style="margin-top:14px;font-size:12px;color:var(--muted);" id="analysisTotalRow"></div>
+
+          <!-- Analysis sub-panel -->
+          <div id="detailAnalysis" style="display:none;">
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+              <button onclick="exportNaacReportPDF()" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.3);">
+                📊 Export NAAC/NBA Report (PDF)
+              </button>
+              <button onclick="exportNaacExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:8px 16px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.3);">
+                📥 Export Data (Excel)
+              </button>
+            </div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Branch</th>
+                    <th style="text-align:center;">Registered</th>
+                    <th style="text-align:left;">Bar</th>
+                  </tr>
+                </thead>
+                <tbody id="analysisBody">
+                  <tr>
+                    <td colspan="3" class="no-data">Loading...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div style="margin-top:14px;font-size:12px;color:var(--muted);" id="analysisTotalRow"></div>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
 
-  <!-- PROFILE TAB -->
-  <div id="profile" class="tab-content">
-    <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0 40px;">
-      <div style="width:100%;max-width:680px;background:var(--glass);border:1px solid var(--border);border-radius:24px;box-shadow:0 8px 32px rgba(15,76,129,0.1);">
-        <div style="height:150px;background:linear-gradient(135deg,#0F4C81 0%,#1E88E5 55%,#0ea5e9 100%);border-radius:24px 24px 0 0;position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(255,255,255,0.08) 0%,transparent 60%);"></div></div>
-        <div style="display:flex;justify-content:center;margin-top:-58px;position:relative;z-index:10;"><div id="dhProfileAvatar" style="width:116px;height:116px;border-radius:50%;background:linear-gradient(135deg,#FFC107,#FFA000);display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:700;color:#0a2540;border:5px solid white;box-shadow:0 8px 32px rgba(0,0,0,0.15);">H</div></div>
-        <div style="padding:16px 32px 36px;display:flex;flex-direction:column;align-items:center;">
-          <div id="dhProfileName" style="font-size:24px;font-weight:800;text-align:center;margin-top:14px;margin-bottom:6px;">—</div>
-          <div style="font-size:13px;color:var(--gold);font-weight:600;text-align:center;margin-bottom:28px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);padding:4px 16px;border-radius:20px;">Head of Department</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:28px;">
-            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">Username</div><div id="dhInfoUsername" style="font-size:15px;font-weight:600;">—</div></div>
-            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">Department</div><div id="dhInfoDept" style="font-size:15px;font-weight:600;">—</div></div>
-            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">Year Group</div><div id="dhInfoYear" style="font-size:15px;font-weight:600;">—</div></div>
-            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">HOD ID</div><div id="dhInfoId" style="font-size:12px;font-weight:600;">—</div></div>
-          </div>
-          <div style="width:100%;padding-top:20px;border-top:1px solid var(--border);">
-            <div style="font-size:14px;font-weight:700;margin-bottom:16px;">✏️ Edit Details</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:6px;"><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Full Name</label><input type="text" id="dhEditName" placeholder="Enter full name" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></div>
-              <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Email</label><input type="email" id="dhEditEmail" placeholder="Enter email" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></div>
-              <div style="display:flex;flex-direction:column;gap:6px;"><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Phone</label><input type="tel" id="dhEditPhone" placeholder="Enter phone" style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"></div>
+    <!-- PROFILE TAB -->
+    <div id="profile" class="tab-content">
+      <div style="display:flex;flex-direction:column;align-items:center;padding:20px 0 40px;">
+        <div
+          style="width:100%;max-width:680px;background:var(--glass);border:1px solid var(--border);border-radius:24px;box-shadow:0 8px 32px rgba(15,76,129,0.1);">
+          <div
+            style="height:150px;background:linear-gradient(135deg,#0F4C81 0%,#1E88E5 55%,#0ea5e9 100%);border-radius:24px 24px 0 0;position:relative;overflow:hidden;">
+            <div
+              style="position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(255,255,255,0.08) 0%,transparent 60%);">
             </div>
-            <div id="dhProfileMsg" style="display:none;margin-top:12px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;"></div>
-            <button onclick="updateDHProfile()" style="width:100%;padding:13px;border-radius:12px;border:none;margin-top:16px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">💾 Update Profile</button>
           </div>
-          <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);margin-top:24px;">
-            <div style="font-size:14px;font-weight:700;margin-bottom:16px;">🔒 Change Password</div>
-            <div style="display:grid;gap:12px;">
-              <div><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Current Password</label><div style="position:relative;"><input type="password" id="dhCurrentPwd" placeholder="Enter current password" style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"><button type="button" onclick="dhTogglePwd('dhCurrentPwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button></div></div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                <div><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">New Password</label><div style="position:relative;"><input type="password" id="dhNewPwd" placeholder="Min. 6 characters" style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"><button type="button" onclick="dhTogglePwd('dhNewPwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button></div></div>
-                <div><label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Confirm Password</label><div style="position:relative;"><input type="password" id="dhConfirmPwd" placeholder="Re-enter new password" style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;" onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'"><button type="button" onclick="dhTogglePwd('dhConfirmPwd',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button></div></div>
+          <div style="display:flex;justify-content:center;margin-top:-58px;position:relative;z-index:10;">
+            <div id="dhProfileAvatar"
+              style="width:116px;height:116px;border-radius:50%;background:linear-gradient(135deg,#FFC107,#FFA000);display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:700;color:#0a2540;border:5px solid white;box-shadow:0 8px 32px rgba(0,0,0,0.15);">
+              H</div>
+          </div>
+          <div style="padding:16px 32px 36px;display:flex;flex-direction:column;align-items:center;">
+            <div id="dhProfileName"
+              style="font-size:24px;font-weight:800;text-align:center;margin-top:14px;margin-bottom:6px;">—</div>
+            <div
+              style="font-size:13px;color:var(--gold);font-weight:600;text-align:center;margin-bottom:28px;background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.25);padding:4px 16px;border-radius:20px;">
+              Head of Department</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;width:100%;margin-bottom:28px;">
+              <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+                <div
+                  style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">
+                  Username</div>
+                <div id="dhInfoUsername" style="font-size:15px;font-weight:600;">—</div>
               </div>
-              <button onclick="changeDHPassword()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">🔒 Change Password</button>
+              <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+                <div
+                  style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">
+                  Department</div>
+                <div id="dhInfoDept" style="font-size:15px;font-weight:600;">—</div>
+              </div>
+              <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:14px 16px;">
+                <div
+                  style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;">
+                  Year Group</div>
+                <div id="dhInfoYear" style="font-size:15px;font-weight:600;">—</div>
+              </div>
             </div>
-          </div>
-          <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);margin-top:24px;">
-            <div style="font-size:14px;font-weight:700;margin-bottom:8px;">✍️ My Signature</div>
-            <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Upload your signature — it will appear on certificates as HOD sign.</p>
-            <div id="dhSigPreviewWrap" style="display:none;margin-bottom:16px;padding:14px;border-radius:12px;border:1px solid var(--border);background:#f8fafc;text-align:center;"><img id="dhSigPreviewImg" src="" alt="Signature" style="max-height:80px;max-width:260px;object-fit:contain;"><div style="font-size:11px;color:var(--muted);margin-top:8px;">Current Signature</div></div>
-            <label for="dhSigFileInput" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px;border-radius:14px;border:2px dashed var(--border);background:#f8fafc;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(30,136,229,0.04)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='#f8fafc'"><span style="font-size:36px;">🖊️</span><span style="font-size:13px;font-weight:600;">Click to upload signature image</span><span style="font-size:11px;color:var(--muted);">PNG or JPG recommended</span></label>
-            <input type="file" id="dhSigFileInput" accept="image/*" style="display:none;" onchange="dhPreviewSignature(event)">
-            <div id="dhSigNewPreview" style="display:none;margin-top:14px;padding:14px;border-radius:12px;border:1px solid rgba(30,136,229,0.3);background:rgba(30,136,229,0.04);text-align:center;"><img id="dhSigNewImg" src="" style="max-height:80px;max-width:260px;object-fit:contain;"><div style="font-size:11px;color:var(--muted);margin-top:6px;">Preview — click Save to apply</div></div>
-            <button onclick="dhSaveSignature()" id="dhSigSaveBtn" style="display:none;width:100%;padding:12px;border-radius:10px;border:none;margin-top:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">💾 Save Signature</button>
-            <div id="dhSigMsg" style="display:none;margin-top:10px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;"></div>
+            <div style="width:100%;padding-top:20px;border-top:1px solid var(--border);">
+              <div style="font-size:14px;font-weight:700;margin-bottom:16px;">✏️ Edit Details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <div style="grid-column:1/-1;display:flex;flex-direction:column;gap:6px;"><label
+                    style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Full
+                    Name</label><input type="text" id="dhEditName" placeholder="Enter full name"
+                    style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                    onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;"><label
+                    style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Email</label><input
+                    type="email" id="dhEditEmail" placeholder="Enter email"
+                    style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                    onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;"><label
+                    style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Phone</label><input
+                    type="tel" id="dhEditPhone" placeholder="Enter phone"
+                    style="width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                    onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--border)'">
+                </div>
+              </div>
+              <div id="dhProfileMsg"
+                style="display:none;margin-top:12px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;">
+              </div>
+              <button onclick="updateDHProfile()"
+                style="width:100%;padding:13px;border-radius:12px;border:none;margin-top:16px;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;"
+                onmouseover="this.style.transform='translateY(-2px)'"
+                onmouseout="this.style.transform='translateY(0)'">💾 Update Profile</button>
+            </div>
+            <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);margin-top:24px;">
+              <div style="font-size:14px;font-weight:700;margin-bottom:16px;">🔒 Change Password</div>
+              <div style="display:grid;gap:12px;">
+                <div><label
+                    style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Current
+                    Password</label>
+                  <div style="position:relative;"><input type="password" id="dhCurrentPwd"
+                      placeholder="Enter current password"
+                      style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                      onfocus="this.style.borderColor='var(--blue)'"
+                      onblur="this.style.borderColor='var(--border)'"><button type="button"
+                      onclick="dhTogglePwd('dhCurrentPwd',this)"
+                      style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                  <div><label
+                      style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">New
+                      Password</label>
+                    <div style="position:relative;"><input type="password" id="dhNewPwd" placeholder="Min. 6 characters"
+                        style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                        onfocus="this.style.borderColor='var(--blue)'"
+                        onblur="this.style.borderColor='var(--border)'"><button type="button"
+                        onclick="dhTogglePwd('dhNewPwd',this)"
+                        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button>
+                    </div>
+                  </div>
+                  <div><label
+                      style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">Confirm
+                      Password</label>
+                    <div style="position:relative;"><input type="password" id="dhConfirmPwd"
+                        placeholder="Re-enter new password"
+                        style="width:100%;padding:12px 44px 12px 14px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);font-size:14px;font-family:'Poppins',sans-serif;outline:none;"
+                        onfocus="this.style.borderColor='var(--blue)'"
+                        onblur="this.style.borderColor='var(--border)'"><button type="button"
+                        onclick="dhTogglePwd('dhConfirmPwd',this)"
+                        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;">👁️</button>
+                    </div>
+                  </div>
+                </div>
+                <button onclick="changeDHPassword()"
+                  style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#ef4444,#dc2626);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;"
+                  onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">🔒 Change
+                  Password</button>
+              </div>
+            </div>
+            <div style="width:100%;padding-top:24px;border-top:1px solid var(--border);margin-top:24px;">
+              <div style="font-size:14px;font-weight:700;margin-bottom:8px;">✍️ My Signature</div>
+              <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Upload your signature — it will appear on
+                certificates as HOD sign.</p>
+              <div id="dhSigPreviewWrap"
+                style="display:none;margin-bottom:16px;padding:14px;border-radius:12px;border:1px solid var(--border);background:#f8fafc;text-align:center;">
+                <img id="dhSigPreviewImg" src="" alt="Signature"
+                  style="max-height:80px;max-width:260px;object-fit:contain;">
+                <div style="font-size:11px;color:var(--muted);margin-top:8px;">Current Signature</div>
+              </div>
+              <label for="dhSigFileInput"
+                style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:28px;border-radius:14px;border:2px dashed var(--border);background:#f8fafc;cursor:pointer;transition:all 0.2s;"
+                onmouseover="this.style.borderColor='var(--blue)';this.style.background='rgba(30,136,229,0.04)'"
+                onmouseout="this.style.borderColor='var(--border)';this.style.background='#f8fafc'"><span
+                  style="font-size:36px;">🖊️</span><span style="font-size:13px;font-weight:600;">Click to upload
+                  signature image</span><span style="font-size:11px;color:var(--muted);">PNG or JPG
+                  recommended</span></label>
+              <input type="file" id="dhSigFileInput" accept="image/*" style="display:none;"
+                onchange="dhPreviewSignature(event)">
+              <div id="dhSigNewPreview"
+                style="display:none;margin-top:14px;padding:14px;border-radius:12px;border:1px solid rgba(30,136,229,0.3);background:rgba(30,136,229,0.04);text-align:center;">
+                <img id="dhSigNewImg" src="" style="max-height:80px;max-width:260px;object-fit:contain;">
+                <div style="font-size:11px;color:var(--muted);margin-top:6px;">Preview — click Save to apply</div>
+              </div>
+              <button onclick="dhSaveSignature()" id="dhSigSaveBtn"
+                style="display:none;width:100%;padding:12px;border-radius:10px;border:none;margin-top:14px;background:linear-gradient(135deg,#22c55e,#16a34a);color:white;font-size:14px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;"
+                onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">💾 Save Signature</button>
+              <div id="dhSigMsg"
+                style="display:none;margin-top:10px;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:600;text-align:center;">
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
-let currentHod = null;
-let allFacultyData = [], allStudentsData = [], allEventsData = [];
+  <script>
+    let currentHod = null;
+    let allFacultyData = [], allStudentsData = [], allEventsData = [];
 
-document.addEventListener('DOMContentLoaded', async () => {
-  currentHod = JSON.parse(localStorage.getItem('departmentHeadData'));
-  if (!currentHod) { window.location.href = 'index.html'; return; }
+    document.addEventListener('DOMContentLoaded', async () => {
+      currentHod = JSON.parse(localStorage.getItem('departmentHeadData'));
+      if (!currentHod) { window.location.href = 'index.html'; return; }
 
-  const name = currentHod.fullName || currentHod.username || 'HOD';
-  document.getElementById('profileName').textContent = name;
-  document.getElementById('welcomeBadge').textContent = name;
-  document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
-  document.getElementById('deptName').textContent = currentHod.department || '—';
-  document.getElementById('yearName').textContent = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : `Year ${currentHod.year}`;
+      const name = currentHod.fullName || currentHod.username || 'HOD';
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('welcomeBadge').textContent = name;
+      document.getElementById('sidebarAvatar').textContent = name.charAt(0).toUpperCase();
+      document.getElementById('deptName').textContent = currentHod.department || '—';
+      document.getElementById('yearName').textContent = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : `Year ${currentHod.year}`;
 
-  await loadStats();
-  await loadFacultyData();
-  await loadStudentsData();
-  await loadEventsData();
-});
+      await loadStats();
+      await loadFacultyData();
+      await loadStudentsData();
+      await loadEventsData();
+    });
 
-function showTab(tab, el) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-  document.getElementById(tab).classList.add('active');
-  if (el) el.classList.add('active');
-  if (tab === 'profile') loadDHProfile();
-}
+    function showTab(tab, el) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      if (el) el.classList.add('active');
+      if (tab === 'profile') loadDHProfile();
+      if (tab === 'events') loadEventsData();
+      if (tab === 'dashboard') loadStats();
+      if (tab === 'students') loadStudentsData();
+      if (tab === 'faculty') loadFacultyData();
+    }
 
-// ── STATS ──────────────────────────────────────────────
-async function loadStats() {
-  try {
-    const r = await fetch(`/api/department-head/stats/${currentHod._id}`);
-    const d = await r.json();
-    document.getElementById('statFaculty').textContent = d.totalFaculty;
-    document.getElementById('statStudents').textContent = d.totalStudents;
-    document.getElementById('statEvents').textContent   = d.totalEvents;
-  } catch(e) { console.error(e); }
-}
+    // ── STATS ──────────────────────────────────────────────
+    async function loadStats() {
+      try {
+        const r = await fetch(`/api/department-head/stats/${currentHod._id}`);
+        const d = await r.json();
+        document.getElementById('statFaculty').textContent = d.totalFaculty;
+        document.getElementById('statStudents').textContent = d.totalStudents;
+        document.getElementById('statEvents').textContent = d.totalEvents;
+      } catch (e) { console.error(e); }
+    }
 
-// ── FACULTY ────────────────────────────────────────────
-async function loadFacultyData() {
-  try {
-    const r = await fetch(`/api/department-head/faculty/${currentHod._id}`);
-    allFacultyData = await r.json();
-    renderFaculty(allFacultyData);
-  } catch(e) { console.error(e); }
-}
+    // ── FACULTY ────────────────────────────────────────────
+    async function loadFacultyData() {
+      try {
+        const r = await fetch(`/api/department-head/faculty/${currentHod._id}`);
+        allFacultyData = await r.json();
+        renderFaculty(allFacultyData);
+      } catch (e) { console.error(e); }
+    }
 
-function renderFaculty(list) {
-  document.getElementById('facultyCount').textContent = `${list.length} faculty`;
-  const tbody = document.getElementById('facultyBody');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No faculty found</td></tr>'; return; }
-  tbody.innerHTML = list.map((f, i) => `
+    function renderFaculty(list) {
+      document.getElementById('facultyCount').textContent = `${list.length} faculty`;
+      const tbody = document.getElementById('facultyBody');
+      if (!list.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No faculty found</td></tr>'; return; }
+      tbody.innerHTML = list.map((f, i) => `
     <tr>
-      <td>${i+1}</td>
-      <td><strong>${f.fullName||'—'}</strong></td>
-      <td><span class="badge badge-blue">${f.username||'—'}</span></td>
-      <td>${f.email||'—'}</td>
-      <td>${f.phone||'—'}</td>
+      <td>${i + 1}</td>
+      <td><strong>${f.fullName || '—'}</strong></td>
+      <td><span class="badge badge-blue">${f.username || '—'}</span></td>
+      <td>${f.email || '—'}</td>
+      <td>${f.phone || '—'}</td>
     </tr>`).join('');
-}
+    }
 
-function filterFaculty(q) {
-  const query = (q||'').toLowerCase();
-  renderFaculty(allFacultyData.filter(f =>
-    (f.fullName||'').toLowerCase().includes(query) ||
-    (f.username||'').toLowerCase().includes(query) ||
-    (f.email||'').toLowerCase().includes(query)
-  ));
-}
+    function filterFaculty(q) {
+      const query = (q || '').toLowerCase();
+      renderFaculty(allFacultyData.filter(f =>
+        (f.fullName || '').toLowerCase().includes(query) ||
+        (f.username || '').toLowerCase().includes(query) ||
+        (f.email || '').toLowerCase().includes(query)
+      ));
+    }
 
-// ── STUDENTS ───────────────────────────────────────────
-let displayedStudents = [];
+    // ── STUDENTS ───────────────────────────────────────────
+    let displayedStudents = [];
 
-async function loadStudentsData() {
-  try {
-    const r = await fetch(`/api/department-head/students/${currentHod._id}`);
-    if (!r.ok) throw new Error('Failed');
-    allStudentsData = await r.json();
-    displayedStudents = allStudentsData;
-    renderStudents(allStudentsData);
-  } catch(e) {
-    console.error(e);
-    document.getElementById('studentsBody').innerHTML = '<tr><td colspan="6" class="no-data">Error loading students</td></tr>';
-  }
-}
+    async function loadStudentsData() {
+      try {
+        const r = await fetch(`/api/department-head/students/${currentHod._id}`);
+        if (!r.ok) throw new Error('Failed');
+        allStudentsData = await r.json();
+        displayedStudents = allStudentsData;
+        renderStudents(allStudentsData);
+      } catch (e) {
+        console.error(e);
+        document.getElementById('studentsBody').innerHTML = '<tr><td colspan="5" class="no-data">Error loading students</td></tr>';
+      }
+    }
 
-function renderStudents(list) {
-  displayedStudents = list;
-  document.getElementById('studentCount').textContent = `${list.length} students`;
-  const tbody = document.getElementById('studentsBody');
-  const wrap  = document.getElementById('studentDownloadWrap');
-  if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No students found</td></tr>';
-    if (wrap) wrap.style.display = 'none';
-    return;
-  }
-  tbody.innerHTML = list.map((s, i) => {
-    const totalScore = (s.score || 0) + (s.eventScore || 0);
-    return `<tr>
-      <td>${i+1}</td>
-      <td><strong>${s.fullName||'—'}</strong></td>
-      <td><span class="badge badge-green">${s.studentId||'—'}</span></td>
-      <td><span class="badge badge-gold">Year ${s.year||'—'}</span></td>
-      <td>Section ${s.section||'—'}</td>
+    function renderStudents(list) {
+      displayedStudents = list;
+      document.getElementById('studentCount').textContent = `${list.length} students`;
+      const tbody = document.getElementById('studentsBody');
+      const wrap = document.getElementById('studentDownloadWrap');
+      if (!list.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No students found</td></tr>';
+        if (wrap) wrap.style.display = 'none';
+        return;
+      }
+      tbody.innerHTML = list.map((s, i) => {
+        const totalScore = (s.score || 0) + (s.eventScore || 0);
+        return `<tr>
+      <td>${i + 1}</td>
+      <td><strong>${s.fullName || '—'}</strong></td>
+      <td><span class="badge badge-green">${s.studentId || '—'}</span></td>
+      <td><span class="badge badge-gold">Year ${s.year || '—'}</span></td>
       <td><strong style="color:var(--blue-dark);">${totalScore}</strong></td>
     </tr>`;
-  }).join('');
-  if (wrap) wrap.style.display = 'block';
-}
-
-function filterStudents(q) {
-  const query     = (q || document.querySelector('.search-input[placeholder*="Search name"]')?.value || '').toLowerCase();
-  const sec       = document.getElementById('filterSec').value;
-  const yr        = document.getElementById('filterYr').value;
-  const maxScore  = document.getElementById('scoreFilter')?.value;
-  const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
-
-  const filtered = allStudentsData.filter(s => {
-    const nameMatch  = !query || (s.fullName||'').toLowerCase().includes(query) || (s.studentId||'').toLowerCase().includes(query);
-    const secMatch   = !sec   || s.section === sec;
-    const yrMatch    = !yr    || s.year    === yr;
-    const totalScore = (s.score || 0) + (s.eventScore || 0);
-    const scoreMatch = threshold === null || totalScore <= threshold;
-    return nameMatch && secMatch && yrMatch && scoreMatch;
-  });
-
-  const countEl = document.getElementById('studentCount');
-  if (countEl) {
-    countEl.textContent = threshold !== null
-      ? `${filtered.length} students with score ≤ ${threshold}`
-      : `${filtered.length} students`;
-  }
-  renderStudents(filtered);
-}
-
-function clearStudentFilters() {
-  const searchEl = document.querySelector('.search-input[placeholder*="Search name"]');
-  if (searchEl) searchEl.value = '';
-  const secEl = document.getElementById('filterSec');
-  const yrEl  = document.getElementById('filterYr');
-  const scEl  = document.getElementById('scoreFilter');
-  if (secEl) secEl.value = '';
-  if (yrEl)  yrEl.value  = '';
-  if (scEl)  scEl.value  = '';
-  document.getElementById('studentCount').textContent = `${allStudentsData.length} students`;
-  renderStudents(allStudentsData);
-}
-
-function downloadStudentsPDF() {
-  const source = displayedStudents.length ? displayedStudents : allStudentsData;
-  if (!source.length) return;
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-  const dept      = currentHod.department || 'Dept';
-  const yearLabel = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : ('Year ' + currentHod.year);
-  const maxScore  = document.getElementById('scoreFilter')?.value;
-  const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
-  const dateStr   = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
-
-  // ── Header bar ──────────────────────────────────────────────────────────────
-  doc.setFillColor(15, 76, 129);               // --primary #0F4C81
-  doc.rect(0, 0, 210, 28, 'F');
-
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text('CEM - Student Report', 14, 12);
-
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Department: ' + dept + '   |   ' + yearLabel + '   |   Generated: ' + dateStr, 14, 20);
-
-  // Filter note (right side of header)
-  if (threshold !== null) {
-    doc.setFont('helvetica', 'bold');
-    doc.text('Filter: Score \u2264 ' + threshold, 196, 12, { align: 'right' });
-  }
-  doc.text('Total: ' + source.length + ' students', 196, 20, { align: 'right' });
-
-  // ── Table ───────────────────────────────────────────────────────────────────
-  const tableRows = source.map((s, i) => {
-    const totalScore = (s.score || 0) + (s.eventScore || 0);
-    return [i + 1, s.fullName || '—', s.studentId || '—', s.year || '—', s.section || '—', totalScore];
-  });
-
-  doc.autoTable({
-    startY: 32,
-    head: [['#', 'Student Name', 'Student ID', 'Year', 'Section', 'Score']],
-    body: tableRows,
-    styles: {
-      font: 'helvetica',
-      fontSize: 9,
-      cellPadding: 3,
-      textColor: [31, 41, 55]
-    },
-    headStyles: {
-      fillColor: [30, 136, 229],   // --blue #1E88E5
-      textColor: 255,
-      fontStyle: 'bold',
-      fontSize: 9,
-      halign: 'left'
-    },
-    alternateRowStyles: { fillColor: [248, 250, 252] },
-    columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 36 },
-      3: { cellWidth: 18, halign: 'center' },
-      4: { cellWidth: 22, halign: 'center' },
-      5: { cellWidth: 20, halign: 'center', fontStyle: 'bold' }
-    },
-    margin: { left: 14, right: 14 },
-    didDrawPage: (data) => {
-      // Footer on every page
-      const pageCount = doc.internal.getNumberOfPages();
-      const pg = doc.internal.getCurrentPageInfo().pageNumber;
-      doc.setFontSize(8);
-      doc.setTextColor(107, 114, 128);
-      doc.setFont('helvetica', 'normal');
-      doc.text('CEM Student Report  |  ' + dept + '  |  ' + dateStr,
-               14, doc.internal.pageSize.height - 8);
-      doc.text('Page ' + pg + ' of ' + pageCount,
-               196, doc.internal.pageSize.height - 8, { align: 'right' });
+      }).join('');
+      if (wrap) wrap.style.display = 'block';
     }
-  });
 
-  // ── Save ────────────────────────────────────────────────────────────────────
-  const filename = threshold !== null
-    ? 'students_' + dept + '_score_lte_' + threshold + '.pdf'
-    : 'students_' + dept + '_' + (currentHod.year || '') + '.pdf';
-  doc.save(filename);
-}
+    function filterStudents(q) {
+      const query = (q || document.querySelector('.search-input[placeholder*="Search name"]')?.value || '').toLowerCase().trim();
+      const yr = document.getElementById('filterYr')?.value || '';
+      const maxScore = document.getElementById('scoreFilter')?.value;
+      const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
 
-// ── EVENTS ─────────────────────────────────────────────
-async function loadEventsData() {
-  try {
-    const r = await fetch(`/api/department-head/events/${currentHod._id}`);
-    allEventsData = await r.json();
-    renderEvents(allEventsData);
-  } catch(e) { console.error(e); }
-}
+      const filtered = allStudentsData.filter(s => {
+        const nameMatch = !query ||
+          (s.fullName || '').toLowerCase().includes(query) ||
+          (s.studentId || '').toLowerCase().includes(query) ||
+          (s.pinNumber || '').toLowerCase().includes(query) ||
+          (s.username || '').toLowerCase().includes(query);
+        const yrMatch = !yr || String(s.year || '').trim() === String(yr).trim();
+        const totalScore = (s.score || 0) + (s.eventScore || 0);
+        const scoreMatch = threshold === null || totalScore <= threshold;
+        return nameMatch && yrMatch && scoreMatch;
+      });
 
-function renderEvents(list) {
-  document.getElementById('eventsCount').textContent = `${list.length} events`;
-  const tbody = document.getElementById('eventsBody');
-  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="no-data">No events found</td></tr>'; return; }
-  tbody.innerHTML = list.map((e, i) => `
+      const countEl = document.getElementById('studentCount');
+      if (countEl) {
+        countEl.textContent = threshold !== null
+          ? `${filtered.length} students (Max Score: ${threshold})`
+          : `${filtered.length} students`;
+      }
+      renderStudents(filtered);
+    }
+
+    function clearStudentFilters() {
+      const searchEl = document.querySelector('.search-input[placeholder*="Search name"]');
+      if (searchEl) searchEl.value = '';
+      const yrEl = document.getElementById('filterYr');
+      const scEl = document.getElementById('scoreFilter');
+      if (yrEl) yrEl.value = '';
+      if (scEl) scEl.value = '';
+      document.getElementById('studentCount').textContent = `${allStudentsData.length} students`;
+      renderStudents(allStudentsData);
+    }
+
+    function downloadStudentsPDF() {
+      const source = displayedStudents.length ? displayedStudents : allStudentsData;
+      if (!source.length) return;
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      const dept = currentHod.department || 'Dept';
+      const yearLabel = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : ('Year ' + currentHod.year);
+      const maxScore = document.getElementById('scoreFilter')?.value;
+      const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
+      const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      // ── Header bar ──────────────────────────────────────────────────────────────
+      doc.setFillColor(15, 76, 129);               // --primary #0F4C81
+      doc.rect(0, 0, 210, 28, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text('CEM - Student Report', 14, 12);
+
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Department: ' + dept + '   |   ' + yearLabel + '   |   Generated: ' + dateStr, 14, 20);
+
+      // Filter note (right side of header)
+      if (threshold !== null) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Filter: Max Score ' + threshold, 196, 12, { align: 'right' });
+      }
+      doc.text('Total: ' + source.length + ' students', 196, 20, { align: 'right' });
+
+      // ── Table ───────────────────────────────────────────────────────────────────
+      const tableRows = source.map((s, i) => {
+        const totalScore = (s.score || 0) + (s.eventScore || 0);
+        return [i + 1, s.fullName || '—', s.studentId || '—', s.year || '—', totalScore];
+      });
+
+      doc.autoTable({
+        startY: 32,
+        head: [['#', 'Student Name', 'Student ID', 'Year', 'Score']],
+        body: tableRows,
+        styles: {
+          font: 'helvetica',
+          fontSize: 9,
+          cellPadding: 3,
+          textColor: [31, 41, 55]
+        },
+        headStyles: {
+          fillColor: [30, 136, 229],   // --blue #1E88E5
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 9,
+          halign: 'left'
+        },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        columnStyles: {
+          0: { cellWidth: 10, halign: 'center' },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 36 },
+          3: { cellWidth: 18, halign: 'center' },
+          4: { cellWidth: 22, halign: 'center' },
+          5: { cellWidth: 20, halign: 'center', fontStyle: 'bold' }
+        },
+        margin: { left: 14, right: 14 },
+        didDrawPage: (data) => {
+          // Footer on every page
+          const pageCount = doc.internal.getNumberOfPages();
+          const pg = doc.internal.getCurrentPageInfo().pageNumber;
+          doc.setFontSize(8);
+          doc.setTextColor(107, 114, 128);
+          doc.setFont('helvetica', 'normal');
+          doc.text('CEM Student Report  |  ' + dept + '  |  ' + dateStr,
+            14, doc.internal.pageSize.height - 8);
+          doc.text('Page ' + pg + ' of ' + pageCount,
+            196, doc.internal.pageSize.height - 8, { align: 'right' });
+        }
+      });
+
+      // ── Save ────────────────────────────────────────────────────────────────────
+      const filename = threshold !== null
+        ? 'students_' + dept + '_score_lte_' + threshold + '.pdf'
+        : 'students_' + dept + '_' + (currentHod.year || '') + '.pdf';
+      doc.save(filename);
+    }
+
+    // ── EVENTS ─────────────────────────────────────────────
+    async function loadEventsData() {
+      try {
+        const r = await fetch(`/api/department-head/events/${currentHod._id}`);
+        allEventsData = await r.json();
+        renderEvents(allEventsData);
+      } catch (e) { console.error(e); }
+    }
+
+    function renderEvents(list) {
+      document.getElementById('eventsCount').textContent = `${list.length} events`;
+      const tbody = document.getElementById('eventsBody');
+      if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="no-data">No events found</td></tr>'; return; }
+      tbody.innerHTML = list.map((e, i) => `
     <tr>
-      <td>${i+1}</td>
-      <td><strong>${e.title||'—'}</strong></td>
+      <td>${i + 1}</td>
+      <td><strong>${e.title || '—'}</strong></td>
       <td>${e.date ? new Date(e.date).toLocaleDateString() : '—'}</td>
-      <td>${e.venue||'—'}</td>
-      <td><span class="badge badge-blue">${e.publishedByName||e.faculty||'—'}</span></td>
-      <td><span class="badge badge-green">👥 ${e.registrationCount??0}</span></td>
+      <td>${e.venue || '—'}</td>
+      <td><span class="badge badge-blue">${e.publishedByName || e.faculty || '—'}</span></td>
+      <td><span class="badge badge-green">👥 ${e.registrationCount ?? 0}</span></td>
       <td>
-        <button onclick="openDetail('${e._id}','${(e.title||'').replace(/'/g,'')}')"
+        <button onclick="openDetail('${e._id}','${(e.title || '').replace(/'/g, '')}')"
           style="padding:6px 14px;border-radius:8px;border:1px solid rgba(34,197,94,0.35);
                  background:rgba(34,197,94,0.1);color:#86efac;font-family:'Poppins',sans-serif;
                  font-size:12px;font-weight:600;cursor:pointer;">View</button>
       </td>
     </tr>`).join('');
-}
+    }
 
-function filterEvents(q) {
-  const query = (q||'').toLowerCase();
-  renderEvents(allEventsData.filter(e =>
-    (e.title||'').toLowerCase().includes(query) ||
-    (e.publishedByName||e.faculty||'').toLowerCase().includes(query)
-  ));
-}
+    function filterEvents(q) {
+      const query = (q || '').toLowerCase();
+      renderEvents(allEventsData.filter(e =>
+        (e.title || '').toLowerCase().includes(query) ||
+        (e.publishedByName || e.faculty || '').toLowerCase().includes(query)
+      ));
+    }
 
-async function openDetail(eventId, title) {
-  document.getElementById('eventDetailPanel').style.display = 'block';
-  document.getElementById('detailEventTitle').textContent = '📅 ' + title;
-  document.getElementById('eventDetailPanel').scrollIntoView({ behavior:'smooth' });
-  switchDetail('regs');
-  await loadRegs(eventId);
-  await loadFeedback(eventId);
-  renderAnalysis(eventId);
-}
+    async function openDetail(eventId, title) {
+      document.getElementById('eventDetailPanel').style.display = 'block';
+      document.getElementById('detailEventTitle').textContent = '📅 ' + title;
+      document.getElementById('eventDetailPanel').scrollIntoView({ behavior: 'smooth' });
+      switchDetail('regs');
+      await loadRegs(eventId);
+      await loadFeedback(eventId);
+      renderAnalysis(eventId);
+    }
 
-function closeDetail() {
-  document.getElementById('eventDetailPanel').style.display = 'none';
-}
+    function closeDetail() {
+      document.getElementById('eventDetailPanel').style.display = 'none';
+    }
 
-function switchDetail(tab) {
-  const tabs = ['regs','fb','analysis'];
-  tabs.forEach(t => {
-    const key = 'detail' + t.charAt(0).toUpperCase() + t.slice(1);
-    const el = document.getElementById(key);
-    if (el) el.style.display = t === tab ? 'block' : 'none';
-  });
-  const btnMap   = { regs:'btnRegs', fb:'btnFb', analysis:'btnAnalysis' };
-  const colorMap = {
-    regs:     { bg:'rgba(30,136,229,0.12)',  color:'#1E88E5', border:'rgba(30,136,229,0.4)' },
-    fb:       { bg:'rgba(46,125,50,0.12)',   color:'#2E7D32', border:'rgba(46,125,50,0.4)' },
-    analysis: { bg:'rgba(255,193,7,0.12)',   color:'#d97706', border:'rgba(255,193,7,0.4)' }
-  };
-  Object.keys(btnMap).forEach(t => {
-    const btn = document.getElementById(btnMap[t]);
-    if (!btn) return;
-    const active = t === tab;
-    btn.style.background  = active ? colorMap[t].bg     : 'var(--glass)';
-    btn.style.color       = active ? colorMap[t].color  : 'var(--muted)';
-    btn.style.borderColor = active ? colorMap[t].border : 'var(--border)';
-  });
-  if (tab === 'analysis') renderAnalysis();
-}
+    function switchDetail(tab) {
+      const tabs = ['regs', 'fb', 'analysis'];
+      tabs.forEach(t => {
+        const key = 'detail' + t.charAt(0).toUpperCase() + t.slice(1);
+        const el = document.getElementById(key);
+        if (el) el.style.display = t === tab ? 'block' : 'none';
+      });
+      const btnMap = { regs: 'btnRegs', fb: 'btnFb', analysis: 'btnAnalysis' };
+      const colorMap = {
+        regs: { bg: 'rgba(30,136,229,0.12)', color: '#1E88E5', border: 'rgba(30,136,229,0.4)' },
+        fb: { bg: 'rgba(46,125,50,0.12)', color: '#2E7D32', border: 'rgba(46,125,50,0.4)' },
+        analysis: { bg: 'rgba(255,193,7,0.12)', color: '#d97706', border: 'rgba(255,193,7,0.4)' }
+      };
+      Object.keys(btnMap).forEach(t => {
+        const btn = document.getElementById(btnMap[t]);
+        if (!btn) return;
+        const active = t === tab;
+        btn.style.background = active ? colorMap[t].bg : 'var(--glass)';
+        btn.style.color = active ? colorMap[t].color : 'var(--muted)';
+        btn.style.borderColor = active ? colorMap[t].border : 'var(--border)';
+      });
+      if (tab === 'analysis') renderAnalysis();
+    }
 
-async function loadRegs(eventId) {
-  const tbody = document.getElementById('regsDetailBody');
-  tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
-  try {
-    const r = await fetch(`/api/department-head/event-registrations/${eventId}`);
-    const regs = await r.json();
-    window._currentRegs = regs; // cache for analysis tab
-    if (!regs.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No registrations yet</td></tr>'; return; }
-    tbody.innerHTML = regs.map((reg, i) => `
+    async function loadRegs(eventId) {
+      const tbody = document.getElementById('regsDetailBody');
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
+      try {
+        const r = await fetch(`/api/department-head/event-registrations/${eventId}`);
+        const regs = await r.json();
+        window._currentRegs = regs; // cache for analysis tab
+        if (!regs.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No registrations yet</td></tr>'; return; }
+        tbody.innerHTML = regs.map((reg, i) => `
       <tr>
-        <td>${i+1}</td>
-        <td>${reg.studentName||'—'}</td>
-        <td><span class="badge badge-green">${reg.pinNumber||'—'}</span></td>
+        <td>${i + 1}</td>
+        <td>${reg.studentName || '—'}</td>
+        <td><span class="badge badge-green">${reg.pinNumber || '—'}</span></td>
         <td>${reg.attended ? '<span class="badge badge-green">✅ Present</span>' : '<span class="badge" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);">Absent</span>'}</td>
         <td>${reg.score ?? '—'}</td>
       </tr>`).join('');
-  } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
-}
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
+    }
 
-function renderAnalysis() {
-  const ALL_BRANCHES = ['CSE','ECE','EEE','MECH','CIVIL','IT','AIDS','AIML','MCA','MBA'];
-  const tbody   = document.getElementById('analysisBody');
-  const totalEl = document.getElementById('analysisTotalRow');
-  const regs    = window._currentRegs || [];
+    function renderAnalysis() {
+      const ALL_BRANCHES = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'DS', 'AIML', 'MCA', 'MBA'];
+      const tbody = document.getElementById('analysisBody');
+      const totalEl = document.getElementById('analysisTotalRow');
+      const regs = window._currentRegs || [];
 
-  const counts = {};
-  ALL_BRANCHES.forEach(b => counts[b] = 0);
-  regs.forEach(r => {
-    const b = (r.branch || '').toUpperCase();
-    if (counts[b] !== undefined) counts[b]++;
-  });
+      const counts = {};
+      ALL_BRANCHES.forEach(b => counts[b] = 0);
+      regs.forEach(r => {
+        const b = (r.branch || '').toUpperCase();
+        if (counts[b] !== undefined) counts[b]++;
+      });
 
-  const max   = Math.max(...Object.values(counts), 1);
-  const total = Object.values(counts).reduce((a,b) => a+b, 0);
+      const max = Math.max(...Object.values(counts), 1);
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
-  tbody.innerHTML = ALL_BRANCHES.map(b => {
-    const count = counts[b];
-    const pct   = Math.round((count / max) * 100);
-    return `
+      tbody.innerHTML = ALL_BRANCHES.map(b => {
+        const count = counts[b];
+        const pct = Math.round((count / max) * 100);
+        return `
       <tr>
         <td><span class="badge badge-blue">${b}</span></td>
-        <td style="text-align:center;font-weight:700;color:${count>0?'#2E7D32':'var(--muted)'};">${count}</td>
+        <td style="text-align:center;font-weight:700;color:${count > 0 ? '#2E7D32' : 'var(--muted)'};">${count}</td>
         <td style="min-width:200px;">
           <div style="background:#f1f5f9;border-radius:6px;height:18px;overflow:hidden;">
             <div style="width:${pct}%;height:100%;
-                        background:${count>0?'linear-gradient(90deg,#1E88E5,#0F4C81)':'rgba(0,0,0,0.06)'};
+                        background:${count > 0 ? 'linear-gradient(90deg,#1E88E5,#0F4C81)' : 'rgba(0,0,0,0.06)'};
                         border-radius:6px;transition:width 0.6s ease;"></div>
           </div>
         </td>
       </tr>`;
-  }).join('');
+      }).join('');
 
-  totalEl.textContent = `Total: ${total} registrations across ${ALL_BRANCHES.filter(b=>counts[b]>0).length} branches`;
-}
+      totalEl.textContent = `Total: ${total} registrations across ${ALL_BRANCHES.filter(b => counts[b] > 0).length} branches`;
+    }
 
-async function loadFeedback(eventId) {
-  const tbody = document.getElementById('fbDetailBody');
-  tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
-  try {
-    const r = await fetch(`/api/department-head/event-feedback/${eventId}`);
-    const fb = await r.json();
-    if (!fb.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback submitted yet</td></tr>'; return; }
-    const stars = n => '⭐'.repeat(n);
-    tbody.innerHTML = fb.map((f, i) => `
+    async function loadFeedback(eventId) {
+      const tbody = document.getElementById('fbDetailBody');
+      tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
+      try {
+        const r = await fetch(`/api/department-head/event-feedback/${eventId}`);
+        const fb = await r.json();
+        if (!fb.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback submitted yet</td></tr>'; return; }
+        const stars = n => '⭐'.repeat(n);
+        tbody.innerHTML = fb.map((f, i) => `
       <tr>
-        <td>${i+1}</td>
-        <td>${f.studentName||'—'}</td>
+        <td>${i + 1}</td>
+        <td>${f.studentName || '—'}</td>
         <td>${stars(f.rating)} <span style="color:var(--gold);font-weight:700;">${f.rating}/5</span></td>
-        <td style="max-width:300px;">${f.comment||'—'}</td>
+        <td style="max-width:300px;">${f.comment || '—'}</td>
         <td>${f.submittedAt ? new Date(f.submittedAt).toLocaleDateString() : '—'}</td>
       </tr>`).join('');
-  } catch(e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
-}
-
-
-async function loadDHProfile() {
-  try {
-    const res = await fetch(`/api/department-head/profile/${currentHod._id}`);
-    if (!res.ok) return;
-    const p = await res.json();
-    currentHod = { ...currentHod, ...p };
-    localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
-    const name = p.fullName || p.username || 'HOD';
-    document.getElementById('dhProfileName').textContent   = name;
-    document.getElementById('dhProfileAvatar').textContent = name.charAt(0).toUpperCase();
-    document.getElementById('dhInfoUsername').textContent  = p.username   || '—';
-    document.getElementById('dhInfoDept').textContent      = p.department || '—';
-    document.getElementById('dhInfoYear').textContent      = p.year === '2-3-4' ? 'Years 2, 3 & 4' : (p.year ? `Year ${p.year}` : '—');
-    document.getElementById('dhInfoId').textContent        = p._id        || '—';
-    document.getElementById('dhEditName').value  = p.fullName || '';
-    document.getElementById('dhEditEmail').value = p.email    || '';
-    document.getElementById('dhEditPhone').value = p.phone    || '';
-    if (p.signatureUrl) {
-      document.getElementById('dhSigPreviewImg').src = p.signatureUrl;
-      document.getElementById('dhSigPreviewWrap').style.display = 'block';
-    } else {
-      document.getElementById('dhSigPreviewWrap').style.display = 'none';
+      } catch (e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
     }
-  } catch(e) { console.error('Profile load error:', e); }
-}
 
-async function updateDHProfile() {
-  const fullName = document.getElementById('dhEditName').value.trim();
-  const email    = document.getElementById('dhEditEmail').value.trim();
-  const phone    = document.getElementById('dhEditPhone').value.trim();
-  if (!fullName) return showDHProfileMsg('Please enter your full name.', 'error');
-  try {
-    const res = await fetch(`/api/department-head/profile/${currentHod._id}`, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ fullName, email, phone })
+
+    async function loadDHProfile() {
+      try {
+        const res = await fetch(`/api/department-head/profile/${currentHod._id}`);
+        if (!res.ok) return;
+        const p = await res.json();
+        currentHod = { ...currentHod, ...p };
+        localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
+        const name = p.fullName || p.username || 'HOD';
+        document.getElementById('dhProfileName').textContent = name;
+        document.getElementById('dhProfileAvatar').textContent = name.charAt(0).toUpperCase();
+        document.getElementById('dhInfoUsername').textContent = p.username || '—';
+        document.getElementById('dhInfoDept').textContent = p.department || '—';
+        document.getElementById('dhInfoYear').textContent = p.year === '2-3-4' ? 'Years 2, 3 & 4' : (p.year ? `Year ${p.year}` : '—');
+        document.getElementById('dhEditName').value = p.fullName || '';
+        document.getElementById('dhEditEmail').value = p.email || '';
+        document.getElementById('dhEditPhone').value = p.phone || '';
+        if (p.signatureUrl) {
+          document.getElementById('dhSigPreviewImg').src = p.signatureUrl;
+          document.getElementById('dhSigPreviewWrap').style.display = 'block';
+        } else {
+          document.getElementById('dhSigPreviewWrap').style.display = 'none';
+        }
+      } catch (e) { console.error('Profile load error:', e); }
+    }
+
+    async function updateDHProfile() {
+      const fullName = document.getElementById('dhEditName').value.trim();
+      const email = document.getElementById('dhEditEmail').value.trim();
+      const phone = document.getElementById('dhEditPhone').value.trim();
+      if (!fullName) return showDHProfileMsg('Please enter your full name.', 'error');
+      try {
+        const res = await fetch(`/api/department-head/profile/${currentHod._id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, phone })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentHod = { ...currentHod, fullName, email, phone };
+          localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
+          document.getElementById('dhProfileName').textContent = fullName;
+          document.getElementById('profileName').textContent = fullName;
+          document.getElementById('sidebarAvatar').textContent = fullName.charAt(0).toUpperCase();
+          showDHProfileMsg('✅ Profile updated successfully!', 'success');
+        } else { showDHProfileMsg(data.message || 'Update failed.', 'error'); }
+      } catch (e) { showDHProfileMsg('Network error.', 'error'); }
+    }
+
+    function showDHProfileMsg(text, type) {
+      const el = document.getElementById('dhProfileMsg');
+      el.textContent = text; el.style.display = 'block';
+      el.style.background = type === 'success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+      el.style.border = type === 'success' ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(239,68,68,0.35)';
+      el.style.color = type === 'success' ? '#16a34a' : '#dc2626';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    async function changeDHPassword() {
+      const current = document.getElementById('dhCurrentPwd').value.trim();
+      const newPwd = document.getElementById('dhNewPwd').value.trim();
+      const confirm = document.getElementById('dhConfirmPwd').value.trim();
+      if (!current || !newPwd || !confirm) return alert('Please fill in all password fields.');
+      if (newPwd.length < 6) return alert('New password must be at least 6 characters.');
+      if (newPwd !== confirm) return alert('Passwords do not match.');
+      try {
+        const res = await fetch(`/api/department-head/change-password/${currentHod._id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ currentPassword: current, newPassword: newPwd })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          ['dhCurrentPwd', 'dhNewPwd', 'dhConfirmPwd'].forEach(id => document.getElementById(id).value = '');
+          alert('✅ Password changed successfully!');
+        } else { alert('❌ ' + (data.message || 'Failed.')); }
+      } catch (e) { alert('Network error.'); }
+    }
+
+    function dhTogglePwd(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      btn.textContent = isHidden ? '🙈' : '👁️';
+    }
+
+    let dhSigBase64 = null;
+
+    function dhPreviewSignature(event) {
+      const file = event.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        dhSigBase64 = e.target.result;
+        document.getElementById('dhSigNewImg').src = dhSigBase64;
+        document.getElementById('dhSigNewPreview').style.display = 'block';
+        document.getElementById('dhSigSaveBtn').style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function dhSaveSignature() {
+      if (!dhSigBase64) return;
+      const btn = document.getElementById('dhSigSaveBtn');
+      btn.disabled = true; btn.textContent = '⏳ Saving…';
+      try {
+        const res = await fetch(`/api/department-head/signature/${currentHod._id}`, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ signatureBase64: dhSigBase64 })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          currentHod.signatureUrl = data.signatureUrl;
+          localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
+          document.getElementById('dhSigPreviewImg').src = data.signatureUrl;
+          document.getElementById('dhSigPreviewWrap').style.display = 'block';
+          document.getElementById('dhSigNewPreview').style.display = 'none';
+          document.getElementById('dhSigSaveBtn').style.display = 'none';
+          document.getElementById('dhSigFileInput').value = '';
+          dhSigBase64 = null;
+          showDHSigMsg('✅ Signature saved!', 'success');
+        } else { showDHSigMsg(data.message || 'Failed.', 'error'); }
+      } catch (e) { showDHSigMsg('Network error.', 'error'); }
+      finally { btn.disabled = false; btn.textContent = '💾 Save Signature'; }
+    }
+
+    function showDHSigMsg(text, type) {
+      const el = document.getElementById('dhSigMsg');
+      el.textContent = text; el.style.display = 'block';
+      el.style.background = type === 'success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
+      el.style.border = type === 'success' ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(239,68,68,0.35)';
+      el.style.color = type === 'success' ? '#16a34a' : '#dc2626';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    async function logout() {
+      const dhData = JSON.parse(localStorage.getItem('departmentHeadData') || '{}');
+      try {
+        await fetch('/api/department-head/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: dhData.username, id: dhData._id })
+        });
+      } catch (e) {}
+      localStorage.removeItem('departmentHeadData');
+      localStorage.removeItem('role');
+      window.location.href = 'index.html';
+    }
+
+    function getDhId() {
+      try {
+        const d = JSON.parse(localStorage.getItem('departmentHeadData') || '{}');
+        return d._id || d.id || d.departmentHeadId || (window.currentHod ? window.currentHod._id : '');
+      } catch(e) {
+        return window.currentHod ? window.currentHod._id || '' : '';
+      }
+    }
+
+    async function exportNaacReportPDF() {
+      const dhId = getDhId();
+      if (!dhId) return alert('Session expired. Please log in again.');
+
+      try {
+        const res = await fetch(`/api/department-head/naac-report/${dhId}`);
+        if (!res.ok) throw new Error('Failed to fetch NAAC report data from server');
+        const data = await res.json();
+
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          alert('PDF generation library is loading. Please try again in 2 seconds.');
+          return;
+        }
+
+        const doc = new window.jspdf.jsPDF('p', 'mm', 'a4');
+
+        doc.setFillColor(15, 76, 129);
+        doc.rect(0, 0, 210, 32, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.text('NAAC / NBA ACCREDITATION SUMMARY REPORT', 14, 16);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Department: ${data.department || 'N/A'} | Year Group: ${data.academicYearGroup || 'N/A'} | Generated: ${new Date().toLocaleDateString('en-IN')}`, 14, 25);
+
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Executive Summary Stats', 14, 42);
+
+        const s = data.summary || {};
+        const summaryData = [
+          ['Total Faculty Members', String(s.totalFaculty || 0), 'Total Events Conducted', String(s.totalEvents || 0)],
+          ['Total Registrations', String(s.totalRegistrations || 0), 'Total Attended Students', String(s.totalAttended || 0)],
+          ['Overall Attendance %', String(s.overallAttendanceRate || '0%'), 'Avg Student Rating', `${s.overallAvgRating || 'N/A'} / 5.0`],
+          ['External Certs Verified', String(s.otherCertificatesVerified || 0), 'Total Feedbacks Received', String(s.totalFeedbackCount || 0)]
+        ];
+
+        doc.autoTable({
+          startY: 46,
+          head: [['Metric', 'Value', 'Metric', 'Value']],
+          body: summaryData,
+          theme: 'grid',
+          headStyles: { fillColor: [15, 76, 129], textColor: 255, fontStyle: 'bold' },
+          styles: { fontSize: 9 }
+        });
+
+        const finalY = (doc.lastAutoTable ? doc.lastAutoTable.finalY : 90) + 12;
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Department Events Breakdown', 14, finalY);
+
+        const eventRows = (data.events || []).length > 0
+          ? data.events.map((e, idx) => [
+              idx + 1,
+              e.title || 'Untitled',
+              e.category || 'General',
+              e.date || 'N/A',
+              e.registered || 0,
+              e.attended || 0,
+              e.attendanceRate || '0%',
+              e.avgRating || 'N/A'
+            ])
+          : [['-', 'No events recorded for this department', '-', '-', '-', '-', '-', '-']];
+
+        doc.autoTable({
+          startY: finalY + 4,
+          head: [['#', 'Event Title', 'Category', 'Date', 'Reg', 'Att', 'Rate', 'Rating']],
+          body: eventRows,
+          theme: 'striped',
+          headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
+          styles: { fontSize: 8 }
+        });
+
+        doc.save(`NAAC_Accreditation_Report_${data.department || 'Department'}.pdf`);
+      } catch (err) {
+        console.error('PDF export error:', err);
+        alert('Error generating PDF report: ' + err.message);
+      }
+    }
+
+    function exportNaacExcel() {
+      const dhId = getDhId();
+      if (!dhId) return alert('Session expired. Please log in again.');
+      window.location.href = `/api/department-head/export-excel/${dhId}`;
+    }
+    function toggleHodSidebar(e) {
+      if (e && e.stopPropagation) e.stopPropagation();
+      const sidebar = document.querySelector(".sidebar");
+      const backdrop = document.getElementById("hodMobileBackdrop");
+      if (sidebar) sidebar.classList.toggle("show");
+      if (backdrop) backdrop.classList.toggle("active");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const menuItems = document.querySelectorAll('.menu-item, .sidebar button');
+      menuItems.forEach(item => {
+        item.addEventListener('click', () => {
+          if (window.innerWidth <= 900) {
+            const sidebar = document.querySelector('.sidebar');
+            const backdrop = document.getElementById('hodMobileBackdrop');
+            if (sidebar) sidebar.classList.remove('show');
+            if (backdrop) backdrop.classList.remove('active');
+          }
+        });
+      });
     });
-    const data = await res.json();
-    if (res.ok) {
-      currentHod = { ...currentHod, fullName, email, phone };
-      localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
-      document.getElementById('dhProfileName').textContent = fullName;
-      document.getElementById('profileName').textContent   = fullName;
-      document.getElementById('sidebarAvatar').textContent = fullName.charAt(0).toUpperCase();
-      showDHProfileMsg('✅ Profile updated successfully!', 'success');
-    } else { showDHProfileMsg(data.message || 'Update failed.', 'error'); }
-  } catch(e) { showDHProfileMsg('Network error.', 'error'); }
-}
-
-function showDHProfileMsg(text, type) {
-  const el = document.getElementById('dhProfileMsg');
-  el.textContent = text; el.style.display = 'block';
-  el.style.background = type==='success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
-  el.style.border      = type==='success' ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(239,68,68,0.35)';
-  el.style.color       = type==='success' ? '#16a34a' : '#dc2626';
-  setTimeout(() => { el.style.display='none'; }, 4000);
-}
-
-async function changeDHPassword() {
-  const current = document.getElementById('dhCurrentPwd').value.trim();
-  const newPwd  = document.getElementById('dhNewPwd').value.trim();
-  const confirm = document.getElementById('dhConfirmPwd').value.trim();
-  if (!current||!newPwd||!confirm) return alert('Please fill in all password fields.');
-  if (newPwd.length < 6) return alert('New password must be at least 6 characters.');
-  if (newPwd !== confirm) return alert('Passwords do not match.');
-  try {
-    const res = await fetch(`/api/department-head/change-password/${currentHod._id}`, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ currentPassword:current, newPassword:newPwd })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      ['dhCurrentPwd','dhNewPwd','dhConfirmPwd'].forEach(id => document.getElementById(id).value='');
-      alert('✅ Password changed successfully!');
-    } else { alert('❌ ' + (data.message||'Failed.')); }
-  } catch(e) { alert('Network error.'); }
-}
-
-function dhTogglePwd(inputId, btn) {
-  const input = document.getElementById(inputId);
-  const isHidden = input.type === 'password';
-  input.type = isHidden ? 'text' : 'password';
-  btn.textContent = isHidden ? '🙈' : '👁️';
-}
-
-let dhSigBase64 = null;
-
-function dhPreviewSignature(event) {
-  const file = event.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    dhSigBase64 = e.target.result;
-    document.getElementById('dhSigNewImg').src = dhSigBase64;
-    document.getElementById('dhSigNewPreview').style.display = 'block';
-    document.getElementById('dhSigSaveBtn').style.display    = 'block';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function dhSaveSignature() {
-  if (!dhSigBase64) return;
-  const btn = document.getElementById('dhSigSaveBtn');
-  btn.disabled = true; btn.textContent = '⏳ Saving…';
-  try {
-    const res = await fetch(`/api/department-head/signature/${currentHod._id}`, {
-      method:'PUT', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ signatureBase64: dhSigBase64 })
-    });
-    const data = await res.json();
-    if (res.ok) {
-      currentHod.signatureUrl = data.signatureUrl;
-      localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
-      document.getElementById('dhSigPreviewImg').src = data.signatureUrl;
-      document.getElementById('dhSigPreviewWrap').style.display = 'block';
-      document.getElementById('dhSigNewPreview').style.display  = 'none';
-      document.getElementById('dhSigSaveBtn').style.display     = 'none';
-      document.getElementById('dhSigFileInput').value = '';
-      dhSigBase64 = null;
-      showDHSigMsg('✅ Signature saved!', 'success');
-    } else { showDHSigMsg(data.message||'Failed.', 'error'); }
-  } catch(e) { showDHSigMsg('Network error.', 'error'); }
-  finally { btn.disabled=false; btn.textContent='💾 Save Signature'; }
-}
-
-function showDHSigMsg(text, type) {
-  const el = document.getElementById('dhSigMsg');
-  el.textContent = text; el.style.display = 'block';
-  el.style.background = type==='success' ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)';
-  el.style.border      = type==='success' ? '1px solid rgba(34,197,94,0.35)' : '1px solid rgba(239,68,68,0.35)';
-  el.style.color       = type==='success' ? '#16a34a' : '#dc2626';
-  setTimeout(() => { el.style.display='none'; }, 4000);
-}
-
-function logout() {
-  localStorage.removeItem('departmentHeadData');
-  localStorage.removeItem('role');
-  window.location.href = 'index.html';
-}
-</script>
+  </script>
 </body>
+
 </html>
-</div>

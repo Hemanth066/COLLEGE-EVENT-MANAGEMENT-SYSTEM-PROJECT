@@ -35,7 +35,7 @@ async function run() {
   console.log('Login credentials:');
   console.log('  Username: hod.cse  | Password: hod123  (for CSE dept)');
   console.log('  Username: hod.ece  | Password: hod123  (for ECE dept)');
-  console.log('  ... etc for EEE, MECH, CIVIL, IT, AIDS, AIML');
+  console.log('  ... etc for EEE, MECH, CIVIL, IT, DS, AIML');
 
   process.exit(0);
 }
