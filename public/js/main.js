@@ -12,14 +12,7 @@ function getActiveSession() {
 function openLogin(type) {
   const active = getActiveSession();
   if (active) {
-    const goToDashboard = confirm(
-      `⚠️ An active session is already logged in on this device (${active.role}).\n\n` +
-      `Only one active login session at a time is allowed on this device. You must log out of your current session first before logging into another portal or account.\n\n` +
-      `Click OK to go to your active ${active.role} dashboard.`
-    );
-    if (goToDashboard) {
-      window.location.href = active.url;
-    }
+    alert(`⚠️ An active session (${active.role}) is already running on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
     return;
   }
 
@@ -36,8 +29,7 @@ function goBack() {
 async function login() {
   const active = getActiveSession();
   if (active) {
-    alert(`⚠️ A ${active.role} session is already logged in on this device. Please log out from that dashboard first!`);
-    window.location.href = active.url;
+    alert(`⚠️ An active session (${active.role}) is already running on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
     return;
   }
 
