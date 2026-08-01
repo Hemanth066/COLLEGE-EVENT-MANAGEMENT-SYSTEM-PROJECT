@@ -40,13 +40,7 @@ function checkActiveTab() {
   });
 }
 
-async function openLogin(type) {
-  const activeRole = await checkActiveTab();
-  if (activeRole) {
-    alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
-    return;
-  }
-
+function openLogin(type) {
   role = type;
   document.getElementById("card").classList.add("flipped");
     document.getElementById("loginTitle").innerText =
@@ -58,12 +52,6 @@ function goBack() {
 }
 
 async function login() {
-  const activeRole = await checkActiveTab();
-  if (activeRole) {
-    alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
-    return;
-  }
-
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
 

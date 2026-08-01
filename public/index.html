@@ -1570,13 +1570,7 @@
     }
 
     let currentRole = '';
-    async function openLogin(role) {
-      const activeRole = await checkActiveTab();
-      if (activeRole) {
-        alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
-        return;
-      }
-
+    function openLogin(role) {
       currentRole = role;
       document.getElementById('modalIcon').textContent = role === 'faculty' ? '👨‍🏫' : role === 'admin' ? '🛡️' : role === 'hod' ? '🏛️' : role === 'dean' ? '👔' : '👨‍🎓';
       document.getElementById('loginTitle').textContent = role === 'faculty' ? 'Faculty Login' : role === 'admin' ? 'Admin Login' : role === 'hod' ? 'HOD Login' : role === 'dean' ? 'Dean Login' : 'Student Login';
@@ -1608,12 +1602,6 @@
 
     async function login(e) {
       e.preventDefault();
-      const activeRole = await checkActiveTab();
-      if (activeRole) {
-        alert(`⚠️ An active session (${activeRole}) is currently running in an open tab on this device.\n\nPlease log out or close your recent active session/tab first before logging into another portal!`);
-        return;
-      }
-
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       if (!username || !password) return alert('Please enter both username and password');
