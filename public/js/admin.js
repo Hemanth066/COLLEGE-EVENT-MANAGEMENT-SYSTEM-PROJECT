@@ -1,10 +1,16 @@
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted || !localStorage.getItem('adminData')) {
+    window.location.replace('index.html');
+  }
+});
+
 let currentAdmin = null;
 let allFaculty = [], allStudents = [], allEvents = [], allRegs = [], allCoordinators = [], allBranches = [];
 let modalMode = '', modalId = '';
 
 document.addEventListener('DOMContentLoaded', () => {
   currentAdmin = JSON.parse(localStorage.getItem('adminData'));
-  if (!currentAdmin) { window.location.href = 'index.html'; return; }
+  if (!currentAdmin) { window.location.replace('index.html'); return; }
   document.getElementById('adminName').textContent = currentAdmin.fullName || currentAdmin.username || 'Admin';
   loadStats();
   loadBranches();
@@ -41,7 +47,7 @@ async function logout() {
     });
   } catch (e) {}
   localStorage.removeItem('adminData');
-  window.location.href = 'index.html';
+  window.location.replace('index.html');
 }
 
 // ── STATS ──────────────────────────────────────────────

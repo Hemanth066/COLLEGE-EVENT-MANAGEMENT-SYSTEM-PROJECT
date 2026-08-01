@@ -1,3 +1,9 @@
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted || !localStorage.getItem('departmentHeadData')) {
+    window.location.replace('index.html');
+  }
+});
+
 let currentDepartmentHead = null;
 let allFaculty = [], allStudents = [], allEvents = [];
 let selectedFacultyId = null;
@@ -5,7 +11,7 @@ let selectedFacultyId = null;
 document.addEventListener('DOMContentLoaded', async () => {
   currentDepartmentHead = JSON.parse(localStorage.getItem('departmentHeadData'));
   if (!currentDepartmentHead) {
-    window.location.href = 'index.html';
+    window.location.replace('index.html');
     return;
   }
   
@@ -166,5 +172,5 @@ async function logout() {
   } catch (e) {}
   localStorage.removeItem('departmentHeadData');
   localStorage.removeItem('role');
-  window.location.href = 'index.html';
+  window.location.replace('index.html');
 }

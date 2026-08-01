@@ -2142,9 +2142,15 @@
           if (window.innerWidth <= 900) closeSidebar();
         }
 
+        window.addEventListener('pageshow', (event) => {
+          if (event.persisted || !localStorage.getItem('studentData')) {
+            window.location.replace('/index.html');
+          }
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
           const stored = localStorage.getItem('studentData');
-          if (!stored) { window.location.href = '/index.html'; return; }
+          if (!stored) { window.location.replace('/index.html'); return; }
           studentData = JSON.parse(stored);
           const name = studentData.fullName || studentData.username || 'Student';
           document.getElementById('userName').textContent = name;
@@ -3122,7 +3128,7 @@
           } catch (e) {}
           localStorage.removeItem('studentData');
           localStorage.removeItem('selectedEventId');
-          window.location.href = '/index.html';
+          window.location.replace('/index.html');
         }
 
         function togglePwd(inputId, btn) {

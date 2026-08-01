@@ -3,6 +3,12 @@ let allEvents = [];
 let allRegistrations = [];
 let currentFaculty = null;
 
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted || (!localStorage.getItem('facultyData') && !localStorage.getItem('user'))) {
+    window.location.replace('index.html');
+  }
+});
+
 // Load data on page load
 document.addEventListener("DOMContentLoaded", async () => {
   // Get current faculty from localStorage - check both old and new keys
@@ -14,8 +20,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   // If no faculty logged in, redirect to login
   if (!currentFaculty) {
-    alert("âŒ Please login first");
-    window.location.href = "index.html";
+    window.location.replace("index.html");
     return;
   }
   
@@ -631,7 +636,7 @@ async function logout() {
       });
     } catch (e) {}
     localStorage.clear();
-    window.location.href = "index.html";
+    window.location.replace("index.html");
   }
 }
 

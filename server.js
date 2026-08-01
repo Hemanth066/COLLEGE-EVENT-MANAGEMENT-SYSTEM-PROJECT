@@ -12,11 +12,14 @@ app.use(express.json());
 // Initialize Email Service (optional - will work without it)
 
 
-// Serve static files with proper UTF-8 encoding
+// Serve static files with proper UTF-8 encoding & no-cache headers for HTML
 app.use(express.static("public", {
   setHeaders: (res, path) => {
     if (path.endsWith('.html')) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
     if (path.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript; charset=utf-8');

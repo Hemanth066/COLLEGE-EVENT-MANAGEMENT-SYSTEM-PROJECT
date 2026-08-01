@@ -1059,13 +1059,19 @@
 
   <!-- SCRIPT LOGIC -->
   <script>
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted || (!localStorage.getItem('deanData') && !localStorage.getItem('user'))) {
+        window.location.replace('index.html');
+      }
+    });
+
     let currentDean = null;
     let allFacultyList = [], allCoordinatorsList = [], allStudentsList = [], allEventsList = [];
     let displayedStudents = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
       currentDean = JSON.parse(localStorage.getItem('deanData')) || JSON.parse(localStorage.getItem('user'));
-      if (!currentDean) { window.location.href = 'index.html'; return; }
+      if (!currentDean) { window.location.replace('index.html'); return; }
 
       updateDeanUI(currentDean);
       await loadStats();
@@ -1919,7 +1925,7 @@
       } catch (e) {}
       localStorage.removeItem('deanData');
       localStorage.removeItem('role');
-      window.location.href = 'index.html';
+      window.location.replace('index.html');
     }
 
     async function exportDeanNaacReportPDF() {
