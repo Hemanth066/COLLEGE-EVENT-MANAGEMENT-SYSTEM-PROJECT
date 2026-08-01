@@ -1528,8 +1528,30 @@
     function scrollTo(selector) { document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth' }); }
 
     // ── LOGIN MODAL ──
+    function getActiveSession() {
+      if (localStorage.getItem('studentData')) return { role: 'Student', url: 'studentDashboard.html' };
+      if (localStorage.getItem('facultyData')) return { role: 'Faculty', url: 'facultyDashboard.html' };
+      if (localStorage.getItem('departmentHeadData')) return { role: 'Department Head / HOD', url: 'departmentHeadDashboard.html' };
+      if (localStorage.getItem('adminData')) return { role: 'Admin', url: 'adminDashboard.html' };
+      if (localStorage.getItem('deanData')) return { role: 'Dean', url: 'deanDashboard.html' };
+      return null;
+    }
+
     let currentRole = '';
     function openLogin(role) {
+      const active = getActiveSession();
+      if (active) {
+        const goToDashboard = confirm(
+          `⚠️ An active session is already logged in on this device (${active.role}).\n\n` +
+          `Only one active login session at a time is allowed on this device. You must log out of your current session first before logging into another portal or account.\n\n` +
+          `Click OK to go to your active ${active.role} dashboard.`
+        );
+        if (goToDashboard) {
+          window.location.href = active.url;
+        }
+        return;
+      }
+
       currentRole = role;
       document.getElementById('modalIcon').textContent = role === 'faculty' ? '👨‍🏫' : role === 'admin' ? '🛡️' : role === 'hod' ? '🏛️' : role === 'dean' ? '👔' : '👨‍🎓';
       document.getElementById('loginTitle').textContent = role === 'faculty' ? 'Faculty Login' : role === 'admin' ? 'Admin Login' : role === 'hod' ? 'HOD Login' : role === 'dean' ? 'Dean Login' : 'Student Login';
@@ -1561,6 +1583,13 @@
 
     async function login(e) {
       e.preventDefault();
+      const active = getActiveSession();
+      if (active) {
+        alert(`⚠️ A ${active.role} session is already logged in on this device. Please log out from that dashboard first!`);
+        window.location.href = active.url;
+        return;
+      }
+
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
       if (!username || !password) return alert('Please enter both username and password');
@@ -1572,6 +1601,12 @@
         });
         const data = await res.json();
         if (res.ok) {
+          localStorage.removeItem('studentData');
+          localStorage.removeItem('facultyData');
+          localStorage.removeItem('departmentHeadData');
+          localStorage.removeItem('adminData');
+          localStorage.removeItem('deanData');
+
           if (currentRole === 'faculty') {
             localStorage.setItem('facultyData', JSON.stringify(data.faculty));
             localStorage.setItem('role', 'faculty');
@@ -1593,7 +1628,35 @@
             localStorage.setItem('role', 'student');
             window.location.href = 'studentDashboard.html';
           }
-        } else { alert(data.message || 'Login failed'); }
+        } else {
+          if (data.isAlreadyLoggedIn) {
+            const resetSession = confirm(
+              (data.message || "⚠️ Account is already logged in on another device or tab. Please log out from the last page first before logging in!") +
+              "\n\nDid you close your last browser without logging out? Click OK to Force Clear your previous session and log in now, or Cancel to go back."
+            );
+            if (resetSession) {
+              let forceEndpoint = "/api/student/force-logout";
+              if (currentRole === "faculty") forceEndpoint = "/api/faculty/force-logout";
+              else if (currentRole === "admin") forceEndpoint = "/api/admin/force-logout";
+              else if (currentRole === "hod") forceEndpoint = "/api/department-head/force-logout";
+
+              const forceRes = await fetch(forceEndpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+              });
+              const forceData = await forceRes.json();
+              if (forceRes.ok) {
+                alert(forceData.message || "Session cleared! Attempting login again...");
+                login(e);
+              } else {
+                alert(forceData.message || "Failed to clear session.");
+              }
+            }
+          } else {
+            alert(data.message || 'Login failed');
+          }
+        }
       } catch (err) { alert('Server connection error. Please try again.'); }
     }
   </script>

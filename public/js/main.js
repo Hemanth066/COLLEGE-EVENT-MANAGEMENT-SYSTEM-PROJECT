@@ -1,6 +1,28 @@
 let role = "";
 
+function getActiveSession() {
+  if (localStorage.getItem('studentData')) return { role: 'Student', url: 'studentDashboard.html' };
+  if (localStorage.getItem('facultyData')) return { role: 'Faculty', url: 'facultyDashboard.html' };
+  if (localStorage.getItem('departmentHeadData')) return { role: 'Department Head / HOD', url: 'departmentHeadDashboard.html' };
+  if (localStorage.getItem('adminData')) return { role: 'Admin', url: 'adminDashboard.html' };
+  if (localStorage.getItem('deanData')) return { role: 'Dean', url: 'deanDashboard.html' };
+  return null;
+}
+
 function openLogin(type) {
+  const active = getActiveSession();
+  if (active) {
+    const goToDashboard = confirm(
+      `⚠️ An active session is already logged in on this device (${active.role}).\n\n` +
+      `Only one active login session at a time is allowed on this device. You must log out of your current session first before logging into another portal or account.\n\n` +
+      `Click OK to go to your active ${active.role} dashboard.`
+    );
+    if (goToDashboard) {
+      window.location.href = active.url;
+    }
+    return;
+  }
+
   role = type;
   document.getElementById("card").classList.add("flipped");
     document.getElementById("loginTitle").innerText =
@@ -12,6 +34,13 @@ function goBack() {
 }
 
 async function login() {
+  const active = getActiveSession();
+  if (active) {
+    alert(`⚠️ A ${active.role} session is already logged in on this device. Please log out from that dashboard first!`);
+    window.location.href = active.url;
+    return;
+  }
+
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
 
@@ -37,6 +66,12 @@ async function login() {
     const data = await response.json();
 
     if (response.ok) {
+      localStorage.removeItem('studentData');
+      localStorage.removeItem('facultyData');
+      localStorage.removeItem('departmentHeadData');
+      localStorage.removeItem('adminData');
+      localStorage.removeItem('deanData');
+
       if (role === "faculty") {
         localStorage.setItem("facultyData", JSON.stringify(data.faculty));
         localStorage.setItem("role", "faculty");
