@@ -52,7 +52,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB Limit
   fileFilter: (_req, file, cb) => {
     const allowed = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
     if (allowed.includes(file.mimetype)) cb(null, true);
@@ -372,11 +372,27 @@ router.get('/student/:pin/:branch', async (req, res) => {
 });
 
 // POST /api/other-certs/upload/:certId — student uploads their certificate
-router.post('/upload/:certId', upload.single('certificate'), async (req, res) => {
+router.post('/upload/:certId', (req, res, next) => {
+  upload.single('certificate')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE' || (err.message && err.message.includes('File too large'))) {
+        return res.status(400).json({ message: 'Please compress your PDF to under 2MB and upload' });
+      }
+      return res.status(400).json({ message: err.message || 'File upload error' });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const { studentPin, studentName, branch } = req.body;
     if (!studentPin || !req.file) {
       return res.status(400).json({ message: 'Student PIN and certificate file are required' });
+    }
+
+    // 2 MB Size check limit safeguard
+    if (req.file.size > 2 * 1024 * 1024) {
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      return res.status(400).json({ message: 'Please compress your PDF to under 2MB and upload' });
     }
 
     const cert = await OtherCertificate.findById(req.params.certId);

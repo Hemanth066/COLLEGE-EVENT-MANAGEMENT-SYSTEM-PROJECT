@@ -135,6 +135,15 @@ async function ocStudentUpload(input) {
   var allowed = ['application/pdf','image/jpeg','image/jpg','image/png'];
   if (!allowed.includes(file.type)) {
     alert('Only PDF, JPG, JPEG, PNG files are allowed.');
+    input.value = '';
+    return;
+  }
+
+  // 2MB size limit (2 * 1024 * 1024 bytes)
+  var MAX_FILE_SIZE = 2 * 1024 * 1024;
+  if (file.size > MAX_FILE_SIZE) {
+    alert('Please compress your PDF to under 2MB and upload');
+    input.value = '';
     return;
   }
 
