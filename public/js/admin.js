@@ -68,6 +68,64 @@ function showTab(tab, element) {
   if (tab === 'hods')          loadHods();
   if (tab === 'deans')         loadDeans();
   if (tab === 'coordinators')  loadCoordinators();
+  if (tab === 'settings')      loadSettings();
+}
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/admin/settings');
+    const data = await res.json();
+    const input = document.getElementById('certRetentionInput');
+    if (input && data.certificateRetentionDays) {
+      input.value = data.certificateRetentionDays;
+    }
+  } catch (e) {
+    console.error('Error loading settings:', e);
+  }
+}
+
+async function saveCertificateSettings() {
+  const input = document.getElementById('certRetentionInput');
+  if (input === null) return;
+  const days = Number(input.value);
+  if (isNaN(days) || days < 0) {
+    showPopup('⚠️', 'Invalid Input', 'Please enter a valid number (0 or greater) for retention days.', 'error');
+    return;
+  }
+  try {
+    showPopup('⏳', 'Saving...', 'Updating certificate retention period...', 'info');
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ certificateRetentionDays: days })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showPopup('✅', 'Settings Saved', `Certificate retention set to ${days} days.`, 'success');
+    } else {
+      showPopup('❌', 'Error', data.message || 'Failed to save settings.', 'error');
+    }
+  } catch (e) {
+    showPopup('❌', 'Error', 'Failed to save settings: ' + e.message, 'error');
+  }
+}
+
+async function triggerManualCleanup() {
+  if (!confirm('Are you sure you want to run certificate cleanup now? This will remove generated PDF files older than the retention period from server/Cloudinary storage.')) {
+    return;
+  }
+  try {
+    showPopup('⏳', 'Cleaning Up...', 'Removing expired certificate files...', 'info');
+    const res = await fetch('/api/admin/cleanup-certificates', { method: 'POST' });
+    const data = await res.json();
+    if (res.ok) {
+      showPopup('✅', 'Cleanup Completed', data.message || 'Certificate storage cleanup completed successfully.', 'success');
+    } else {
+      showPopup('❌', 'Cleanup Failed', data.message || 'Error running cleanup.', 'error');
+    }
+  } catch (e) {
+    showPopup('❌', 'Error', 'Cleanup failed: ' + e.message, 'error');
+  }
 }
 
 async function logout() {

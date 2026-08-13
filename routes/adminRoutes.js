@@ -538,4 +538,59 @@ router.delete("/branches/:id", async (req, res) => {
   }
 });
 
+// ── SYSTEM SETTINGS & CERTIFICATE RETENTION ──────────────
+const SystemSetting = require('../models/SystemSetting');
+const { cleanupExpiredCertificates } = require('../utils/certificateCleanup');
+
+router.get("/settings", async (req, res) => {
+  try {
+    let retentionSetting = await SystemSetting.findOne({ key: 'certificateRetentionDays' });
+    if (!retentionSetting) {
+      retentionSetting = await SystemSetting.create({
+        key: 'certificateRetentionDays',
+        value: 30,
+        description: 'Days before generated certificate PDF files are deleted from storage (lazy auto-regenerates on student view)'
+      });
+    }
+    res.json({
+      certificateRetentionDays: Number(retentionSetting.value) || 30
+    });
+  } catch (e) {
+    res.status(500).json({ message: "Error fetching system settings: " + e.message });
+  }
+});
+
+router.post("/settings", async (req, res) => {
+  try {
+    const { certificateRetentionDays } = req.body;
+    let days = Number(certificateRetentionDays);
+    if (isNaN(days) || days < 0) {
+      return res.status(400).json({ message: "Invalid retention days value. Must be 0 or a positive number." });
+    }
+
+    let setting = await SystemSetting.findOneAndUpdate(
+      { key: 'certificateRetentionDays' },
+      { value: days },
+      { new: true, upsert: true }
+    );
+
+    res.json({ message: "System settings updated successfully ✅", certificateRetentionDays: setting.value });
+  } catch (e) {
+    res.status(500).json({ message: "Error updating system settings: " + e.message });
+  }
+});
+
+router.post("/cleanup-certificates", async (req, res) => {
+  try {
+    const result = await cleanupExpiredCertificates();
+    res.json({
+      message: `Certificate cleanup completed ✅ Processed ${result.cleanedCount} expired certificate(s).`,
+      cleanedCount: result.cleanedCount,
+      retentionDays: result.retentionDays
+    });
+  } catch (e) {
+    res.status(500).json({ message: "Error running certificate cleanup: " + e.message });
+  }
+});
+
 module.exports = router;

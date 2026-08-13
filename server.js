@@ -125,6 +125,17 @@ const maxPortAttempts = 5;
 function startServer(port, attemptsLeft) {
   const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+
+    // Schedule Certificate Cleanup (runs once on startup, then every 6 hours)
+    try {
+      const { cleanupExpiredCertificates } = require('./utils/certificateCleanup');
+      cleanupExpiredCertificates().catch(err => console.error('[Cleanup Init Error]:', err.message));
+      setInterval(() => {
+        cleanupExpiredCertificates().catch(err => console.error('[Cleanup Interval Error]:', err.message));
+      }, 6 * 60 * 60 * 1000); // 6 hours
+    } catch (e) {
+      console.error('Failed to initialize certificate cleanup task:', e.message);
+    }
   });
 
   server.on('error', (err) => {

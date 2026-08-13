@@ -2896,13 +2896,13 @@
 
           grid.innerHTML = attended.map(reg => {
             const event = getEventFromReg(reg);
-            if (!event && !reg.certificateUrl) return '';
+            if (!event && !reg.certificateUrl && !reg.hasCertificate) return '';
             const title = event ? event.title : `Past Event (${getEventId(reg).slice(-6)})`;
             const date = event ? (event.date || 'TBA') : 'Past';
             const venue = event ? (event.venue || 'TBA') : '—';
-            const hasCert = !!reg.certificateUrl;
+            const hasCert = !!reg.certificateUrl || reg.hasCertificate;
             const safeTitle = (title || 'Certificate').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            const certUrl = reg.certificateUrl || '';
+            const regId = reg._id;
 
             return `
         <div class="uc-card">
@@ -2923,10 +2923,10 @@
             </div>
             ${hasCert
                 ? `<div class="uc-action-row">
-                   <button class="uc-action" onclick="openCertModal('${certUrl}', '${safeTitle}')">
+                   <button class="uc-action" onclick="accessCertificate('${regId}', 'view', '${safeTitle}')">
                      👁️ View
                    </button>
-                   <button class="uc-action uc-action-green" onclick="downloadCertificate('${certUrl}', '${safeTitle}')">
+                   <button class="uc-action uc-action-green" onclick="accessCertificate('${regId}', 'download', '${safeTitle}')">
                      ⬇️ Download
                    </button>
                  </div>`
@@ -2934,6 +2934,48 @@
           </div>
         </div>`;
           }).join('');
+        }
+
+        async function accessCertificate(target, action, title) {
+          if (!target) {
+            alert('Certificate details missing.');
+            return;
+          }
+
+          let isRegId = /^[0-9a-fA-F]{24}$/.test(target);
+          let finalUrl = target;
+
+          if (isRegId) {
+            try {
+              const res = await fetch('/api/certificates/view/' + target);
+              const data = await res.json();
+              if (!res.ok || !data.certificateUrl) {
+                alert(data.message || 'Failed to access certificate.');
+                return;
+              }
+              finalUrl = data.certificateUrl;
+            } catch (err) {
+              alert('Error loading certificate: ' + err.message);
+              return;
+            }
+          }
+
+          if (action === 'view') {
+            openCertModal(finalUrl, title);
+          } else if (action === 'download') {
+            downloadCertificateFile(finalUrl, title);
+          }
+        }
+
+        function downloadCertificateFile(url, title) {
+          const downloadUrl = url.includes('flags=attachment') ? url : (url + (url.includes('?') ? '&' : '?') + 'flags=attachment');
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = (title || 'Certificate') + '.pdf';
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
         }
 
         function openCertModal(url, title) {

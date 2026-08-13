@@ -320,8 +320,8 @@ const certUrl = cloudinary.url(result.public_id + ".pdf", {
     fs.unlinkSync(filepath);
   }
 
-  // Return Cloudinary URL
-  return result.secure_url;
+  // Return Cloudinary URL and public ID
+  return { url: result.secure_url, publicId: result.public_id };
 }
 
 router.post('/generate/:registrationId', async (req, res) => {
@@ -331,15 +331,18 @@ router.post('/generate/:registrationId', async (req, res) => {
     if (!reg.attended) return res.status(400).json({ message:'Student did not attend this event' });
     const event = await Event.findById(reg.eventId);
     if (!event) return res.status(404).json({ message:'Event not found' });
-    const certUrl = await generateAndSave(reg, event);
-    reg.certificateUrl = certUrl;
+    const { url, publicId } = await generateAndSave(reg, event);
+    reg.certificateUrl = url;
+    reg.certificateCloudinaryPublicId = publicId;
+    reg.certificateGeneratedAt = new Date();
+    reg.hasCertificate = true;
     await reg.save();
     await Notification.create({
       type:'certificate', title:'🏅 Certificate Issued',
       message:`Your certificate for "${event.title}" is ready. Download it from My Certificates.`,
       eventId:event._id, eventTitle:event.title, pinNumber:reg.pinNumber
     }).catch(()=>{});
-    res.json({ message:'Certificate generated ✅', certificateUrl:certUrl });
+    res.json({ message:'Certificate generated ✅', certificateUrl:url });
   } catch(err) {
     console.error('Certificate generation error:', err);
     res.status(500).json({ message:'Failed: ' + err.message });
@@ -355,8 +358,11 @@ router.post('/generate-all/:eventId', async (req, res) => {
     let generated = 0;
     for (const reg of regs) {
       try {
-        const certUrl = await generateAndSave(reg, event);
-        reg.certificateUrl = certUrl;
+        const { url, publicId } = await generateAndSave(reg, event);
+        reg.certificateUrl = url;
+        reg.certificateCloudinaryPublicId = publicId;
+        reg.certificateGeneratedAt = new Date();
+        reg.hasCertificate = true;
         await reg.save();
         await Notification.create({
           type:'certificate', title:'🏅 Certificate Issued',
@@ -369,6 +375,49 @@ router.post('/generate-all/:eventId', async (req, res) => {
     res.json({ message:`Generated ${generated}/${regs.length} certificates ✅` });
   } catch(err) {
     res.status(500).json({ message:err.message });
+  }
+});
+
+// GET /api/certificates/view/:registrationId — View or lazily regenerate certificate
+router.get('/view/:registrationId', async (req, res) => {
+  try {
+    const reg = await Registration.findById(req.params.registrationId);
+    if (!reg) return res.status(404).json({ message: 'Registration record not found' });
+    if (!reg.attended) return res.status(400).json({ message: 'Student did not attend this event' });
+
+    const event = await Event.findById(reg.eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    const SystemSetting = require('../models/SystemSetting');
+    let setting = await SystemSetting.findOne({ key: 'certificateRetentionDays' });
+    let retentionDays = (setting && setting.value !== undefined && setting.value !== null) ? Number(setting.value) : 30;
+    if (isNaN(retentionDays) || retentionDays < 0) retentionDays = 30;
+
+    let isExpired = false;
+    if (reg.certificateGeneratedAt) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - retentionDays);
+      if (reg.certificateGeneratedAt < cutoff) {
+        isExpired = true;
+      }
+    }
+
+    if (reg.certificateUrl && !isExpired) {
+      return res.json({ certificateUrl: reg.certificateUrl, regenerated: false });
+    }
+
+    // Lazy regeneration on-demand!
+    const { url, publicId } = await generateAndSave(reg, event);
+    reg.certificateUrl = url;
+    reg.certificateCloudinaryPublicId = publicId;
+    reg.certificateGeneratedAt = new Date();
+    reg.hasCertificate = true;
+    await reg.save();
+
+    return res.json({ certificateUrl: url, regenerated: true, message: 'Certificate regenerated on-demand' });
+  } catch (err) {
+    console.error('Certificate view error:', err);
+    res.status(500).json({ message: 'Failed to access certificate: ' + err.message });
   }
 });
 

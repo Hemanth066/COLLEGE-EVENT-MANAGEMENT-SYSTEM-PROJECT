@@ -37,6 +37,18 @@ const registrationSchema = new mongoose.Schema({
   certificateUrl: {
     type: String,
     default: null
+  },
+  certificateGeneratedAt: {
+    type: Date,
+    default: null
+  },
+  certificateCloudinaryPublicId: {
+    type: String,
+    default: null
+  },
+  hasCertificate: {
+    type: Boolean,
+    default: false
   }
 });
 
