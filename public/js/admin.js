@@ -75,9 +75,13 @@ async function loadSettings() {
   try {
     const res = await fetch('/api/admin/settings');
     const data = await res.json();
-    const input = document.getElementById('certRetentionInput');
-    if (input && data.certificateRetentionDays) {
-      input.value = data.certificateRetentionDays;
+    const inputEvent = document.getElementById('certRetentionInput');
+    const inputOther = document.getElementById('otherCertRetentionInput');
+    if (inputEvent && data.certificateRetentionDays !== undefined) {
+      inputEvent.value = data.certificateRetentionDays;
+    }
+    if (inputOther && data.otherCertRetentionDays !== undefined) {
+      inputOther.value = data.otherCertRetentionDays;
     }
   } catch (e) {
     console.error('Error loading settings:', e);
@@ -85,23 +89,30 @@ async function loadSettings() {
 }
 
 async function saveCertificateSettings() {
-  const input = document.getElementById('certRetentionInput');
-  if (input === null) return;
-  const days = Number(input.value);
-  if (isNaN(days) || days < 0) {
-    showPopup('⚠️', 'Invalid Input', 'Please enter a valid number (0 or greater) for retention days.', 'error');
+  const inputEvent = document.getElementById('certRetentionInput');
+  const inputOther = document.getElementById('otherCertRetentionInput');
+  if (!inputEvent || !inputOther) return;
+
+  const eventDays = Number(inputEvent.value);
+  const otherDays = Number(inputOther.value);
+
+  if (isNaN(eventDays) || eventDays < 0 || isNaN(otherDays) || otherDays < 0) {
+    showPopup('⚠️', 'Invalid Input', 'Please enter valid numbers (0 or greater) for retention days.', 'error');
     return;
   }
   try {
-    showPopup('⏳', 'Saving...', 'Updating certificate retention period...', 'info');
+    showPopup('⏳', 'Saving...', 'Updating certificate retention settings...', 'info');
     const res = await fetch('/api/admin/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ certificateRetentionDays: days })
+      body: JSON.stringify({
+        certificateRetentionDays: eventDays,
+        otherCertRetentionDays: otherDays
+      })
     });
     const data = await res.json();
     if (res.ok) {
-      showPopup('✅', 'Settings Saved', `Certificate retention set to ${days} days.`, 'success');
+      showPopup('✅', 'Settings Saved', `Event Cert Retention: ${eventDays} days | Other Cert Retention: ${otherDays} days.`, 'success');
     } else {
       showPopup('❌', 'Error', data.message || 'Failed to save settings.', 'error');
     }

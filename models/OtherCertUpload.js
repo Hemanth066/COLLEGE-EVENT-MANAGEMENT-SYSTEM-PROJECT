@@ -7,7 +7,8 @@ const otherCertUploadSchema = new mongoose.Schema({
   studentPin:      { type: String, required: true },
   studentName:     { type: String, default: '' },
   branch:          { type: String, default: '' },
-  fileUrl:         { type: String, required: true },   // Cloudinary URL
+  fileUrl:         { type: String, default: null },   // Cloudinary URL (null when cleaned up)
+  fileBackupId:    { type: mongoose.Schema.Types.ObjectId, default: null }, // GridFS backup ID
   fileName:        { type: String, default: '' },
   status:          { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   marksAwarded:    { type: Number, default: 0 },

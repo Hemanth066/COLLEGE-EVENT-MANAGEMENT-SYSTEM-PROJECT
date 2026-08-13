@@ -208,7 +208,7 @@ router.get("/students/:departmentHeadId", async (req, res) => {
       year: yearQuery 
     })
       .select("-password")
-      .sort({ year: 1, fullName: 1 });
+      .sort({ pinNumber: 1, studentId: 1, username: 1, fullName: 1 });
 
     res.json(students);
   } catch (e) {

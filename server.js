@@ -27,21 +27,21 @@ app.use(express.static("public", {
   }
 }));
 
-// MongoDB Connection with Local Fallback
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/CEM";
-const LOCAL_URI = "mongodb://127.0.0.1:27017/CEM";
+// MongoDB Connection
+const ATLAS_URI = "mongodb+srv://cemuser:Cem12345@cem.c5r0uv0.mongodb.net/CEM?retryWrites=true&w=majority&appName=CEM";
+const MONGO_URI = process.env.MONGO_URI || ATLAS_URI;
 
 async function connectDB() {
   try {
-    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 });
+    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
     console.log("MongoDB Connected ✅ (Atlas/Primary)");
   } catch (err) {
-    console.warn("Primary MongoDB Connection failed. Trying local fallback...");
+    console.warn("Primary MongoDB Connection failed. Retrying Atlas Connection...", err.message);
     try {
-      await mongoose.connect(LOCAL_URI, { serverSelectionTimeoutMS: 5000 });
-      console.log("MongoDB Connected ✅ (Local Fallback)");
+      await mongoose.connect(ATLAS_URI, { serverSelectionTimeoutMS: 10000 });
+      console.log("MongoDB Connected ✅ (Atlas Fallback)");
     } catch (localErr) {
-      console.error("Failed to connect to MongoDB:", localErr.message);
+      console.error("Failed to connect to MongoDB Atlas:", localErr.message);
     }
   }
 }
@@ -128,10 +128,12 @@ function startServer(port, attemptsLeft) {
 
     // Schedule Certificate Cleanup (runs once on startup, then every 6 hours)
     try {
-      const { cleanupExpiredCertificates } = require('./utils/certificateCleanup');
-      cleanupExpiredCertificates().catch(err => console.error('[Cleanup Init Error]:', err.message));
+      const { cleanupExpiredCertificates, cleanupExpiredOtherCertificates } = require('./utils/certificateCleanup');
+      cleanupExpiredCertificates().catch(err => console.error('[Event Cleanup Init Error]:', err.message));
+      cleanupExpiredOtherCertificates().catch(err => console.error('[OtherCert Cleanup Init Error]:', err.message));
       setInterval(() => {
-        cleanupExpiredCertificates().catch(err => console.error('[Cleanup Interval Error]:', err.message));
+        cleanupExpiredCertificates().catch(err => console.error('[Event Cleanup Interval Error]:', err.message));
+        cleanupExpiredOtherCertificates().catch(err => console.error('[OtherCert Cleanup Interval Error]:', err.message));
       }, 6 * 60 * 60 * 1000); // 6 hours
     } catch (e) {
       console.error('Failed to initialize certificate cleanup task:', e.message);

@@ -2,16 +2,16 @@ const fs = require('fs');
 const path = require('path');
 const cloudinary = require('../config/cloudinary');
 const Registration = require('../models/Registration');
+const OtherCertUpload = require('../models/OtherCertUpload');
 const SystemSetting = require('../models/SystemSetting');
 
 /**
- * Clean up generated certificate files that are older than the retention period.
+ * Clean up generated event certificate files that are older than the retention period.
  * Sets certificateUrl to null so storage space is freed up, while preserving
  * hasCertificate = true so the student can lazily regenerate it on demand.
  */
 async function cleanupExpiredCertificates() {
   try {
-    // Get certificate retention days setting (default: 30 days)
     let setting = await SystemSetting.findOne({ key: 'certificateRetentionDays' });
     let retentionDays = (setting && setting.value !== undefined && setting.value !== null) ? Number(setting.value) : 30;
     if (isNaN(retentionDays) || retentionDays < 0) {
@@ -21,7 +21,6 @@ async function cleanupExpiredCertificates() {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
 
-    // Find registrations with non-null certificateUrl created before cutoffDate
     const expiredRegs = await Registration.find({
       certificateUrl: { $ne: null },
       certificateGeneratedAt: { $lt: cutoffDate }
@@ -34,10 +33,8 @@ async function cleanupExpiredCertificates() {
     let cleanedCount = 0;
     for (const reg of expiredRegs) {
       try {
-        // Attempt Cloudinary deletion if public ID is known or extract from URL
         let publicId = reg.certificateCloudinaryPublicId;
         if (!publicId && reg.certificateUrl) {
-          // Attempt to extract Cloudinary public ID from URL if stored
           const match = reg.certificateUrl.match(/CEM_Certificates\/([^/.]+)/);
           if (match) {
             publicId = `CEM_Certificates/${match[1]}`;
@@ -50,7 +47,6 @@ async function cleanupExpiredCertificates() {
           });
         }
 
-        // Reset URL & publicId on registration record, maintain hasCertificate = true
         reg.certificateUrl = null;
         reg.certificateCloudinaryPublicId = null;
         reg.hasCertificate = true;
@@ -62,12 +58,78 @@ async function cleanupExpiredCertificates() {
       }
     }
 
-    console.log(`[Certificate Cleanup] Processed ${cleanedCount} expired certificate(s) (Retention: ${retentionDays} days).`);
+    console.log(`[Event Cert Cleanup] Processed ${cleanedCount} expired certificate(s) (Retention: ${retentionDays} days).`);
     return { cleanedCount, retentionDays };
   } catch (err) {
-    console.error('[Certificate Cleanup] Global Cleanup Error:', err);
+    console.error('[Event Cert Cleanup] Global Cleanup Error:', err);
     throw err;
   }
 }
 
-module.exports = { cleanupExpiredCertificates };
+/**
+ * Clean up approved Other Certificates uploaded by students that are older than the otherCertRetentionDays period after faculty approval (reviewedAt).
+ * Clears fileUrl while keeping status = 'approved', marks, and GridFS backup for lazy on-demand restoration.
+ */
+async function cleanupExpiredOtherCertificates() {
+  try {
+    let setting = await SystemSetting.findOne({ key: 'otherCertRetentionDays' });
+    let retentionDays = (setting && setting.value !== undefined && setting.value !== null) ? Number(setting.value) : 30;
+    if (isNaN(retentionDays) || retentionDays < 0) {
+      retentionDays = 30;
+    }
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+    // Find approved uploads with active fileUrl where reviewedAt is older than cutoffDate
+    const expiredUploads = await OtherCertUpload.find({
+      status: 'approved',
+      fileUrl: { $ne: null },
+      reviewedAt: { $ne: null, $lt: cutoffDate }
+    });
+
+    if (!expiredUploads.length) {
+      return { cleanedCount: 0, retentionDays };
+    }
+
+    let cleanedCount = 0;
+    for (const upload of expiredUploads) {
+      try {
+        // Extract public ID from Cloudinary URL if stored
+        let publicId = null;
+        if (upload.fileUrl) {
+          const match = upload.fileUrl.match(/CEM_OtherCerts\/([^/.]+)/);
+          if (match) {
+            publicId = `CEM_OtherCerts/${match[1]}`;
+          }
+        }
+
+        if (publicId) {
+          await cloudinary.uploader.destroy(publicId, { resource_type: 'auto' }).catch(err => {
+            // Also try raw if auto didn't catch
+            cloudinary.uploader.destroy(publicId, { resource_type: 'raw' }).catch(() => {});
+          });
+        }
+
+        // Set fileUrl to null, maintain approved status and marks
+        upload.fileUrl = null;
+        await upload.save();
+
+        cleanedCount++;
+      } catch (err) {
+        console.error(`[OtherCert Cleanup] Error cleaning upload ${upload._id}:`, err.message);
+      }
+    }
+
+    console.log(`[OtherCert Cleanup] Processed ${cleanedCount} expired certificate(s) (Retention: ${retentionDays} days).`);
+    return { cleanedCount, retentionDays };
+  } catch (err) {
+    console.error('[OtherCert Cleanup] Global Cleanup Error:', err);
+    throw err;
+  }
+}
+
+module.exports = {
+  cleanupExpiredCertificates,
+  cleanupExpiredOtherCertificates
+};

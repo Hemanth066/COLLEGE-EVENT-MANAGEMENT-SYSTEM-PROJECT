@@ -1566,11 +1566,14 @@
 
         <!-- SUB-TAB TOGGLE BUTTONS -->
         <div style="display:flex;justify-content:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
-          <button id="regSubTabRegisteredBtn" onclick="switchRegSubTab('registered')" style="padding:10px 24px;border-radius:12px;border:none;font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;box-shadow:0 4px 15px rgba(59,130,246,0.35);">
+          <button id="regSubTabRegisteredBtn" onclick="switchRegSubTab('registered')"
+            style="padding:10px 24px;border-radius:12px;border:none;font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;box-shadow:0 4px 15px rgba(59,130,246,0.35);">
             📝 Registered Events
           </button>
-          <button id="regSubTabCompletedBtn" onclick="switchRegSubTab('completed')" style="padding:10px 24px;border-radius:12px;border:1px solid var(--border);font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.8);color:var(--muted);">
-            🎓 Completed Events <span id="regSubTabBadge" style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;">0</span>
+          <button id="regSubTabCompletedBtn" onclick="switchRegSubTab('completed')"
+            style="padding:10px 24px;border-radius:12px;border:1px solid var(--border);font-size:14px;font-weight:700;font-family:'Poppins',sans-serif;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.8);color:var(--muted);">
+            🎓 Completed Events <span id="regSubTabBadge"
+              style="background:#16a34a;color:white;padding:2px 8px;border-radius:10px;font-size:11px;margin-left:4px;">0</span>
           </button>
         </div>
 
@@ -1584,7 +1587,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Event</th>
                   <th>Date</th>
                   <th>Time</th>
@@ -1608,7 +1611,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Event Title</th>
                   <th>Venue</th>
                   <th>Date</th>
@@ -1618,7 +1621,10 @@
                 </tr>
               </thead>
               <tbody id="studentCompletedEventsBody">
-                <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">Loading completed events...</td></tr>
+                <tr>
+                  <td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">Loading completed events...
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -1633,7 +1639,8 @@
         </div>
 
         <!-- SEMESTER SCORE SUMMARY CARDS -->
-        <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stats-grid"
+          style="margin-bottom:24px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
           <div class="stat-card">
             <div class="stat-icon-wrap" style="background:rgba(30,136,229,0.15);">📘</div>
             <div class="stat-info">
@@ -1656,6 +1663,13 @@
             </div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon-wrap" style="background:rgba(14,165,233,0.15);">📜</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreOtherCerts">0</div>
+              <div class="stat-label">Other Certificates</div>
+            </div>
+          </div>
+          <div class="stat-card">
             <div class="stat-icon-wrap" style="background:rgba(168,85,247,0.15);">🏆</div>
             <div class="stat-info">
               <div class="stat-value" id="scoreGrandTotal">0</div>
@@ -1672,17 +1686,25 @@
             </div>
             <!-- SEMESTER FILTER BUTTONS -->
             <div style="display:flex; gap:8px; flex-wrap:wrap; margin-left:auto;">
-              <button onclick="switchSemScoreFilter('all', this)" class="sem-score-filter-btn active" style="padding:7px 14px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:white; box-shadow:0 4px 12px rgba(30,136,229,0.3); transition:all 0.2s;">
+              <button onclick="switchSemScoreFilter('all', this)" class="sem-score-filter-btn active"
+                style="padding:7px 14px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:white; box-shadow:0 4px 12px rgba(30,136,229,0.3); transition:all 0.2s;">
                 🌐 All Scores
               </button>
-              <button onclick="switchSemScoreFilter('sem3', this)" class="sem-score-filter-btn" style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+              <button onclick="switchSemScoreFilter('sem3', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
                 📘 3rd Sem
               </button>
-              <button onclick="switchSemScoreFilter('sem4', this)" class="sem-score-filter-btn" style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+              <button onclick="switchSemScoreFilter('sem4', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
                 📗 4th Sem
               </button>
-              <button onclick="switchSemScoreFilter('events', this)" class="sem-score-filter-btn" style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+              <button onclick="switchSemScoreFilter('events', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
                 🎯 Event Scores
+              </button>
+              <button onclick="switchSemScoreFilter('otherCerts', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+                📜 Other Certificates
               </button>
             </div>
           </div>
@@ -1690,10 +1712,10 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Category / Event Title</th>
-                  <th>Date / Source</th>
-                  <th>Venue / Info</th>
+                  <th>Date / Verification</th>
+                  <th>Venue / Branch </th>
                   <th>Score Points</th>
                   <th>Running Total</th>
                 </tr>
@@ -1760,9 +1782,11 @@
             <h3 style="margin-bottom:18px; color:var(--blue-dark);">Scores Breakdown</h3>
             <div style="display:flex; flex-direction:column; gap:12px;">
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);">
-                <span>Average Score</span><strong id="analyticsAvgScore">0</strong></div>
+                <span>Average Score</span><strong id="analyticsAvgScore">0</strong>
+              </div>
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);">
-                <span>Highest Score</span><strong id="analyticsHighScore">0</strong></div>
+                <span>Highest Score</span><strong id="analyticsHighScore">0</strong>
+              </div>
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);"><span>Lowest
                   Score</span><strong id="analyticsLowScore">0</strong></div>
             </div>
@@ -1773,7 +1797,8 @@
             <h3 style="margin-bottom:16px; color:var(--blue-dark);">Marks to 100</h3>
             <div style="display:grid; gap:12px;">
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);">
-                <span>Remaining marks</span><strong id="analyticsRemainingMarks">100</strong></div>
+                <span>Remaining marks</span><strong id="analyticsRemainingMarks">100</strong>
+              </div>
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);"><span>Events
                   needed with attendance only</span><strong id="analyticsEventsNeededAttend">20</strong></div>
               <div style="display:flex; justify-content:space-between; font-size:13px; color:var(--muted);"><span>Events
@@ -2091,9 +2116,14 @@
       </div>
 
       <!-- PAST EVENT DETAIL MODAL -->
-      <div id="pastEventModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
-        <div style="background:white; border-radius:24px; max-width:620px; width:100%; padding:28px; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); max-height:90vh; overflow-y:auto; border:1px solid rgba(226,232,240,0.8);">
-          <button onclick="closePastEventModal()" style="position:absolute; top:20px; right:20px; background:#f1f5f9; border:1px solid #cbd5e1; width:36px; height:36px; border-radius:10px; font-size:18px; cursor:pointer; color:var(--text); display:flex; align-items:center; justify-content:center; transition:0.2s;" onmouseover="this.style.background='rgba(239,68,68,0.15)'" onmouseout="this.style.background='#f1f5f9'">✕</button>
+      <div id="pastEventModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(6px); z-index:99999; align-items:center; justify-content:center; padding:20px;">
+        <div
+          style="background:white; border-radius:24px; max-width:620px; width:100%; padding:28px; position:relative; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); max-height:90vh; overflow-y:auto; border:1px solid rgba(226,232,240,0.8);">
+          <button onclick="closePastEventModal()"
+            style="position:absolute; top:20px; right:20px; background:#f1f5f9; border:1px solid #cbd5e1; width:36px; height:36px; border-radius:10px; font-size:18px; cursor:pointer; color:var(--text); display:flex; align-items:center; justify-content:center; transition:0.2s;"
+            onmouseover="this.style.background='rgba(239,68,68,0.15)'"
+            onmouseout="this.style.background='#f1f5f9'">✕</button>
           <div id="pastEventModalContent"></div>
         </div>
       </div>
@@ -2176,7 +2206,7 @@
                   window.location.replace('/index.html');
                 }
               }
-            } catch (e) {}
+            } catch (e) { }
           }, 4000);
         }
 
@@ -2384,7 +2414,7 @@
                   const slotsLeft = info.availableSlots;
                   const pct = Math.min(100, Math.round((count / max) * 100));
                   const barColor = isFull ? '#ef4444' : slotsLeft <= 5 ? '#f59e0b' : '#22c55e';
-                  
+
                   countEl.style.color = isFull ? '#ef4444' : 'var(--text)';
                   countEl.innerHTML = `${count} / ${max} ${isFull ? '🔴 Full' : slotsLeft <= 5 ? `⚠️ ${slotsLeft} left` : ''}`;
                   if (barEl) {
@@ -2393,7 +2423,7 @@
                   }
                 }
               });
-            } catch(e) { /* silent */ }
+            } catch (e) { /* silent */ }
           }, 5000);
         }
 
@@ -2471,8 +2501,30 @@
 
         let currentSemScoreFilter = 'all';
 
+        async function loadOtherCertsForScores() {
+          if (window._ocFetching) return;
+          window._ocFetching = true;
+          const sData = studentData || (JSON.parse(localStorage.getItem('studentData')) || {});
+          const pin = (sData.pinNumber || sData.studentId || sData.username || '').trim();
+          const branch = (sData.branch || '').trim();
+          if (!pin || !branch) { window._ocFetching = false; return; }
+          try {
+            const res = await fetch('/api/other-certs/student/' + encodeURIComponent(pin) + '/' + encodeURIComponent(branch));
+            const certs = await res.json();
+            window._ocStudentCertsList = Array.isArray(certs) ? certs : [];
+            displayScores();
+          } catch (e) {
+            console.error('Error fetching other certs for score breakdown:', e);
+          } finally {
+            window._ocFetching = false;
+          }
+        }
+
         function displayScores(filterType) {
           if (filterType) currentSemScoreFilter = filterType;
+          if (!window._ocStudentCertsList && !window._ocFetching) {
+            loadOtherCertsForScores();
+          }
           const tbody = document.getElementById('scoresTable');
           const countEl = document.getElementById('scoreCount');
           if (!tbody) return;
@@ -2484,18 +2536,24 @@
           const attendedRegs = myRegistrations.filter(r => r.attended);
           const totalEventScore = attendedRegs.reduce((sum, r) => sum + (r.score || 0), 0);
 
+          // Calculate total approved other certificates score
+          const approvedOtherCerts = (window._ocStudentCertsList || []).filter(c => c.uploadStatus === 'approved');
+          const totalOtherCertsScore = approvedOtherCerts.reduce((sum, c) => sum + (c.marksAwarded || 0), 0);
+
           // Total base academic score (sem3 + sem4 or studentData.score)
           const baseAcademicScore = (sem3 || sem4) ? (sem3 + sem4) : (studentData?.score || 0);
-          const grandTotal = baseAcademicScore + totalEventScore;
+          const grandTotal = baseAcademicScore + totalEventScore + totalOtherCertsScore;
 
           // Update summary stat cards
           const elSem3 = document.getElementById('scoreSem3');
           const elSem4 = document.getElementById('scoreSem4');
           const elEvents = document.getElementById('scoreEvents');
+          const elOtherCerts = document.getElementById('scoreOtherCerts');
           const elGrand = document.getElementById('scoreGrandTotal');
           if (elSem3) elSem3.textContent = sem3;
           if (elSem4) elSem4.textContent = sem4;
           if (elEvents) elEvents.textContent = totalEventScore;
+          if (elOtherCerts) elOtherCerts.textContent = totalOtherCertsScore;
           if (elGrand) elGrand.textContent = grandTotal;
 
           // Build rows based on currentSemScoreFilter
@@ -2550,6 +2608,24 @@
                   <td>${date}</td>
                   <td>${venue}</td>
                   <td><strong style="color:var(--gold-dark);font-size:16px;">+${score}</strong></td>
+                  <td><strong style="color:var(--blue);">${runningSum}</strong></td>
+                </tr>
+              `);
+            });
+          }
+
+          if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'otherCerts') {
+            approvedOtherCerts.forEach(c => {
+              const title = c.certificateName || (c.cert ? c.cert.certificateName : 'Approved Certificate');
+              const marks = c.marksAwarded || 0;
+              runningSum += marks;
+              rows.push(`
+                <tr style="background:rgba(14,165,233,0.04);">
+                  <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
+                  <td><strong style="color:#0284c7;">📜 ${title} (Other Certificate)</strong></td>
+                  <td>Faculty Verified ✅</td>
+                  <td>${c.branch || 'General'}</td>
+                  <td><strong style="color:#0284c7;font-size:16px;">+${marks}</strong></td>
                   <td><strong style="color:var(--blue);">${runningSum}</strong></td>
                 </tr>
               `);
@@ -2763,7 +2839,7 @@
           }
         }
 
-        const tabTitles = { home: 'Dashboard Overview', events: 'Available Events', registrations: 'My Registrations', scores: 'My Scores', analytics: 'Analytics', certificates: 'My Certificates', notifications: 'Notifications', profile: 'My Profile' };
+        const tabTitles = { home: 'Dashboard Overview', events: 'Available Events', registrations: 'My Registrations', scores: 'My Scores', analytics: 'Analytics', certificates: 'My Certificates', notifications: 'Notifications', otherCerts: 'Other Certificates', profile: 'My Profile' };
         function showTab(name, el) {
           document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
           if (el) el.classList.add('active');
@@ -3200,7 +3276,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username: sData.username, id: sData._id, studentId: sData.studentId })
             });
-          } catch (e) {}
+          } catch (e) { }
           localStorage.removeItem('studentData');
           localStorage.removeItem('selectedEventId');
           window.location.replace('/index.html');
@@ -3256,7 +3332,7 @@
 
       </script>
       <script>
-        window.switchRegSubTab = function(type) {
+        window.switchRegSubTab = function (type) {
           const regBtn = document.getElementById('regSubTabRegisteredBtn');
           const compBtn = document.getElementById('regSubTabCompletedBtn');
           const regSec = document.getElementById('regSectionRegistered');

@@ -1502,7 +1502,7 @@
       <div class="menu-item" onclick="showTab('attendance')">
 
 
-        <span class="icon">✅</span><span>Attendance</span>
+        <span class="icon">✅</span><span>Score & Certificates</span>
 
 
       </div>
@@ -1613,8 +1613,7 @@
       <!-- Top Right Controls: Logout Button & Notification Bell -->
       <div class="top-bar-controls" style="display:flex;align-items:center;gap:12px;margin-left:auto;">
 
-        <button onclick="logout()" title="Logout"
-          style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:14px;
+        <button onclick="logout()" title="Logout" style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:14px;
                  border:1px solid rgba(255,255,255,0.35);background:rgba(239,68,68,0.25);color:white;
                  font-weight:700;font-size:14px;cursor:pointer;font-family:'Poppins',sans-serif;
                  transition:all 0.2s;box-shadow:0 4px 14px rgba(239,68,68,0.2);"
@@ -1957,7 +1956,8 @@
             <div style="margin-bottom:16px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <label class="form-label" style="margin-bottom:0;">Faculty Coordinator(s)</label>
-                <button type="button" onclick="addFacultyCoord_Dashboard()" style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                <button type="button" onclick="addFacultyCoord_Dashboard()"
+                  style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
                   ➕ Add Faculty
                 </button>
               </div>
@@ -1967,7 +1967,8 @@
                     <input class="form-input dash-fac-name" type="text" id="eventFaculty" placeholder="Faculty name">
                   </div>
                   <div>
-                    <input class="form-input dash-fac-phone" type="tel" id="eventFacultyPhone" placeholder="Phone number">
+                    <input class="form-input dash-fac-phone" type="tel" id="eventFacultyPhone"
+                      placeholder="Phone number">
                   </div>
                 </div>
               </div>
@@ -1977,7 +1978,8 @@
             <div style="margin-bottom:16px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <label class="form-label" style="margin-bottom:0;">Student Coordinator(s)</label>
-                <button type="button" onclick="addStudentCoord_Dashboard()" style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                <button type="button" onclick="addStudentCoord_Dashboard()"
+                  style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
                   ➕ Add Student
                 </button>
               </div>
@@ -1987,7 +1989,8 @@
                     <input class="form-input dash-stu-name" type="text" id="eventStudent" placeholder="Student name">
                   </div>
                   <div>
-                    <input class="form-input dash-stu-phone" type="tel" id="eventStudentPhone" placeholder="Phone number">
+                    <input class="form-input dash-stu-phone" type="tel" id="eventStudentPhone"
+                      placeholder="Phone number">
                   </div>
                 </div>
               </div>
@@ -2155,45 +2158,51 @@
               </div>
 
 
-            <!-- Update Faculty Coordinator Section with Plus Icon -->
-            <div style="margin-bottom:16px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">Faculty Coordinator(s)</label>
-                <button type="button" onclick="addFacultyCoord_UpdateForm()" style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-                  ➕ Add Faculty
-                </button>
-              </div>
-              <div id="updateFacultyCoordsContainer">
-                <div class="form-grid-2 update-fac-coord-item" style="margin-bottom:8px;">
-                  <div>
-                    <input class="form-input update-fac-name" type="text" id="updateFaculty" placeholder="Faculty name">
-                  </div>
-                  <div>
-                    <input class="form-input update-fac-phone" type="tel" id="updateFacultyPhone" placeholder="Phone number">
+              <!-- Update Faculty Coordinator Section with Plus Icon -->
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <label class="form-label" style="margin-bottom:0;">Faculty Coordinator(s)</label>
+                  <button type="button" onclick="addFacultyCoord_UpdateForm()"
+                    style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                    ➕ Add Faculty
+                  </button>
+                </div>
+                <div id="updateFacultyCoordsContainer">
+                  <div class="form-grid-2 update-fac-coord-item" style="margin-bottom:8px;">
+                    <div>
+                      <input class="form-input update-fac-name" type="text" id="updateFaculty"
+                        placeholder="Faculty name">
+                    </div>
+                    <div>
+                      <input class="form-input update-fac-phone" type="tel" id="updateFacultyPhone"
+                        placeholder="Phone number">
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Update Student Coordinator Section with Plus Icon -->
-            <div style="margin-bottom:16px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                <label class="form-label" style="margin-bottom:0;">Student Coordinator(s)</label>
-                <button type="button" onclick="addStudentCoord_UpdateForm()" style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
-                  ➕ Add Student
-                </button>
-              </div>
-              <div id="updateStudentCoordsContainer">
-                <div class="form-grid-2 update-stu-coord-item" style="margin-bottom:8px;">
-                  <div>
-                    <input class="form-input update-stu-name" type="text" id="updateStudent" placeholder="Student name">
-                  </div>
-                  <div>
-                    <input class="form-input update-stu-phone" type="tel" id="updateStudentPhone" placeholder="Phone number">
+              <!-- Update Student Coordinator Section with Plus Icon -->
+              <div style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <label class="form-label" style="margin-bottom:0;">Student Coordinator(s)</label>
+                  <button type="button" onclick="addStudentCoord_UpdateForm()"
+                    style="background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.3);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+                    ➕ Add Student
+                  </button>
+                </div>
+                <div id="updateStudentCoordsContainer">
+                  <div class="form-grid-2 update-stu-coord-item" style="margin-bottom:8px;">
+                    <div>
+                      <input class="form-input update-stu-name" type="text" id="updateStudent"
+                        placeholder="Student name">
+                    </div>
+                    <div>
+                      <input class="form-input update-stu-phone" type="tel" id="updateStudentPhone"
+                        placeholder="Phone number">
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
 
               <div style="display:flex;gap:12px;justify-content:center;">
@@ -2276,8 +2285,11 @@
 
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
               <span class="count" id="regCount">0 Registrations</span>
-              <button onclick="downloadEventReport()" class="btn-primary" style="padding:8px 18px;font-size:13px;">📄 Download PDF Report</button>
-              <button onclick="saveAllAttendance()" class="btn-success" style="padding:8px 20px;font-size:13px;font-weight:700;background:#16a34a;color:white;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.25);">💾 Save Attendance</button>
+              <button onclick="downloadEventReport()" class="btn-primary" style="padding:8px 18px;font-size:13px;">📄
+                Download PDF Report</button>
+              <button onclick="saveAllAttendance()" class="btn-success"
+                style="padding:8px 20px;font-size:13px;font-weight:700;background:#16a34a;color:white;border:none;border-radius:8px;cursor:pointer;box-shadow:0 4px 12px rgba(22,163,74,0.25);">💾
+                Save Attendance</button>
             </div>
           </div>
 
@@ -2285,15 +2297,18 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Student Name</th>
                   <th>PIN Number</th>
                   <th>Branch</th>
                   <th>Year</th>
                   <th>Event</th>
                   <th style="text-align:center;">
-                    <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:var(--primary);" title="Check / Uncheck All Present">
-                      <input type="checkbox" id="selectAllAttCheck" onchange="toggleSelectAllAtt(this)" style="width:18px;height:18px;cursor:pointer;accent-color:#16a34a;">
+                    <label
+                      style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-weight:700;color:var(--primary);"
+                      title="Check / Uncheck All Present">
+                      <input type="checkbox" id="selectAllAttCheck" onchange="toggleSelectAllAtt(this)"
+                        style="width:18px;height:18px;cursor:pointer;accent-color:#16a34a;">
                       <span>Attendance Status</span>
                     </label>
                   </th>
@@ -2340,7 +2355,7 @@
       <div style="text-align:center;padding:60px 20px 40px;">
 
 
-        <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">✅ Attendance &amp; Scoring</h1>
+        <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">✅ Scoring & Certificates</h1>
 
 
         <div style="max-width:600px;margin:0 auto;">
@@ -2425,7 +2440,7 @@
                 <tr>
 
 
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Student Name</th>
                   <th>PIN Number</th>
 
@@ -2704,7 +2719,7 @@
 
 
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Student Name</th>
                   <th>Rating</th>
                   <th>Comment</th>
@@ -2742,42 +2757,34 @@
     <div id="certificates" class="tab-content">
 
 
-      <div style="text-align:center;padding:60px 20px 40px;">
-
-
-        <h1 style="font-size:40px;font-weight:700;margin-bottom:32px;">🏅 Upload Certificates</h1>
-
-
+      <div style="text-align:center;padding:50px 20px 30px;">
+        <h1 style="font-size:38px;font-weight:700;margin-bottom:28px;">🏅 Upload Certificates</h1>
         <div style="max-width:600px;margin:0 auto;">
-
-
-          <select id="filterEventCert" class="hero-select" onchange="filterCertificates()">
-
-
+          <select id="filterEventCert" class="hero-select" onchange="filterCertificates()" style="width:100%;">
             <option value="">🏅 Select an event to upload certificates...</option>
-
-
           </select>
-
-
         </div>
-
-
         <p style="margin-top:16px;color:var(--muted);font-size:14px;">Only students who attended the event are shown.
           Upload PDF or image certificates.</p>
-
-
       </div>
-
 
       <div id="certTableContainer" style="display:none;max-width:1400px;margin:0 auto;padding:0 0 40px;width:100%;">
 
-
         <div class="table-container">
 
-
-          <div class="table-header">
-            <h3>Attended Students</h3><span class="count" id="certCount">0 Students</span>
+          <div class="table-header"
+            style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <h3>Attended Students</h3><span class="count" id="certCount">0 Students</span>
+            </div>
+            <!-- Search Box Inside Table Header -->
+            <div style="flex:1;max-width:360px;">
+              <input type="text" id="certSearchInput" placeholder="🔍 Search PIN Number, Name, or Branch..."
+                oninput="filterCertificates()"
+                style="width:100%;padding:8px 16px;border-radius:10px;border:1.5px solid #1E88E5;font-size:13px;font-family:'Poppins',sans-serif;outline:none;background:#ffffff;color:#1e293b;box-shadow:0 2px 8px rgba(30,136,229,0.1);transition:all 0.2s;"
+                onfocus="this.style.borderColor='#1565C0';this.style.boxShadow='0 4px 12px rgba(30,136,229,0.2)'"
+                onblur="this.style.borderColor='#1E88E5';this.style.boxShadow='0 2px 8px rgba(30,136,229,0.1)'">
+            </div>
           </div>
 
 
@@ -2791,7 +2798,7 @@
 
 
                 <tr>
-                  <th>#</th>
+                  <th>S.No</th>
                   <th>Student Name</th>
                   <th>PIN Number</th>
                   <th>Branch</th>
@@ -3186,7 +3193,8 @@
 
     <!-- ---------------- PAST EVENTS TAB (Completed) ---------------- -->
     <div id="pastEvents" class="tab-content">
-      <div class="content-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div class="content-header"
+        style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
           <h1>📅 Completed Past Events</h1>
           <p>Create completed past events, search events, and manage participant rosters</p>
@@ -3204,12 +3212,15 @@
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
             <div style="flex:1;min-width:280px;position:relative;">
-              <select id="peEventSelect" onchange="peSelectEventFromDropdown(this.value)" class="form-input" style="width:100%;border:1.5px solid #1E88E5;font-weight:600;color:#000;padding:12px 14px;border-radius:12px;background:#ffffff;box-shadow:0 4px 12px rgba(30,136,229,0.1);">
+              <select id="peEventSelect" onchange="peSelectEventFromDropdown(this.value)" class="form-input"
+                style="width:100%;border:1.5px solid #1E88E5;font-weight:600;color:#000;padding:12px 14px;border-radius:12px;background:#ffffff;box-shadow:0 4px 12px rgba(30,136,229,0.1);">
                 <option value="">-- Choose a Past Event --</option>
               </select>
             </div>
-            <input type="text" id="peSearchInput" placeholder="🔍 Search event title, venue..." class="search-input" oninput="peFilterEventOptions()" style="width:240px;padding:11px 14px;">
-            <button onclick="peLoadEvents()" class="btn" style="background:#f1f5f9;color:var(--primary);border:1px solid var(--border);font-size:13px;padding:11px 18px;">
+            <input type="text" id="peSearchInput" placeholder="🔍 Search event title, venue..." class="search-input"
+              oninput="peFilterEventOptions()" style="width:240px;padding:11px 14px;">
+            <button onclick="peLoadEvents()" class="btn"
+              style="background:#f1f5f9;color:var(--primary);border:1px solid var(--border);font-size:13px;padding:11px 18px;">
               🔄 Refresh
             </button>
           </div>
@@ -3218,23 +3229,28 @@
 
       <!-- SELECTED PAST EVENT DETAILS & PARTICIPANT ROSTER TABLE -->
       <div id="peSelectedEventCard" style="display:none;" class="card-panel">
-        
+
         <!-- EVENT HEADER SUMMARY -->
-        <div style="background:linear-gradient(135deg, rgba(30,136,229,0.08), rgba(59,130,246,0.03));border:1px solid rgba(30,136,229,0.2);border-radius:16px;padding:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
+        <div
+          style="background:linear-gradient(135deg, rgba(30,136,229,0.08), rgba(59,130,246,0.03));border:1px solid rgba(30,136,229,0.2);border-radius:16px;padding:18px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;">
           <div>
-            <h2 id="peViewTitle" style="margin:0 0 6px 0;color:var(--primary);font-size:20px;font-weight:800;">📌 Event Title</h2>
+            <h2 id="peViewTitle" style="margin:0 0 6px 0;color:var(--primary);font-size:20px;font-weight:800;">📌 Event
+              Title</h2>
             <div style="font-size:13px;color:var(--muted);margin-bottom:12px;display:flex;gap:14px;flex-wrap:wrap;">
               <span>📍 <strong style="color:#000;" id="peViewVenue">—</strong></span>
               <span>📅 <strong style="color:#000;" id="peViewDate">—</strong></span>
               <span>⏰ <strong style="color:#000;" id="peViewTime">—</strong></span>
             </div>
             <div style="font-size:13px;display:flex;gap:20px;flex-wrap:wrap;color:#334155;">
-              <span>👨‍🏫 <strong>Faculty Coord:</strong> <span id="peViewFacultyCoord">—</span> (📞 <span id="peViewFacultyPhone">—</span>)</span>
-              <span>🎓 <strong>Student Coord:</strong> <span id="peViewStudentCoord">—</span> (📞 <span id="peViewStudentPhone">—</span>)</span>
+              <span>👨‍🏫 <strong>Faculty Coord:</strong> <span id="peViewFacultyCoord">—</span> (📞 <span
+                  id="peViewFacultyPhone">—</span>)</span>
+              <span>🎓 <strong>Student Coord:</strong> <span id="peViewStudentCoord">—</span> (📞 <span
+                  id="peViewStudentPhone">—</span>)</span>
             </div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <a id="peViewPdfLink" href="#" target="_blank" class="btn" style="display:none;background:rgba(30,136,229,0.12);color:#1E88E5;font-size:12px;padding:8px 14px;border:1px solid rgba(30,136,229,0.3);">
+            <a id="peViewPdfLink" href="#" target="_blank" class="btn"
+              style="display:none;background:rgba(30,136,229,0.12);color:#1E88E5;font-size:12px;padding:8px 14px;border:1px solid rgba(30,136,229,0.3);">
               📄 View PDF
             </a>
             <button onclick="peDeleteCurrentEvent()" class="btn btn-danger" style="font-size:12px;padding:8px 14px;">
@@ -3244,20 +3260,23 @@
         </div>
 
         <!-- PARTICIPANT TABLE -->
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div class="card-header"
+          style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
           <div>
             <div class="card-title" style="font-size:18px;">👥 Participant Roster</div>
             <span style="font-size:12px;color:var(--muted);" id="peRosterCount">0 students extracted</span>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <input type="text" id="peTableSearchInput" placeholder="🔍 Search Roll No / Name..." class="search-input" oninput="peFilterTableRows()" style="width:200px;">
+            <input type="text" id="peTableSearchInput" placeholder="🔍 Search Roll No / Name..." class="search-input"
+              oninput="peFilterTableRows()" style="width:200px;">
             <button onclick="peAddParticipantRow()" class="btn btn-primary" style="font-size:12px;padding:8px 16px;">
               ➕ Add Student Row
             </button>
           </div>
         </div>
 
-        <div style="overflow-x:auto;margin-bottom:24px;border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,0.03);">
+        <div
+          style="overflow-x:auto;margin-bottom:24px;border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,0.03);">
           <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="background:#f8fafc;">
@@ -3269,14 +3288,19 @@
               </tr>
             </thead>
             <tbody id="peParticipantBody">
-              <tr><td colspan="5" style="text-align:center;padding:30px;color:var(--muted);">Select a past event to view participant roster.</td></tr>
+              <tr>
+                <td colspan="5" style="text-align:center;padding:30px;color:var(--muted);">Select a past event to view
+                  participant roster.</td>
+              </tr>
             </tbody>
           </table>
         </div>
 
         <!-- SAVE PARTICIPANTS BUTTON AT BOTTOM -->
-        <div style="display:flex;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1.5px solid var(--border);">
-          <button onclick="peSaveParticipantsList()" id="peSaveParticipantsBtn" class="btn btn-success" style="font-size:15px;padding:12px 32px;font-weight:700;box-shadow:0 4px 14px rgba(34,197,94,0.35);">
+        <div
+          style="display:flex;justify-content:flex-end;gap:12px;padding-top:16px;border-top:1.5px solid var(--border);">
+          <button onclick="peSaveParticipantsList()" id="peSaveParticipantsBtn" class="btn btn-success"
+            style="font-size:15px;padding:12px 32px;font-weight:700;box-shadow:0 4px 14px rgba(34,197,94,0.35);">
             💾 Save Participants & Notify Students
           </button>
         </div>
@@ -3285,12 +3309,16 @@
     </div>
 
     <!-- PAST EVENT CREATE MODAL -->
-    <div id="peModalOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
-      <div style="background:#ffffff;border-radius:20px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);border:1px solid var(--border);padding:28px;">
-        
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;">
+    <div id="peModalOverlay"
+      style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.7);backdrop-filter:blur(6px);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+      <div
+        style="background:#ffffff;border-radius:20px;max-width:760px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,0.3);border:1px solid var(--border);padding:28px;">
+
+        <div
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:14px;">
           <h2 style="font-size:20px;font-weight:800;color:var(--primary);margin:0;">➕ Create Past Event</h2>
-          <button onclick="peCloseModal()" class="btn" style="background:transparent;color:var(--muted);font-size:20px;padding:4px 10px;">✕</button>
+          <button onclick="peCloseModal()" class="btn"
+            style="background:transparent;color:var(--muted);font-size:20px;padding:4px 10px;">✕</button>
         </div>
 
         <form id="peCreateForm" onsubmit="peSubmitCreateForm(event)">
@@ -3298,11 +3326,13 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
             <div class="form-group">
               <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Event Title *</label>
-              <input type="text" id="peTitle" class="form-input" placeholder="e.g. AI & Robotics Workshop 2025" required style="border:1px solid #cbd5e1;color:#000;">
+              <input type="text" id="peTitle" class="form-input" placeholder="e.g. AI & Robotics Workshop 2025" required
+                style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Venue *</label>
-              <input type="text" id="peVenue" class="form-input" placeholder="e.g. Main Auditorium" required style="border:1px solid #cbd5e1;color:#000;">
+              <input type="text" id="peVenue" class="form-input" placeholder="e.g. Main Auditorium" required
+                style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
               <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Event Date *</label>
@@ -3313,41 +3343,57 @@
               <input type="time" id="peTime" class="form-input" required style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Faculty Coordinator Name *</label>
-              <input type="text" id="peFacultyCoord" class="form-input" placeholder="e.g. Dr. A. Sharma" required style="border:1px solid #cbd5e1;color:#000;">
+              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Faculty Coordinator Name
+                *</label>
+              <input type="text" id="peFacultyCoord" class="form-input" placeholder="e.g. Dr. A. Sharma" required
+                style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Faculty Coordinator Phone * (10 Digits)</label>
-              <input type="tel" id="peFacultyPhone" class="form-input" placeholder="e.g. 9876543210" maxlength="10" required style="border:1px solid #cbd5e1;color:#000;">
+              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Faculty Coordinator Phone *
+                (10 Digits)</label>
+              <input type="tel" id="peFacultyPhone" class="form-input" placeholder="e.g. 9876543210" maxlength="10"
+                required style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Student Coordinator Name *</label>
-              <input type="text" id="peStudentCoord" class="form-input" placeholder="e.g. Rahul Verma" required style="border:1px solid #cbd5e1;color:#000;">
+              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Student Coordinator Name
+                *</label>
+              <input type="text" id="peStudentCoord" class="form-input" placeholder="e.g. Rahul Verma" required
+                style="border:1px solid #cbd5e1;color:#000;">
             </div>
             <div class="form-group">
-              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Student Coordinator Phone * (10 Digits)</label>
-              <input type="tel" id="peStudentPhone" class="form-input" placeholder="e.g. 9123456789" maxlength="10" required style="border:1px solid #cbd5e1;color:#000;">
+              <label class="form-label" style="font-weight:600;font-size:13px;color:#000;">Student Coordinator Phone *
+                (10 Digits)</label>
+              <input type="tel" id="peStudentPhone" class="form-input" placeholder="e.g. 9123456789" maxlength="10"
+                required style="border:1px solid #cbd5e1;color:#000;">
             </div>
           </div>
 
           <!-- UPLOAD PARTICIPANT PDF SECTION -->
-          <div style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:16px;padding:20px;margin-bottom:24px;text-align:center;">
-            <div style="font-weight:700;font-size:15px;color:var(--primary);margin-bottom:4px;">📄 Upload Participant PDF</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Upload a PDF document containing student Roll Numbers and Names.</div>
-            
+          <div
+            style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:16px;padding:20px;margin-bottom:24px;text-align:center;">
+            <div style="font-weight:700;font-size:15px;color:var(--primary);margin-bottom:4px;">📄 Upload Participant
+              PDF</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Upload a PDF document containing student
+              Roll Numbers and Names.</div>
+
             <div style="display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;">
               <label class="btn btn-primary" style="cursor:pointer;font-size:13px;padding:10px 20px;">
                 📂 Choose PDF File
-                <input type="file" id="pePdfInput" accept=".pdf" required onchange="peHandleFileSelect(event)" style="display:none;">
+                <input type="file" id="pePdfInput" accept=".pdf" required onchange="peHandleFileSelect(event)"
+                  style="display:none;">
               </label>
             </div>
-            <div id="peFileSelectedBadge" style="display:none;margin-top:12px;font-size:13px;color:#1e88e5;font-weight:600;"></div>
+            <div id="peFileSelectedBadge"
+              style="display:none;margin-top:12px;font-size:13px;color:#1e88e5;font-weight:600;"></div>
           </div>
 
           <!-- SUBMIT BUTTONS -->
-          <div style="display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border);padding-top:18px;">
-            <button type="button" onclick="peCloseModal()" class="btn" style="background:#f1f5f9;color:var(--muted);border:1px solid var(--border);">Cancel</button>
-            <button type="submit" id="peSubmitBtn" class="btn btn-primary" style="padding:10px 24px;">🚀 Submit Event</button>
+          <div
+            style="display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border);padding-top:18px;">
+            <button type="button" onclick="peCloseModal()" class="btn"
+              style="background:#f1f5f9;color:var(--muted);border:1px solid var(--border);">Cancel</button>
+            <button type="submit" id="peSubmitBtn" class="btn btn-primary" style="padding:10px 24px;">🚀 Submit
+              Event</button>
           </div>
         </form>
 
@@ -3775,7 +3821,7 @@
 
 
         populateAllDropdowns();
-        
+
         if (currentFaculty && (currentFaculty.isCoordinator === true || currentFaculty.isCoordinator === 'true')) {
           loadFacultyBranchStudents();
           loadFacultyBranchEvents();
@@ -4050,7 +4096,7 @@
                 badgeEl.textContent = `⚡ Live: ${info.count}${info.maxParticipants ? ` / ${info.maxParticipants}` : ''} Registered`;
               }
             });
-          } catch(e) {}
+          } catch (e) { }
         }, 5000);
       }
 
@@ -4125,6 +4171,7 @@
         if (tabName === 'analytics') loadAnalytics();
         if (tabName === 'feedbackAnalysis') populateFeedbackEventDropdown();
         if (tabName === 'pastEvents') peInit();
+        if (tabName === 'otherCerts') ocFacultyInit();
 
         if (tabName === 'students') loadFacultyBranchStudents();
         if (tabName === 'branchEvents') loadFacultyBranchEvents();
@@ -4630,31 +4677,27 @@
 
         if (!eventId) { wrap.style.display = 'none'; count.textContent = 'Select an event'; return; }
 
-
         wrap.style.display = 'block';
 
+        const searchInput = document.getElementById('certSearchInput');
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
+        let filtered = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId && allEvents.find(e => e._id === getRegEventId(r)));
 
-
-
-        const filtered = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId && allEvents.find(e => e._id === getRegEventId(r)));
-
+        if (query) {
+          filtered = filtered.filter(r => {
+            const pin = String(r.pinNumber || r.studentPin || r.pin || r.studentId || r.username || '').toLowerCase();
+            const name = String(r.studentName || r.name || '').toLowerCase();
+            const branch = String(r.branch || '').toLowerCase();
+            return pin.includes(query) || name.includes(query) || branch.includes(query);
+          });
+        }
 
         count.textContent = `${filtered.length} Students`;
 
-
-
-
-
         if (!filtered.length) {
-
-
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">No attended students for this event yet</td></tr>`;
-
-
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--muted);">${query ? '🔍 No matching students found' : 'No attended students for this event yet'}</td></tr>`;
           return;
-
-
         }
 
 
@@ -6219,7 +6262,7 @@
       function filterCertificates() {
 
 
-        const eventId = document.getElementById('filterEventCert').value;
+        const eventId = document.getElementById('filterEventCert') ? document.getElementById('filterEventCert').value : '';
 
 
         const tbody = document.getElementById('certBody');
@@ -6231,36 +6274,81 @@
         const wrap = document.getElementById('certTableContainer');
 
 
+        const searchInput = document.getElementById('certSearchInput');
+
+
+        const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
 
 
-        if (!eventId) { wrap.style.display = 'none'; count.textContent = 'Select an event'; return; }
+        if (!eventId) {
 
 
-        wrap.style.display = 'block';
+          if (wrap) wrap.style.display = 'none';
 
 
-
-
-
-        const attended = allRegistrations.filter(r => r.attended && getRegEventId(r) === eventId);
-
-
-        count.textContent = `${attended.length} Students`;
-
-
-
-
-
-        if (!attended.length) {
-
-
-          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No attended students for this event yet</td></tr>`;
+          if (count) count.textContent = 'Select an event';
 
 
           return;
 
 
+        }
+
+
+
+        if (wrap) wrap.style.display = 'block';
+
+
+
+        let attended = allRegistrations.filter(r => {
+
+
+          if (!r.attended) return false;
+
+
+          const regEvtId = getRegEventId(r);
+
+
+          return regEvtId === eventId || (r.eventId && r.eventId.toString() === eventId);
+
+
+        });
+
+
+
+        if (query) {
+
+
+          attended = attended.filter(r => {
+
+
+            const pin = String(r.pinNumber || r.studentPin || r.pin || r.studentId || r.username || '').trim().toLowerCase();
+
+
+            const name = String(r.studentName || r.name || '').trim().toLowerCase();
+
+
+            const branch = String(r.branch || '').trim().toLowerCase();
+
+
+            return pin.includes(query) || name.includes(query) || branch.includes(query);
+
+
+          });
+
+
+        }
+
+
+
+        if (count) count.textContent = `${attended.length} Students`;
+
+
+
+        if (!attended.length) {
+          if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">${query ? '🔍 No matching student PIN or name found' : 'No attended students for this event yet'}</td></tr>`;
+          return;
         }
 
 
@@ -6273,7 +6361,7 @@
         attended.forEach((reg, i) => {
 
 
-          const hasCert = !!reg.certificateUrl;
+          const hasCert = !!reg.certificateUrl || reg.hasCertificate;
 
 
           const row = document.createElement('tr');
@@ -6312,7 +6400,7 @@
                <span style="color:#4caf50;font-size:16px;">📄</span>
 
 
-               <a href="${reg.certificateUrl}" target="_blank" style="color:#4caf50;font-weight:600;font-size:13px;text-decoration:none;">Uploaded ✅ View</a>
+               <button onclick="viewFacultyCertificate('${reg._id}', '${reg.certificateUrl || ''}')" style="background:transparent;border:none;color:#4caf50;font-weight:600;font-size:13px;cursor:pointer;font-family:'Poppins',sans-serif;padding:0;">Uploaded ✅ View</button>
 
 
              </span>`
@@ -6429,7 +6517,7 @@
 
 
 
-          if (statusEl) statusEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);padding:5px 12px;border-radius:20px;"><span style="color:#4caf50;font-size:16px;">📄</span><a href="${result.certificateUrl}" target="_blank" style="color:#4caf50;font-weight:600;font-size:13px;text-decoration:none;">Uploaded ✅ View</a></span>`;
+          if (statusEl) statusEl.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);padding:5px 12px;border-radius:20px;"><span style="color:#4caf50;font-size:16px;">📄</span><button onclick="viewFacultyCertificate('${regId}', '${result.certificateUrl || ''}')" style="background:transparent;border:none;color:#4caf50;font-weight:600;font-size:13px;cursor:pointer;font-family:'Poppins',sans-serif;padding:0;">Uploaded ✅ View</button></span>`;
 
 
           if (actionEl) {
@@ -6473,6 +6561,30 @@
 
 
 
+
+      async function viewFacultyCertificate(registrationId, fallbackUrl) {
+        if (!registrationId) {
+          if (fallbackUrl) window.open(fallbackUrl, '_blank');
+          return;
+        }
+        try {
+          showPopup('⏳', 'Accessing Certificate...', 'Preparing certificate preview...', 'info');
+          const res = await fetch(`/api/certificates/view/${registrationId}`);
+          const data = await res.json();
+          closePopup();
+          if (res.ok && data.url) {
+            window.open(data.url, '_blank');
+          } else if (fallbackUrl) {
+            window.open(fallbackUrl, '_blank');
+          } else {
+            showPopup('❌', 'Error', data.message || 'Unable to load certificate.', 'error');
+          }
+        } catch (e) {
+          closePopup();
+          if (fallbackUrl) window.open(fallbackUrl, '_blank');
+          else showPopup('❌', 'Error', 'Failed to access certificate.', 'error');
+        }
+      }
 
       async function deleteCertificate(regId) {
 
@@ -6917,7 +7029,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username: fData.username, id: fData._id, facultyId: fData.facultyId })
             });
-          } catch (e) {}
+          } catch (e) { }
           localStorage.removeItem('facultyData');
           window.location.href = 'index.html';
         }
@@ -8203,6 +8315,7 @@
             document.getElementById('ocEndDate').value = '';
             document.getElementById('ocEndTime').value = '';
             ocLoadCerts();
+            ocLoadVerifyDropdown();
           } else {
             ocShowMsg('ocCreateMsg', '❌ ' + (data.message || 'Failed'), 'error');
           }
@@ -8213,8 +8326,9 @@
 
       // ── Load activated certs table ──
       async function ocLoadCerts() {
-        const fId = ocFacultyData?._id || ocFacultyData?.facultyId || '';
-        if (!fId) return;
+        const raw = localStorage.getItem('facultyData') || localStorage.getItem('faculty') || localStorage.getItem('user');
+        if (raw) ocFacultyData = JSON.parse(raw);
+        const fId = ocFacultyData?._id || ocFacultyData?.facultyId || ocFacultyData?.id || 'all';
         try {
           const res = await fetch(`/api/other-certs/faculty/${fId}`);
           const certs = await res.json();
@@ -8331,14 +8445,18 @@
 
       // ── Load verification dropdown ──
       async function ocLoadVerifyDropdown() {
-        const fId = ocFacultyData?._id || ocFacultyData?.facultyId || '';
-        if (!fId) return;
+        const raw = localStorage.getItem('facultyData') || localStorage.getItem('faculty') || localStorage.getItem('user');
+        if (raw) ocFacultyData = JSON.parse(raw);
+        const fId = ocFacultyData?._id || ocFacultyData?.facultyId || ocFacultyData?.id || 'all';
         try {
           const res = await fetch(`/api/other-certs/faculty/${fId}`);
           const certs = await res.json();
           const sel = document.getElementById('ocVerifyCertSelect');
-          sel.innerHTML = '<option value="">📋 Select a certificate...</option>' +
+          sel.innerHTML = '<option value="">📋 Select a certificate to verify...</option>' +
             certs.map(c => `<option value="${c._id}">${c.certificateName} — ${c.branch}</option>`).join('');
+
+          sel.value = '';
+          ocLoadUploads();
         } catch (e) { console.error('ocLoadVerifyDropdown error', e); }
       }
 
@@ -8348,7 +8466,17 @@
         const wrap = document.getElementById('ocUploadsWrap');
         const empty = document.getElementById('ocVerifyEmpty');
 
-        if (!certId) { wrap.style.display = 'none'; empty.style.display = 'none'; return; }
+        if (!certId) {
+          wrap.style.display = 'none';
+          if (empty) {
+            empty.style.display = 'block';
+            empty.innerHTML = `
+              <div style="font-size:48px;margin-bottom:12px;">🔍</div>
+              Please select a certificate from the dropdown above to view student uploads.
+            `;
+          }
+          return;
+        }
 
         try {
           const res = await fetch(`/api/other-certs/uploads/${certId}`);
@@ -8358,12 +8486,18 @@
 
           if (!uploads.length) {
             wrap.style.display = 'none';
-            empty.style.display = 'block';
+            if (empty) {
+              empty.style.display = 'block';
+              empty.innerHTML = `
+                <div style="font-size:48px;margin-bottom:12px;">📭</div>
+                No uploads found for this certificate.
+              `;
+            }
             return;
           }
 
           wrap.style.display = 'block';
-          empty.style.display = 'none';
+          if (empty) empty.style.display = 'none';
 
           const statusBadge = s => {
             const map = {
@@ -8384,11 +8518,11 @@
         <td id="oc-status-${u._id}">${statusBadge(u.status)}</td>
         <td>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="${u.fileUrl}" target="_blank"
+            <button onclick="ocViewFile('${u._id}', '${u.fileUrl || ''}')"
               style="padding:5px 12px;border-radius:8px;background:rgba(30,136,229,0.12);color:var(--blue);
-                     font-size:12px;font-weight:600;text-decoration:none;border:1px solid rgba(30,136,229,0.25);">
+                     font-size:12px;font-weight:600;border:1px solid rgba(30,136,229,0.25);cursor:pointer;font-family:'Poppins',sans-serif;">
               👁 View
-            </a>
+            </button>
             ${u.status !== 'approved' ? `
             <button onclick="ocApprove('${u._id}')"
               style="padding:5px 12px;border-radius:8px;border:1px solid rgba(34,197,94,0.3);
@@ -8407,6 +8541,30 @@
         </td>
       </tr>`).join('');
         } catch (e) { console.error('ocLoadUploads error', e); }
+      }
+      // ── View File (Lazy Restore & View) ──
+      async function ocViewFile(uploadId, fallbackUrl) {
+        if (!uploadId) {
+          if (fallbackUrl) window.open(fallbackUrl, '_blank');
+          return;
+        }
+        try {
+          showPopup('⏳', 'Accessing Certificate...', 'Preparing certificate preview...', 'info');
+          const res = await fetch(`/api/other-certs/view/${uploadId}`);
+          const data = await res.json();
+          closePopup();
+          if (res.ok && data.fileUrl) {
+            window.open(data.fileUrl, '_blank');
+          } else if (fallbackUrl) {
+            window.open(fallbackUrl, '_blank');
+          } else {
+            showPopup('❌', 'Error', data.message || 'Unable to access file', 'error');
+          }
+        } catch (e) {
+          closePopup();
+          if (fallbackUrl) window.open(fallbackUrl, '_blank');
+          else showPopup('❌', 'Error', 'Failed to access file', 'error');
+        }
       }
 
       // ── Approve ──
@@ -8464,7 +8622,7 @@
         try {
           const res = await fetch('/api/admin/students');
           if (res.ok) peAllStudents = await res.json();
-        } catch (e) {}
+        } catch (e) { }
         await peLoadEvents();
       }
 

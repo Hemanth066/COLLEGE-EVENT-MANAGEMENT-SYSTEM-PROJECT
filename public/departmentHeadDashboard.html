@@ -1246,22 +1246,32 @@
       }
     }
 
+    function sortStudentsByPinAscending(list) {
+      if (!Array.isArray(list)) return [];
+      return [...list].sort((a, b) => {
+        const pinA = String(a.studentId || a.pinNumber || a.username || '').trim();
+        const pinB = String(b.studentId || b.pinNumber || b.username || '').trim();
+        return pinA.localeCompare(pinB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+    }
+
     function renderStudents(list) {
-      displayedStudents = list;
-      document.getElementById('studentCount').textContent = `${list.length} students`;
+      const sortedList = sortStudentsByPinAscending(list);
+      displayedStudents = sortedList;
+      document.getElementById('studentCount').textContent = `${sortedList.length} students`;
       const tbody = document.getElementById('studentsBody');
       const wrap = document.getElementById('studentDownloadWrap');
-      if (!list.length) {
+      if (!sortedList.length) {
         tbody.innerHTML = '<tr><td colspan="6" class="no-data">No students found</td></tr>';
         if (wrap) wrap.style.display = 'none';
         return;
       }
-      tbody.innerHTML = list.map((s, i) => {
+      tbody.innerHTML = sortedList.map((s, i) => {
         const totalScore = (s.score || 0) + (s.eventScore || 0);
         return `<tr>
       <td>${i + 1}</td>
       <td><strong>${s.fullName || '—'}</strong></td>
-      <td><span class="badge badge-green">${s.studentId || '—'}</span></td>
+      <td><span class="badge badge-green">${s.studentId || s.pinNumber || '—'}</span></td>
       <td><span class="badge badge-gold">Year ${s.year || '—'}</span></td>
       <td><strong style="color:var(--blue-dark);">${totalScore}</strong></td>
     </tr>`;

@@ -73,8 +73,16 @@ router.post("/verify-session", async (req, res) => {
     if (id) query.push({ _id: id });
     if (query.length === 0) return res.json({ valid: true });
 
-    const admin = await Admin.findOne({ $or: query });
-    if (!admin || !admin.isLoggedIn || admin.sessionId !== sessionId) {
+    let account = await Admin.findOne({ $or: query });
+    if (!account) {
+      account = await Dean.findOne({ $or: query });
+    }
+
+    if (!account) {
+      return res.json({ valid: true });
+    }
+
+    if (account.isLoggedIn && account.sessionId && sessionId && account.sessionId !== sessionId) {
       return res.json({ valid: false, message: "Session expired or logged in on another device." });
     }
     res.json({ valid: true });
@@ -540,7 +548,7 @@ router.delete("/branches/:id", async (req, res) => {
 
 // ── SYSTEM SETTINGS & CERTIFICATE RETENTION ──────────────
 const SystemSetting = require('../models/SystemSetting');
-const { cleanupExpiredCertificates } = require('../utils/certificateCleanup');
+const { cleanupExpiredCertificates, cleanupExpiredOtherCertificates } = require('../utils/certificateCleanup');
 
 router.get("/settings", async (req, res) => {
   try {
@@ -549,11 +557,22 @@ router.get("/settings", async (req, res) => {
       retentionSetting = await SystemSetting.create({
         key: 'certificateRetentionDays',
         value: 30,
-        description: 'Days before generated certificate PDF files are deleted from storage (lazy auto-regenerates on student view)'
+        description: 'Days before generated event certificate PDF files are deleted from storage (lazy auto-regenerates on student view)'
       });
     }
+
+    let otherCertSetting = await SystemSetting.findOne({ key: 'otherCertRetentionDays' });
+    if (!otherCertSetting) {
+      otherCertSetting = await SystemSetting.create({
+        key: 'otherCertRetentionDays',
+        value: 30,
+        description: 'Days after faculty approval before uploaded Other Certificate files are deleted from storage (restores on demand from backup)'
+      });
+    }
+
     res.json({
-      certificateRetentionDays: Number(retentionSetting.value) || 30
+      certificateRetentionDays: Number(retentionSetting.value) || 30,
+      otherCertRetentionDays: Number(otherCertSetting.value) || 30
     });
   } catch (e) {
     res.status(500).json({ message: "Error fetching system settings: " + e.message });
@@ -562,19 +581,35 @@ router.get("/settings", async (req, res) => {
 
 router.post("/settings", async (req, res) => {
   try {
-    const { certificateRetentionDays } = req.body;
-    let days = Number(certificateRetentionDays);
-    if (isNaN(days) || days < 0) {
-      return res.status(400).json({ message: "Invalid retention days value. Must be 0 or a positive number." });
+    const { certificateRetentionDays, otherCertRetentionDays } = req.body;
+
+    let eventDays = Number(certificateRetentionDays);
+    if (isNaN(eventDays) || eventDays < 0) {
+      return res.status(400).json({ message: "Invalid event certificate retention days value. Must be 0 or a positive number." });
     }
 
-    let setting = await SystemSetting.findOneAndUpdate(
+    let otherDays = Number(otherCertRetentionDays);
+    if (isNaN(otherDays) || otherDays < 0) {
+      return res.status(400).json({ message: "Invalid other certificate retention days value. Must be 0 or a positive number." });
+    }
+
+    let setting1 = await SystemSetting.findOneAndUpdate(
       { key: 'certificateRetentionDays' },
-      { value: days },
+      { value: eventDays },
       { new: true, upsert: true }
     );
 
-    res.json({ message: "System settings updated successfully ✅", certificateRetentionDays: setting.value });
+    let setting2 = await SystemSetting.findOneAndUpdate(
+      { key: 'otherCertRetentionDays' },
+      { value: otherDays },
+      { new: true, upsert: true }
+    );
+
+    res.json({
+      message: "System settings updated successfully ✅",
+      certificateRetentionDays: setting1.value,
+      otherCertRetentionDays: setting2.value
+    });
   } catch (e) {
     res.status(500).json({ message: "Error updating system settings: " + e.message });
   }
@@ -582,11 +617,15 @@ router.post("/settings", async (req, res) => {
 
 router.post("/cleanup-certificates", async (req, res) => {
   try {
-    const result = await cleanupExpiredCertificates();
+    const resEvent = await cleanupExpiredCertificates();
+    const resOther = await cleanupExpiredOtherCertificates();
+
+    const totalCleaned = resEvent.cleanedCount + resOther.cleanedCount;
     res.json({
-      message: `Certificate cleanup completed ✅ Processed ${result.cleanedCount} expired certificate(s).`,
-      cleanedCount: result.cleanedCount,
-      retentionDays: result.retentionDays
+      message: `Certificate cleanup completed ✅ Processed ${totalCleaned} expired file(s) (${resEvent.cleanedCount} Event, ${resOther.cleanedCount} Other).`,
+      eventCleanedCount: resEvent.cleanedCount,
+      otherCleanedCount: resOther.cleanedCount,
+      totalCleaned
     });
   } catch (e) {
     res.status(500).json({ message: "Error running certificate cleanup: " + e.message });

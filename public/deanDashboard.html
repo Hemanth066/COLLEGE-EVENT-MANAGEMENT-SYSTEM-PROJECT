@@ -427,7 +427,8 @@
 <body>
 
   <!-- Toast Popup Container -->
-  <div id="deanToast" style="position:fixed;top:28px;right:28px;z-index:99999;display:none;align-items:center;gap:12px;background:#ffffff;border:1.5px solid var(--border);border-left:4px solid #16a34a;padding:14px 22px;border-radius:14px;box-shadow:0 10px 30px rgba(15,76,129,0.18);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);opacity:0;transform:translateY(-10px);">
+  <div id="deanToast"
+    style="position:fixed;top:28px;right:28px;z-index:99999;display:none;align-items:center;gap:12px;background:#ffffff;border:1.5px solid var(--border);border-left:4px solid #16a34a;padding:14px 22px;border-radius:14px;box-shadow:0 10px 30px rgba(15,76,129,0.18);transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);opacity:0;transform:translateY(-10px);">
     <span id="deanToastIcon" style="font-size:22px;">✅</span>
     <div>
       <div id="deanToastTitle" style="font-weight:700;font-size:14px;color:var(--primary);">Refreshed!</div>
@@ -469,7 +470,7 @@
       </div>
     </div>
 
-    </div>
+  </div>
   </div>
 
   <!-- MAIN CONTENT AREA -->
@@ -558,10 +559,14 @@
             and NAAC accreditation analytics.</p>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <button onclick="exportDeanNaacReportPDF()" style="background:#2563eb;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+          <button onclick="exportDeanNaacReportPDF()"
+            style="background:#2563eb;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(37,99,235,0.3);transition:all 0.2s;"
+            onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
             📊 Export NAAC/NBA Report (PDF)
           </button>
-          <button onclick="exportDeanNaacExcel()" style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.3);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
+          <button onclick="exportDeanNaacExcel()"
+            style="background:#16a34a;color:white;border:none;border-radius:10px;padding:10px 18px;font-weight:700;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(22,163,74,0.3);transition:all 0.2s;"
+            onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">
             📥 Export Data (Excel)
           </button>
           <button onclick="loadOverallAnalysis(true)" class="btn"
@@ -572,13 +577,15 @@
       </div>
 
       <!-- ASSIGNED YEAR FILTER BAR -->
-      <div class="card-panel" style="margin-bottom:24px;padding:18px 24px;background:white;border-radius:16px;border:1px solid var(--border);box-shadow:0 2px 10px rgba(15,76,129,0.04);">
+      <div class="card-panel"
+        style="margin-bottom:24px;padding:18px 24px;background:white;border-radius:16px;border:1px solid var(--border);box-shadow:0 2px 10px rgba(15,76,129,0.04);">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
           <div style="display:flex;align-items:center;gap:12px;">
             <span style="font-size:22px;">🎓</span>
             <div>
               <div style="font-weight:700;font-size:15px;color:var(--primary);">Filter by Academic Year</div>
-              <div style="font-size:12px;color:var(--muted);" id="anYearFilterSubtitle">Showing analytics & tables for assigned student years</div>
+              <div style="font-size:12px;color:var(--muted);" id="anYearFilterSubtitle">Showing analytics & tables for
+                assigned student years</div>
             </div>
           </div>
           <div id="anYearButtonsContainer" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -634,15 +641,18 @@
 
       <!-- Branch Score Range Analysis Matrix Table -->
       <div class="card-panel" style="margin-top:24px;">
-        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+        <div class="card-header"
+          style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
           <div>
             <div class="card-title">📈 Student Score Range Distribution Matrix</div>
             <div style="font-size:12px;color:var(--muted);margin-top:4px;">
-              Distribution of students by score ranges (0, 1–10, 11–50, 51–100, 101–150, &gt;150 pts) across assigned branches.
+              Distribution of students by score ranges (0, 1–10, 11–50, 51–100, 101–150, &gt;150 pts) across assigned
+              branches.
             </div>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <button onclick="refreshScoreMatrixTable()" class="btn" style="background:#f1f5f9;color:var(--primary);border:1px solid var(--border);font-size:12px;padding:8px 14px;">
+            <button onclick="refreshScoreMatrixTable()" class="btn"
+              style="background:#f1f5f9;color:var(--primary);border:1px solid var(--border);font-size:12px;padding:8px 14px;">
               🔄 Refresh Table
             </button>
             <button onclick="downloadScoreMatrixCSV()" class="btn btn-success" style="font-size:12px;padding:8px 14px;">
@@ -666,7 +676,8 @@
             </thead>
             <tbody id="anScoreMatrixBody">
               <tr>
-                <td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Loading matrix analysis...</td>
+                <td colspan="8" style="text-align:center;padding:30px;color:var(--muted);">Loading matrix analysis...
+                </td>
               </tr>
             </tbody>
           </table>
@@ -699,7 +710,7 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>S.No</th>
               <th>Faculty Name</th>
               <th>Username</th>
               <th>Department</th>
@@ -803,7 +814,7 @@
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>S.No</th>
               <th>Student Name</th>
               <th>Student ID / PIN</th>
               <th>Branch</th>
@@ -1079,6 +1090,7 @@
         const dData = JSON.parse(localStorage.getItem('deanData') || localStorage.getItem('user') || '{}');
         const sessId = localStorage.getItem('sessionId');
         if (!dData.username && !dData._id) return;
+        if (!sessId) return;
         try {
           const res = await fetch('/api/admin/verify-session', {
             method: 'POST',
@@ -1093,8 +1105,8 @@
               window.location.replace('index.html');
             }
           }
-        } catch (e) {}
-      }, 4000);
+        } catch (e) { }
+      }, 6000);
     }
 
     let currentDean = null;
@@ -1955,7 +1967,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: dData.username, id: dData._id })
         });
-      } catch (e) {}
+      } catch (e) { }
       localStorage.removeItem('deanData');
       localStorage.removeItem('role');
       window.location.replace('index.html');

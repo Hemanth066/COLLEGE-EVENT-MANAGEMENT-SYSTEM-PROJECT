@@ -30,6 +30,10 @@ async function ocStudentInit() {
 
     const res   = await fetch('/api/other-certs/student/' + encodeURIComponent(pin) + '/' + encodeURIComponent(branch));
     const certs = await res.json();
+    window._ocStudentCertsList = Array.isArray(certs) ? certs : [];
+    if (typeof displayScores === 'function') {
+      try { displayScores(); } catch(err) {}
+    }
 
     loading.style.display = 'none';
 
@@ -73,7 +77,7 @@ function ocBuildCard(cert) {
   } else if (cert.uploadStatus === 'approved') {
     actionHtml =
       '<div class="uc-status-row"><span class="uc-pill uc-pill-green" style="font-weight:700;font-size:13px;padding:6px 14px;">' + st.text + '</span></div>' +
-      (cert.fileUrl ? '<a href="' + cert.fileUrl + '" target="_blank" class="uc-action" style="display:inline-block;text-align:center;text-decoration:none;background:rgba(34,197,94,0.12);color:#15803d;border:1px solid rgba(34,197,94,0.3);margin-top:8px;">👁 View Submitted Certificate</a>' : '');
+      (cert.uploadId || cert.fileUrl ? '<button onclick="accessOtherCertificate(\'' + (cert.uploadId || '') + '\', \'' + (cert.fileUrl || '') + '\')" class="uc-action" style="display:inline-block;text-align:center;background:rgba(34,197,94,0.12);color:#15803d;border:1px solid rgba(34,197,94,0.3);margin-top:8px;width:100%;cursor:pointer;">👁 View Submitted Certificate</button>' : '');
   } else if (cert.uploadStatus === 'rejected') {
     actionHtml =
       '<div class="uc-status-row"><span class="uc-pill uc-pill-red">❌ Rejected — contact faculty</span></div>' +
@@ -84,7 +88,7 @@ function ocBuildCard(cert) {
     // Pending
     actionHtml =
       '<div class="uc-status-row"><span class="uc-pill" style="background:rgba(234,179,8,0.15);color:#ca8a04;font-weight:700;padding:6px 14px;">' + st.text + '</span></div>' +
-      (cert.fileUrl ? '<a href="' + cert.fileUrl + '" target="_blank" class="uc-action" style="display:inline-block;text-align:center;text-decoration:none;background:rgba(30,136,229,0.1);color:var(--blue);border:1px solid rgba(30,136,229,0.25);margin-top:8px;">👁 View Uploaded File</a>' : '');
+      (cert.uploadId || cert.fileUrl ? '<button onclick="accessOtherCertificate(\'' + (cert.uploadId || '') + '\', \'' + (cert.fileUrl || '') + '\')" class="uc-action" style="display:inline-block;text-align:center;background:rgba(30,136,229,0.1);color:var(--blue);border:1px solid rgba(30,136,229,0.25);margin-top:8px;width:100%;cursor:pointer;">👁 View Uploaded File</button>' : '');
   }
 
   var descHtml = cert.description
@@ -195,4 +199,25 @@ async function ocStudentUpload(input) {
     overlay.style.opacity = '0';
     setTimeout(function() { overlay.remove(); }, 300);
   }, 3000);
+}
+
+async function accessOtherCertificate(uploadId, fallbackUrl) {
+  if (!uploadId) {
+    if (fallbackUrl) window.open(fallbackUrl, '_blank');
+    return;
+  }
+  try {
+    const res = await fetch('/api/other-certs/view/' + uploadId);
+    const data = await res.json();
+    if (res.ok && data.fileUrl) {
+      window.open(data.fileUrl, '_blank');
+    } else if (fallbackUrl) {
+      window.open(fallbackUrl, '_blank');
+    } else {
+      alert(data.message || 'Unable to access certificate file.');
+    }
+  } catch (e) {
+    if (fallbackUrl) window.open(fallbackUrl, '_blank');
+    else alert('Error accessing certificate file.');
+  }
 }

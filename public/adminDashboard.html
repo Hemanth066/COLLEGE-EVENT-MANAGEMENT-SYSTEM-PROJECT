@@ -1266,11 +1266,19 @@
             Configure automated certificate retention. Certificate files older than the retention period will be automatically deleted from storage to save space, but will be <strong>lazily regenerated on-the-fly</strong> whenever a student views or downloads them.
           </p>
 
-          <div class="form-group" style="margin-top:20px;">
-            <label for="certRetentionInput">Certificate Retention Period (Days)</label>
-            <input type="number" id="certRetentionInput" min="0" max="365" placeholder="e.g. 30" style="max-width:260px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;">
+            <div class="form-group">
+              <label for="certRetentionInput">🏅 Event Cert Retention (Days)</label>
+              <input type="number" id="certRetentionInput" min="0" max="365" placeholder="e.g. 30" style="width:100%;">
+              <small style="color:var(--muted);display:block;margin-top:4px;font-size:12px;">Applies to faculty generated event certs.</small>
+            </div>
+            <div class="form-group">
+              <label for="otherCertRetentionInput">📜 Other Cert Retention (Days)</label>
+              <input type="number" id="otherCertRetentionInput" min="0" max="365" placeholder="e.g. 30" style="width:100%;">
+              <small style="color:var(--muted);display:block;margin-top:4px;font-size:12px;">Applies post-approval to student uploaded certs.</small>
+            </div>
           </div>
-          <button class="btn btn-primary" onclick="saveCertificateSettings()" style="margin-top:10px;">💾 Save Retention Settings</button>
+          <button class="btn btn-primary" onclick="saveCertificateSettings()" style="margin-top:14px;">💾 Save Retention Settings</button>
         </div>
 
         <hr style="border:none;border-top:1px solid var(--border);margin:24px 0;">

@@ -186,13 +186,19 @@ function renderStudents(list) {
   const tbody = document.getElementById('studentsBody');
   const downloadWrap = document.getElementById('studentDownloadWrap');
 
-  if (!list.length) {
+  if (!list || !list.length) {
     tbody.innerHTML = '<tr><td colspan="7" class="no-data">No students found for your branch/year</td></tr>';
     if (downloadWrap) downloadWrap.style.display = 'none';
     return;
   }
 
-  tbody.innerHTML = list.map((s, i) => {
+  const sortedList = [...list].sort((a, b) => {
+    const pinA = String(a.pinNumber || a.studentId || a.username || '').trim();
+    const pinB = String(b.pinNumber || b.studentId || b.username || '').trim();
+    return pinA.localeCompare(pinB, undefined, { numeric: true, sensitivity: 'base' });
+  });
+
+  tbody.innerHTML = sortedList.map((s, i) => {
     const totalScore = (s.score || 0) + (s.eventScore || 0);
     return `<tr>
       <td>${i + 1}</td>

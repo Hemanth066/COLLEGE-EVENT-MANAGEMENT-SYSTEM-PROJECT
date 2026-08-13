@@ -4,10 +4,55 @@ const multer     = require('multer');
 const cloudinary = require('../config/cloudinary');
 const path       = require('path');
 const fs         = require('fs');
+const mongoose     = require('mongoose');
 const OtherCertificate = require('../models/OtherCertificate');
 const OtherCertUpload  = require('../models/OtherCertUpload');
 const Student          = require('../models/Student');
 const Notification     = require('../models/Notification');
+
+// Helper to store upload buffer in MongoDB GridFS bucket
+async function storeInGridFS(filePath, filename) {
+  try {
+    const db = mongoose.connection.db;
+    if (!db) return null;
+    const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'otherCertBackups' });
+    const uploadStream = bucket.openUploadStream(filename);
+    const readStream = fs.createReadStream(filePath);
+    readStream.pipe(uploadStream);
+    return new Promise((resolve) => {
+      uploadStream.on('finish', () => resolve(uploadStream.id));
+      uploadStream.on('error', (err) => {
+        console.error('GridFS stream upload error:', err.message);
+        resolve(null);
+      });
+    });
+  } catch (e) {
+    console.error('GridFS backup error:', e.message);
+    return null;
+  }
+}
+
+// Helper to restore from GridFS to temp file
+async function restoreFromGridFS(backupId, tempPath) {
+  try {
+    const db = mongoose.connection.db;
+    if (!db) return false;
+    const bucket = new mongoose.mongo.GridFSBucket(db, { bucketName: 'otherCertBackups' });
+    const downloadStream = bucket.openDownloadStream(new mongoose.Types.ObjectId(backupId));
+    const writeStream = fs.createWriteStream(tempPath);
+    downloadStream.pipe(writeStream);
+    return new Promise((resolve) => {
+      writeStream.on('finish', () => resolve(true));
+      writeStream.on('error', (err) => {
+        console.error('GridFS stream download error:', err.message);
+        resolve(false);
+      });
+    });
+  } catch (e) {
+    console.error('GridFS restore error:', e.message);
+    return false;
+  }
+}
 
 function parseDateInput(value, timeValue = null) {
   if (!value) return null;
@@ -35,10 +80,6 @@ function parseDateInput(value, timeValue = null) {
 
 function isCertificateVisible(cert, now = new Date()) {
   if (!cert || cert.status !== 'active') return false;
-  if (cert.endDate) {
-    const endDate = new Date(cert.endDate);
-    if (now > endDate) return false;
-  }
   return true;
 }
 
@@ -120,11 +161,30 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// GET /api/other-certs/faculty/:facultyId — all certificates created by this faculty
+// GET /api/other-certs/all — fetch all created certificates
+router.get('/all', async (req, res) => {
+  try {
+    const certs = await OtherCertificate.find().sort({ createdAt: -1 });
+    res.json(certs);
+  } catch (err) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// GET /api/other-certs/faculty/:facultyId — all certificates created by this faculty (or all if ID invalid)
 router.get('/faculty/:facultyId', async (req, res) => {
   try {
-    const certs = await OtherCertificate.find({ facultyId: req.params.facultyId })
-      .sort({ createdAt: -1 });
+    const fId = (req.params.facultyId || '').trim();
+    let query = {};
+    if (fId && fId !== 'all' && fId !== 'undefined' && fId !== 'null') {
+      query = {
+        $or: [
+          { facultyId: fId },
+          { facultyId: new RegExp(`^${fId}$`, 'i') }
+        ]
+      };
+    }
+    const certs = await OtherCertificate.find(query).sort({ createdAt: -1 });
     res.json(certs);
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
@@ -180,8 +240,6 @@ router.post('/extend/:certId', async (req, res) => {
   }
 });
 
-const mongoose   = require('mongoose');
-
 // DELETE /api/other-certs/:certId or POST /api/other-certs/delete/:certId
 async function deleteCertHandler(req, res) {
   try {
@@ -215,8 +273,11 @@ router.post('/delete/:certId', deleteCertHandler);
 // GET /api/other-certs/uploads/:certId
 router.get('/uploads/:certId', async (req, res) => {
   try {
-    const uploads = await OtherCertUpload.find({ certificateId: req.params.certId })
-      .sort({ uploadedAt: -1 });
+    let query = { certificateId: req.params.certId };
+    if (req.params.certId === 'all' || req.params.certId === 'undefined' || req.params.certId === 'null') {
+      query = {};
+    }
+    const uploads = await OtherCertUpload.find(query).sort({ uploadedAt: -1 });
     res.json(uploads);
   } catch (err) {
     res.status(500).json({ message: 'Server Error' });
@@ -416,9 +477,13 @@ router.post('/upload/:certId', (req, res, next) => {
       return res.status(400).json({ message: 'Already uploaded — waiting for verification' });
     }
 
+    // Store backup buffer in MongoDB GridFS before unlinking temp file
+    const backupId = await storeInGridFS(req.file.path, req.file.originalname);
+
     // Upload to Cloudinary
     const uploadOpts = {
       folder: 'CEM_OtherCerts',
+      asset_folder: 'CEM_OtherCerts',
       resource_type: 'auto',
       public_id: `oc_${studentPin}_${Date.now()}`,
       tags: ['CEM_OtherCerts', studentPin, studentName].filter(Boolean),
@@ -431,6 +496,7 @@ router.post('/upload/:certId', (req, res, next) => {
     const record = existing
       ? Object.assign(existing, {
           fileUrl: result.secure_url,
+          fileBackupId: backupId || existing.fileBackupId,
           fileName: req.file.originalname,
           status: 'pending',
           uploadedAt: new Date(),
@@ -443,6 +509,7 @@ router.post('/upload/:certId', (req, res, next) => {
           studentName:     studentName || '',
           branch:          branch || cert.branch,
           fileUrl:         result.secure_url,
+          fileBackupId:    backupId,
           fileName:        req.file.originalname
         });
 
@@ -467,6 +534,67 @@ router.post('/upload/:certId', (req, res, next) => {
   } catch (err) {
     if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     res.status(500).json({ message: 'Upload failed: ' + err.message });
+  }
+});
+
+// GET /api/other-certs/view/:uploadId — View or lazily restore student uploaded certificate from GridFS
+router.get('/view/:uploadId', async (req, res) => {
+  try {
+    const upload = await OtherCertUpload.findById(req.params.uploadId);
+    if (!upload) return res.status(404).json({ message: 'Certificate upload record not found' });
+
+    // Fetch Admin otherCertRetentionDays setting
+    const SystemSetting = require('../models/SystemSetting');
+    let setting = await SystemSetting.findOne({ key: 'otherCertRetentionDays' });
+    let retentionDays = (setting && setting.value !== undefined && setting.value !== null) ? Number(setting.value) : 30;
+    if (isNaN(retentionDays) || retentionDays < 0) retentionDays = 30;
+
+    let isExpired = false;
+    if (upload.status === 'approved' && upload.reviewedAt) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - retentionDays);
+      if (upload.reviewedAt < cutoff) {
+        isExpired = true;
+      }
+    }
+
+    // Return existing active Cloudinary URL if present and not expired
+    if (upload.fileUrl && !isExpired) {
+      return res.json({ fileUrl: upload.fileUrl, restored: false });
+    }
+
+    // Lazy restoration from GridFS backup if fileUrl is null or expired!
+    if (upload.fileBackupId) {
+      const tempPath = path.join(uploadDir, `restore_${upload.studentPin}_${Date.now()}_${upload.fileName || 'cert.pdf'}`);
+      const restored = await restoreFromGridFS(upload.fileBackupId, tempPath);
+      if (restored && fs.existsSync(tempPath)) {
+        const uploadOpts = {
+          folder: 'CEM_OtherCerts',
+          asset_folder: 'CEM_OtherCerts',
+          resource_type: 'auto',
+          public_id: `oc_${upload.studentPin}_${Date.now()}`,
+          tags: ['CEM_OtherCerts', upload.studentPin, upload.studentName].filter(Boolean),
+          use_filename: true
+        };
+        const result = await cloudinary.uploader.upload(tempPath, uploadOpts);
+        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
+
+        upload.fileUrl = result.secure_url;
+        upload.reviewedAt = new Date(); // Reset retention timer on restore/view!
+        await upload.save();
+
+        return res.json({ fileUrl: result.secure_url, restored: true, message: 'Certificate file restored from database backup' });
+      }
+    }
+
+    if (upload.fileUrl) {
+      return res.json({ fileUrl: upload.fileUrl, restored: false });
+    }
+
+    return res.status(404).json({ message: 'Certificate file has expired and backup is unavailable' });
+  } catch (err) {
+    console.error('OtherCert view error:', err);
+    res.status(500).json({ message: 'Failed to access certificate: ' + err.message });
   }
 });
 
