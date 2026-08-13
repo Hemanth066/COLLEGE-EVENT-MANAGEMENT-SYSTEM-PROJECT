@@ -417,11 +417,12 @@ router.post('/upload/:certId', (req, res, next) => {
     }
 
     // Upload to Cloudinary
-    const isPdf = req.file.mimetype === 'application/pdf';
     const uploadOpts = {
       folder: 'CEM_OtherCerts',
-      resource_type: isPdf ? 'raw' : 'image',
-      public_id: `oc_${studentPin}_${Date.now()}`
+      resource_type: 'auto',
+      public_id: `oc_${studentPin}_${Date.now()}`,
+      tags: ['CEM_OtherCerts', studentPin, studentName].filter(Boolean),
+      use_filename: true
     };
     const result = await cloudinary.uploader.upload(req.file.path, uploadOpts);
     if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
