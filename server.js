@@ -29,7 +29,7 @@ app.use(express.static("public", {
 
 // MongoDB Connection
 const ATLAS_URI = "mongodb+srv://cemuser:Cem12345@cem.c5r0uv0.mongodb.net/CEM?retryWrites=true&w=majority&appName=CEM";
-const MONGO_URI = process.env.MONGO_URI || ATLAS_URI;
+const MONGO_URI = process.env.MONGO_URI;
 
 async function connectDB() {
   try {
