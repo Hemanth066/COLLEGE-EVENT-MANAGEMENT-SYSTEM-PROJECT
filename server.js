@@ -29,22 +29,20 @@ app.use(express.static("public", {
 
 // MongoDB Connection
 const ATLAS_URI = "mongodb+srv://cemuser:Cem12345@cem.c5r0uv0.mongodb.net/CEM?retryWrites=true&w=majority&appName=CEM";
-const MONGO_URI = process.env.MONGO_URI || ATLAS_URI;
+const MONGO_URI = process.env.MONGO_URI;
 
 async function connectDB() {
   try {
-    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
-    console.log("MongoDB Connected ✅ (Atlas/Primary)");
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000
+    });
+
+    console.log("MongoDB Connected ✅");
   } catch (err) {
-    console.warn("Primary MongoDB Connection failed. Retrying Atlas Connection...", err.message);
-    try {
-      await mongoose.connect(ATLAS_URI, { serverSelectionTimeoutMS: 10000 });
-      console.log("MongoDB Connected ✅ (Atlas Fallback)");
-    } catch (localErr) {
-      console.error("Failed to connect to MongoDB Atlas:", localErr.message);
-    }
+    console.error("Failed to connect to MongoDB:", err.message);
   }
 }
+
 connectDB();
 
 
@@ -57,9 +55,9 @@ const feedbackRoutes = require("./routes/feedbackRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const departmentHeadRoutes = require("./routes/departmentHeadRoutes");
-const certificateRoutes    = require("./routes/certificateRoutes");
-const otherCertRoutes      = require("./routes/otherCertRoutes");
-const pastEventRoutes      = require("./routes/pastEventRoutes");
+const certificateRoutes = require("./routes/certificateRoutes");
+const otherCertRoutes = require("./routes/otherCertRoutes");
+const pastEventRoutes = require("./routes/pastEventRoutes");
 
 console.log("Routes imported successfully");
 
@@ -98,8 +96,8 @@ app.get("/api/branches", async (_req, res) => {
 });
 app.use("/api/department-head", departmentHeadRoutes);
 app.use("/api/certificates", certificateRoutes);
-app.use("/api/other-certs",  otherCertRoutes);
-app.use("/api/past-events",  pastEventRoutes);
+app.use("/api/other-certs", otherCertRoutes);
+app.use("/api/past-events", pastEventRoutes);
 
 console.log("Routes registered:");
 console.log("  - /api/faculty");
