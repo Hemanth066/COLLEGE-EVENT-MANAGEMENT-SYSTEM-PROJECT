@@ -33,18 +33,16 @@ const MONGO_URI = process.env.MONGO_URI;
 
 async function connectDB() {
   try {
-    await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
-    console.log("MongoDB Connected ✅ (Atlas/Primary)");
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 10000
+    });
+
+    console.log("MongoDB Connected ✅");
   } catch (err) {
-    console.warn("Primary MongoDB Connection failed. Retrying Atlas Connection...", err.message);
-    try {
-      await mongoose.connect(ATLAS_URI, { serverSelectionTimeoutMS: 10000 });
-      console.log("MongoDB Connected ✅ (Atlas Fallback)");
-    } catch (localErr) {
-      console.error("Failed to connect to MongoDB Atlas:", localErr.message);
-    }
+    console.error("Failed to connect to MongoDB:", err.message);
   }
 }
+
 connectDB();
 
 
