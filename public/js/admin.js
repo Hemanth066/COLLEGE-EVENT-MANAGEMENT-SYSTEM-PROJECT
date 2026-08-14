@@ -487,6 +487,8 @@ function updateBranchDropdowns() {
       branchNames.map(b => `<option value="${b}">${b}</option>`).join('');
     if (currentVal && branchNames.includes(currentVal)) select.value = currentVal;
   });
+
+  populateRegistrationBranchDropdown();
 }
 
 // ── EVENTS ─────────────────────────────────────────────
@@ -516,18 +518,226 @@ async function deleteEvent(id, title) {
 
 // ── REGISTRATIONS ──────────────────────────────────────
 async function loadRegistrations() {
-  const r = await fetch('/api/admin/registrations');
-  allRegs = await r.json();
+  try {
+    if (!allBranches || !allBranches.length) {
+      const rB = await fetch('/api/admin/branches');
+      if (rB.ok) allBranches = await rB.json();
+    }
+    const r = await fetch('/api/admin/registrations');
+    if (r.ok) {
+      allRegs = await r.json();
+    } else {
+      allRegs = [];
+    }
+
+    populateRegistrationEventDropdown();
+    populateRegistrationBranchDropdown();
+    filterRegistrations();
+  } catch (e) {
+    console.error('Error loading registrations:', e);
+    const tbody = document.getElementById('regsBody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="8" class="no-data">Failed to load registrations.</td></tr>';
+  }
+}
+
+function populateRegistrationEventDropdown() {
+  const select = document.getElementById('regEventFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const eventMap = new Map();
+
+  allRegs.forEach(reg => {
+    if (reg.eventId && typeof reg.eventId === 'object' && reg.eventId.title) {
+      eventMap.set(String(reg.eventId._id), reg.eventId.title);
+    } else if (typeof reg.eventId === 'string') {
+      eventMap.set(reg.eventId, 'Event ID: ' + reg.eventId);
+    }
+  });
+
+  if (Array.isArray(allEvents)) {
+    allEvents.forEach(ev => {
+      if (ev._id && ev.title && !eventMap.has(String(ev._id))) {
+        eventMap.set(String(ev._id), ev.title);
+      }
+    });
+  }
+
+  let html = '<option value="">🎯 All Events (' + eventMap.size + ')</option>';
+  Array.from(eventMap.entries())
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .forEach(([id, title]) => {
+      html += `<option value="${id}">${title}</option>`;
+    });
+
+  select.innerHTML = html;
+  if (currentVal && Array.from(eventMap.keys()).includes(currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+function populateRegistrationBranchDropdown() {
+  const select = document.getElementById('regBranchFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const defaultBranches = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'AIML', 'DS', 'MCA', 'MBA'];
+  const branchSet = new Set(defaultBranches);
+
+  if (Array.isArray(allBranches) && allBranches.length > 0) {
+    allBranches.forEach(b => {
+      if (b.name) branchSet.add(b.name.trim().toUpperCase());
+    });
+  }
+
+  if (Array.isArray(allRegs)) {
+    allRegs.forEach(reg => {
+      if (reg.branch) branchSet.add(reg.branch.trim().toUpperCase());
+    });
+  }
+
+  let html = '<option value="">🏛️ All Branches</option>';
+  Array.from(branchSet)
+    .sort()
+    .forEach(b => {
+      html += `<option value="${b}">${b}</option>`;
+    });
+
+  select.innerHTML = html;
+  if (currentVal && branchSet.has(currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+function filterRegistrations() {
+  const q = (document.getElementById('regSearchInput')?.value || '').toLowerCase().trim();
+  const eventFilter = (document.getElementById('regEventFilter')?.value || '').trim();
+  const branchFilter = (document.getElementById('regBranchFilter')?.value || '').toLowerCase().trim();
+  const yearFilter = (document.getElementById('regYearFilter')?.value || '').trim();
+  const statusFilter = (document.getElementById('regStatusFilter')?.value || '').toLowerCase().trim();
+
+  let filtered = allRegs.filter(reg => {
+    // 1. Event filter match
+    if (eventFilter) {
+      const regEvId = reg.eventId && typeof reg.eventId === 'object' ? String(reg.eventId._id) : String(reg.eventId || '');
+      if (regEvId !== eventFilter) return false;
+    }
+
+    // 2. Branch filter match
+    if (branchFilter) {
+      const regBranch = (reg.branch || '').toLowerCase().trim();
+      if (regBranch !== branchFilter) return false;
+    }
+
+    // 3. Year filter match
+    if (yearFilter) {
+      const rYr = String(reg.year || '').trim().toLowerCase();
+      const rDigit = rYr.replace(/[^0-9]/g, '');
+      const targetDigit = String(yearFilter).replace(/[^0-9]/g, '');
+
+      const matchYear = rYr === yearFilter.toLowerCase() || (rDigit && targetDigit && rDigit === targetDigit);
+      if (!matchYear) return false;
+    }
+
+    // 4. Status filter match
+    if (statusFilter) {
+      if (statusFilter === 'attended' && !reg.attended) return false;
+      if (statusFilter === 'registered' && reg.attended) return false;
+    }
+
+    // 5. Search input match
+    if (q) {
+      const sName = (reg.studentName || reg.studentId || '').toLowerCase();
+      const sPin = (reg.pinNumber || '').toLowerCase();
+      const evTitle = reg.eventId && typeof reg.eventId === 'object' ? (reg.eventId.title || '').toLowerCase() : '';
+      const branch = (reg.branch || '').toLowerCase();
+      const year = (reg.year || '').toLowerCase();
+      const statusText = reg.attended ? 'attended' : 'registered';
+
+      const match = sName.includes(q) || sPin.includes(q) || evTitle.includes(q) || branch.includes(q) || year.includes(q) || statusText.includes(q);
+      if (!match) return false;
+    }
+
+    return true;
+  });
+
+  renderRegistrationsTable(filtered);
+}
+
+function renderRegistrationsTable(list) {
   const tbody = document.getElementById('regsBody');
-  if (!allRegs.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No registrations found</td></tr>'; return; }
-  tbody.innerHTML = allRegs.map((reg, i) => `
-    <tr>
-      <td>${i+1}</td>
-      <td>${reg.studentName||reg.studentId||'—'}</td>
-      <td>${reg.eventId?.title || reg.eventId || '—'}</td>
-      <td><span class="badge ${reg.attended?'badge-green':'badge-blue'}">${reg.attended?'Attended':'Registered'}</span></td>
-      <td>${reg.registeredAt ? new Date(reg.registeredAt).toLocaleDateString() : '—'}</td>
-    </tr>`).join('');
+  if (!tbody) return;
+
+  const statTotal = document.getElementById('statRegTotal');
+  const statAttended = document.getElementById('statRegAttended');
+  const statPending = document.getElementById('statRegPending');
+  const summaryText = document.getElementById('regSummaryText');
+
+  const attendedCount = list.filter(r => r.attended).length;
+  const pendingCount = list.length - attendedCount;
+
+  if (statTotal) statTotal.textContent = list.length;
+  if (statAttended) statAttended.textContent = attendedCount;
+  if (statPending) statPending.textContent = pendingCount;
+  if (summaryText) {
+    summaryText.textContent = `Showing ${list.length} of ${allRegs.length} total event registration records`;
+  }
+
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="no-data" style="text-align:center;padding:32px;color:var(--muted);">No registrations found for selected event or search criteria</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map((reg, i) => {
+    const evTitle = reg.eventId && typeof reg.eventId === 'object' ? (reg.eventId.title || '—') : (reg.eventId || '—');
+    const evDept = reg.eventId && typeof reg.eventId === 'object' && reg.eventId.department ? reg.eventId.department : '';
+    const dateStr = reg.registeredAt ? new Date(reg.registeredAt).toLocaleDateString() : (reg._id ? new Date(parseInt(reg._id.substring(0,8), 16)*1000).toLocaleDateString() : '—');
+    const scoreVal = typeof reg.score === 'number' ? reg.score : 0;
+
+    return `
+      <tr>
+        <td><strong>${i + 1}</strong></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--blue-dark));color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">
+              ${(reg.studentName || 'S').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div style="font-weight:600;color:var(--text);">${reg.studentName || '—'}</div>
+            </div>
+          </div>
+        </td>
+        <td><code style="background:#f1f5f9;padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--blue-dark);">${reg.pinNumber || reg.studentId || '—'}</code></td>
+        <td><span class="badge badge-blue" style="font-size:11.5px;">${reg.branch || '—'} ${reg.year ? '· Yr ' + reg.year : ''}</span></td>
+        <td>
+          <div style="font-weight:600;color:var(--primary);">${evTitle}</div>
+          ${evDept ? `<div style="font-size:11px;color:var(--muted);">${evDept} Department</div>` : ''}
+        </td>
+        <td>
+          <span class="badge ${reg.attended ? 'badge-green' : 'badge-blue'}" style="font-size:12px;padding:4px 10px;">
+            ${reg.attended ? '✅ Attended' : '🔵 Registered'}
+          </span>
+        </td>
+        <td><strong style="color:${scoreVal > 0 ? '#16a34a' : 'var(--muted)'};">${scoreVal} pts</strong></td>
+        <td style="font-size:12.5px;color:var(--muted);">${dateStr}</td>
+      </tr>`;
+  }).join('');
+}
+
+function resetRegistrationFilters() {
+  const searchInput = document.getElementById('regSearchInput');
+  const eventFilter = document.getElementById('regEventFilter');
+  const branchFilter = document.getElementById('regBranchFilter');
+  const yearFilter = document.getElementById('regYearFilter');
+  const statusFilter = document.getElementById('regStatusFilter');
+
+  if (searchInput) searchInput.value = '';
+  if (eventFilter) eventFilter.value = '';
+  if (branchFilter) branchFilter.value = '';
+  if (yearFilter) yearFilter.value = '';
+  if (statusFilter) statusFilter.value = '';
+
+  filterRegistrations();
 }
 
 // ── MODAL SAVE ─────────────────────────────────────────

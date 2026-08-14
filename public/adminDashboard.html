@@ -1230,24 +1230,95 @@
     <!-- REGISTRATIONS TAB -->
     <div id="registrations" class="tab-content">
       <div class="table-box">
-        <div class="table-box-header">
-          <h3>📋 All Registrations</h3>
-          <input class="search-input" placeholder="🔍 Search..." oninput="filterTable('regsTable',this.value)">
+        <div class="table-box-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:16px;">
+          <div>
+            <h3 style="margin:0;font-size:20px;font-weight:700;color:var(--blue-dark);display:flex;align-items:center;gap:8px;">
+              📋 Event-Wise Student Registrations
+            </h3>
+            <div style="font-size:12.5px;color:var(--muted);margin-top:4px;" id="regSummaryText">
+              Viewing all event registration records
+            </div>
+          </div>
+
+          <!-- Stats Badges -->
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="background:#f1f5f9;padding:6px 14px;border-radius:10px;font-size:12.5px;font-weight:600;color:var(--blue-dark);border:1px solid #e2e8f0;">
+              Total: <strong id="statRegTotal" style="color:var(--blue);">0</strong>
+            </div>
+            <div style="background:rgba(16,185,129,0.1);padding:6px 14px;border-radius:10px;font-size:12.5px;font-weight:600;color:#059669;border:1px solid rgba(16,185,129,0.25);">
+              Attended: <strong id="statRegAttended">0</strong>
+            </div>
+            <div style="background:rgba(30,136,229,0.1);padding:6px 14px;border-radius:10px;font-size:12.5px;font-weight:600;color:#1e88e5;border:1px solid rgba(30,136,229,0.25);">
+              Registered: <strong id="statRegPending">0</strong>
+            </div>
+          </div>
         </div>
+
+        <!-- Filter & Search Controls Bar -->
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#f8fafc;padding:14px 16px;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:20px;">
+          <!-- 1. Search Bar -->
+          <div style="flex:1;min-width:220px;position:relative;">
+            <input type="text" id="regSearchInput" class="search-input" style="width:100%;padding-left:14px;" placeholder="🔍 Search student name, PIN, event title, branch..." oninput="filterRegistrations()">
+          </div>
+
+          <!-- 2. Event Wise Filter Dropdown -->
+          <div style="min-width:200px;">
+            <select id="regEventFilter" onchange="filterRegistrations()" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #cbd5e1;background:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+              <option value="">🎯 All Events</option>
+            </select>
+          </div>
+
+          <!-- 3. Branch Filter Dropdown -->
+          <div style="min-width:140px;">
+            <select id="regBranchFilter" onchange="filterRegistrations()" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #cbd5e1;background:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+              <option value="">🏛️ All Branches</option>
+            </select>
+          </div>
+
+          <!-- 4. Year Filter Dropdown -->
+          <div style="min-width:130px;">
+            <select id="regYearFilter" onchange="filterRegistrations()" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #cbd5e1;background:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+              <option value="">🎓 All Years</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+          </div>
+
+          <!-- 5. Attendance Status Filter -->
+          <div style="min-width:140px;">
+            <select id="regStatusFilter" onchange="filterRegistrations()" style="width:100%;padding:10px 14px;border-radius:12px;border:1.5px solid #cbd5e1;background:white;font-size:13px;font-family:'Poppins',sans-serif;outline:none;cursor:pointer;">
+              <option value="">📊 All Statuses</option>
+              <option value="attended">✅ Attended</option>
+              <option value="registered">🔵 Registered Only</option>
+            </select>
+          </div>
+
+          <!-- Clear Button -->
+          <button onclick="resetRegistrationFilters()" class="btn btn-sm" style="background:#e2e8f0;color:#475569;border:none;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer;">
+            🔄 Clear
+          </button>
+        </div>
+
+        <!-- Table View -->
         <div style="overflow-x:auto;">
           <table id="regsTable">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Student</th>
-                <th>Event</th>
+                <th>Student Name</th>
+                <th>PIN / Roll No</th>
+                <th>Branch & Year</th>
+                <th>Event Title</th>
                 <th>Status</th>
-                <th>Registered On</th>
+                <th>Score</th>
+                <th>Registered Date</th>
               </tr>
             </thead>
             <tbody id="regsBody">
               <tr>
-                <td colspan="5" class="no-data">Loading...</td>
+                <td colspan="8" class="no-data">Loading registrations...</td>
               </tr>
             </tbody>
           </table>

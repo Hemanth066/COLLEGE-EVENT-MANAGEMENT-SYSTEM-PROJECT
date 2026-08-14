@@ -1160,6 +1160,42 @@
       return true;
     }
 
+    function isFacultyAllowedForDean(f, dean) {
+      if (!dean) return true;
+
+      const deanBranchesStr = (dean.branches || 'ALL').trim();
+      if (!deanBranchesStr || deanBranchesStr.toUpperCase() === 'ALL') {
+        return true;
+      }
+
+      const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+      const facultyDept = (f.department || '').trim().toUpperCase();
+      const coordBranch = (f.coordinatorBranch || '').trim().toUpperCase();
+
+      if (facultyDept && allowedBranches.includes(facultyDept)) return true;
+      if (coordBranch && allowedBranches.includes(coordBranch)) return true;
+
+      return false;
+    }
+
+    function isCoordinatorAllowedForDean(c, dean) {
+      if (!dean) return true;
+
+      const deanBranchesStr = (dean.branches || 'ALL').trim();
+      if (!deanBranchesStr || deanBranchesStr.toUpperCase() === 'ALL') {
+        return true;
+      }
+
+      const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+      const coordBranch = (c.coordinatorBranch || c.department || '').trim().toUpperCase();
+      const dept = (c.department || '').trim().toUpperCase();
+
+      if (coordBranch && allowedBranches.includes(coordBranch)) return true;
+      if (dept && allowedBranches.includes(dept)) return true;
+
+      return false;
+    }
+
     function populateDeanFilterDropdowns(dean) {
       if (!dean) return;
 
@@ -1191,6 +1227,34 @@
           const allowedYears = rawYears.split(',').map(y => y.trim().replace(/[^0-9]/g, '')).filter(Boolean);
           yearFilter.innerHTML = `<option value="">All Assigned Years</option>` +
             allowedYears.map(y => `<option value="${y}">Year ${y}</option>`).join('');
+        }
+      }
+
+      // 3. Populate Faculty Department Filter
+      const facDeptFilter = document.getElementById('facultyDeptFilter');
+      if (facDeptFilter) {
+        const rawBranches = (dean.branches || 'ALL').trim();
+        if (rawBranches.toUpperCase() === 'ALL') {
+          facDeptFilter.innerHTML = `<option value="">All Departments</option>` +
+            allBranchesList.map(b => `<option value="${b}">${b}</option>`).join('');
+        } else {
+          const allowedBranches = rawBranches.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+          facDeptFilter.innerHTML = `<option value="">All Assigned Departments</option>` +
+            allowedBranches.map(b => `<option value="${b}">${b}</option>`).join('');
+        }
+      }
+
+      // 4. Populate Coordinator Branch Select Dropdown
+      const coordBranchSelect = document.getElementById('coordBranchSelect');
+      if (coordBranchSelect) {
+        const rawBranches = (dean.branches || 'ALL').trim();
+        if (rawBranches.toUpperCase() === 'ALL') {
+          coordBranchSelect.innerHTML = `<option value="">-- Select Branch --</option>` +
+            allBranchesList.map(b => `<option value="${b}">${b}</option>`).join('');
+        } else {
+          const allowedBranches = rawBranches.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+          coordBranchSelect.innerHTML = `<option value="">-- Select Branch --</option>` +
+            allowedBranches.map(b => `<option value="${b}">${b}</option>`).join('');
         }
       }
     }
@@ -1313,7 +1377,10 @@
         }
         if (!allFacultyList || !allFacultyList.length) {
           const resF = await fetch('/api/admin/faculty');
-          if (resF.ok) allFacultyList = await resF.json();
+          if (resF.ok) {
+            const rawF = await resF.json();
+            allFacultyList = rawF.filter(f => isFacultyAllowedForDean(f, currentDean));
+          }
         }
 
         // Apply Year Filter for Analysis view
@@ -1563,16 +1630,35 @@
         const res = await fetch('/api/admin/stats');
         if (!res.ok) return;
         const s = await res.json();
-        document.getElementById('statFacultyCount').textContent = s.faculty || 0;
-        document.getElementById('statStudentCount').textContent = s.students || 0;
+
+        const resF = await fetch('/api/admin/faculty');
+        if (resF.ok) {
+          const rawF = await resF.json();
+          allFacultyList = rawF.filter(f => isFacultyAllowedForDean(f, currentDean));
+          document.getElementById('statFacultyCount').textContent = allFacultyList.length;
+        } else {
+          document.getElementById('statFacultyCount').textContent = s.faculty || 0;
+        }
+
+        const resC = await fetch('/api/admin/coordinators');
+        if (resC.ok) {
+          const rawC = await resC.json();
+          allCoordinatorsList = rawC.filter(c => isCoordinatorAllowedForDean(c, currentDean));
+          document.getElementById('statCoordinatorCount').textContent = allCoordinatorsList.length;
+        } else {
+          document.getElementById('statCoordinatorCount').textContent = s.coordinators || 0;
+        }
+
+        document.getElementById('statStudentCount').textContent = allStudentsList.length || s.students || 0;
         document.getElementById('statEventCount').textContent = s.events || 0;
 
         // Load branch breakdown
         const resStud = await fetch('/api/admin/students');
         if (resStud.ok) {
           const students = await resStud.json();
+          const filteredStudents = students.filter(st => isStudentAllowedForDean(st, currentDean));
           const branchMap = {};
-          students.forEach(st => {
+          filteredStudents.forEach(st => {
             const b = (st.branch || 'OTHER').trim().toUpperCase();
             branchMap[b] = (branchMap[b] || 0) + 1;
           });
@@ -1590,20 +1676,30 @@
     async function loadFacultyData() {
       try {
         const res = await fetch('/api/admin/faculty');
-        allFacultyList = await res.json();
+        if (res.ok) {
+          const raw = await res.json();
+          allFacultyList = raw.filter(f => isFacultyAllowedForDean(f, currentDean));
+        } else {
+          allFacultyList = [];
+        }
         renderFacultyTable(allFacultyList);
+
+        const statFac = document.getElementById('statFacultyCount');
+        if (statFac) statFac.textContent = allFacultyList.length;
 
         // Populate coordinator select dropdown
         const sel = document.getElementById('coordFacultySelect');
-        sel.innerHTML = '<option value="">-- Select Faculty Member --</option>' +
-          allFacultyList.map(f => `<option value="${f._id}">${f.fullName || f.username} (${f.department || 'No Dept'})</option>`).join('');
+        if (sel) {
+          sel.innerHTML = '<option value="">-- Select Faculty Member --</option>' +
+            allFacultyList.map(f => `<option value="${f._id}">${f.fullName || f.username} (${f.department || 'No Dept'})</option>`).join('');
+        }
       } catch (e) { console.error('Faculty load error:', e); }
     }
 
     function renderFacultyTable(list) {
       const tbody = document.getElementById('facultyTableBody');
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No faculty records found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No faculty records found for assigned branches</td></tr>';
         return;
       }
       tbody.innerHTML = list.map((f, i) => `
@@ -1623,7 +1719,7 @@
       const d = document.getElementById('facultyDeptFilter').value.toLowerCase().trim();
       const filtered = allFacultyList.filter(f => {
         const matchQ = !q || (f.fullName || '').toLowerCase().includes(q) || (f.username || '').toLowerCase().includes(q) || (f.email || '').toLowerCase().includes(q);
-        const matchD = !d || (f.department || '').toLowerCase() === d;
+        const matchD = !d || (f.department || '').toLowerCase() === d || (f.coordinatorBranch || '').toLowerCase() === d;
         return matchQ && matchD;
       });
       renderFacultyTable(filtered);
@@ -1632,8 +1728,14 @@
     async function loadCoordinatorsData() {
       try {
         const res = await fetch('/api/admin/coordinators');
-        allCoordinatorsList = await res.json();
-        document.getElementById('statCoordinatorCount').textContent = allCoordinatorsList.length;
+        if (res.ok) {
+          const raw = await res.json();
+          allCoordinatorsList = raw.filter(c => isCoordinatorAllowedForDean(c, currentDean));
+        } else {
+          allCoordinatorsList = [];
+        }
+        const statCoord = document.getElementById('statCoordinatorCount');
+        if (statCoord) statCoord.textContent = allCoordinatorsList.length;
         renderCoordinatorsTable(allCoordinatorsList);
       } catch (e) { console.error('Coordinators load error:', e); }
     }
