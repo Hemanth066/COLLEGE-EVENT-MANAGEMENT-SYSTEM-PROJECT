@@ -108,6 +108,9 @@ router.get('/faculty/:facultyId', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const currentEvent = await Event.findById(req.params.id);
+    if (!currentEvent) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
 
     const updatedData = {
       ...req.body,
@@ -146,8 +149,8 @@ router.put('/:id', async (req, res) => {
     });
 
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error updating event:', err);
+    res.status(500).json({ message: 'Server Error: ' + err.message });
   }
 });
 

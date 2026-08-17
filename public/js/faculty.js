@@ -909,19 +909,50 @@ function loadEventData() {
 async function handleUpdateEvent(e) {
   e.preventDefault();
   
-  const eventId = document.getElementById('eventToUpdate').value;
+  const eventId = document.getElementById('eventToUpdate')?.value;
+  if (!eventId) {
+    showPopup('❌', 'Update Failed', 'Please select an event to edit.', 'error');
+    return;
+  }
+  
+  const facNameEls = document.querySelectorAll('#updateFacultyCoordsContainer .update-fac-name');
+  const facPhoneEls = document.querySelectorAll('#updateFacultyCoordsContainer .update-fac-phone');
+  const facNames = [];
+  const facPhones = [];
+  facNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = facPhoneEls[idx] ? facPhoneEls[idx].value.trim() : '';
+    if (n) {
+      facNames.push(n);
+      if (p) facPhones.push(p);
+    }
+  });
+
+  const stuNameEls = document.querySelectorAll('#updateStudentCoordsContainer .update-stu-name');
+  const stuPhoneEls = document.querySelectorAll('#updateStudentCoordsContainer .update-stu-phone');
+  const stuNames = [];
+  const stuPhones = [];
+  stuNameEls.forEach((el, idx) => {
+    const n = el.value.trim();
+    const p = stuPhoneEls[idx] ? stuPhoneEls[idx].value.trim() : '';
+    if (n) {
+      stuNames.push(n);
+      if (p) stuPhones.push(p);
+    }
+  });
+
   const eventData = {
-    title: document.getElementById('updateTitle').value,
-    description: document.getElementById('updateDescription').value,
-    venue: document.getElementById('updateVenue').value,
-    date: document.getElementById('updateDate').value,
-    time: document.getElementById('updateTime').value,
-    registrationDeadline: document.getElementById('updateRegistrationDeadline').value,
-    faculty: document.getElementById('updateFaculty').value,
-    facultyPhone: document.getElementById('updateFacultyPhone').value,
-    student: document.getElementById('updateStudent').value,
-    studentPhone: document.getElementById('updateStudentPhone').value,
-    maxParticipants: document.getElementById('updateMaxParticipants').value
+    title: document.getElementById('updateTitle')?.value || '',
+    description: document.getElementById('updateDescription')?.value || '',
+    venue: document.getElementById('updateVenue')?.value || '',
+    date: document.getElementById('updateDate')?.value || '',
+    time: document.getElementById('updateTime')?.value || '',
+    registrationDeadline: document.getElementById('updateRegistrationDeadline')?.value || '',
+    faculty: facNames.join(', '),
+    facultyPhone: facPhones.join(', '),
+    student: stuNames.join(', '),
+    studentPhone: stuPhones.join(', '),
+    maxParticipants: document.getElementById('updateMaxParticipants')?.value
       ? parseInt(document.getElementById('updateMaxParticipants').value) : null
   };
 

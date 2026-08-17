@@ -1,0 +1,8 @@
+node_modules/
+.env
+scratch/
+tmp_uploads/
+video.mp4
+public/video.mp4
+public/videos/
+public/certificates/cert_*.pdf
