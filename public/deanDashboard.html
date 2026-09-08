@@ -421,6 +421,178 @@
       min-width: calc(1024px - var(--sidebar-w)) !important;
       box-sizing: border-box !important;
     }
+
+    /* ── DEAN: VIEW PROOF BUTTON ── */
+    .dean-btn-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(30,136,229,0.35);
+      background: rgba(30,136,229,0.08);
+      color: #0F4C81;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .dean-btn-proof:hover {
+      background: #1E88E5;
+      color: #fff;
+      border-color: #1E88E5;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(30,136,229,0.3);
+    }
+
+    /* ── DEAN: PROOF MODAL SHARED STYLES ── */
+    #deanProofModal, #deanDocPreviewOverlay {
+      display: none;
+    }
+    #deanProofModal.active, #deanDocPreviewOverlay.active {
+      display: flex !important;
+    }
+    @keyframes deanProofIn {
+      from { opacity:0; transform:scale(0.95) translateY(12px); }
+      to   { opacity:1; transform:scale(1)    translateY(0);    }
+    }
+    .dp-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 12px;
+    }
+    .dp-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .dp-card.dp-highlight {
+      background: linear-gradient(135deg,rgba(30,136,229,0.08),rgba(15,76,129,0.04));
+      border-color: rgba(30,136,229,0.35);
+    }
+    .dp-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6B7280;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+    .dp-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #1F2937;
+    }
+    .dp-card.dp-highlight .dp-value { color: #0F4C81; }
+    .dp-desc { font-size: 11px; color: #6B7280; margin-top: 4px; }
+    .dp-section {
+      background: #fff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      padding: 16px 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .dp-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .dp-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1F2937;
+    }
+    .dp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .dp-table th {
+      background: #f8fafc;
+      color: #6B7280;
+      font-weight: 600;
+      font-size: 11px;
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .dp-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1F2937;
+      vertical-align: middle;
+    }
+    .dp-table tr:last-child td { border-bottom: none; }
+    .dp-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Poppins', sans-serif;
+    }
+    .dp-link-btn:hover { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+
+    /* ── DEAN: EVENT DETAIL SUB-TAB BUTTONS ── */
+    .dean-ev-tab-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--muted);
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dean-ev-tab-btn:hover {
+      border-color: rgba(30,136,229,0.4);
+      color: var(--primary);
+      background: rgba(30,136,229,0.06);
+    }
+    .dean-ev-tab-active {
+      background: rgba(30,136,229,0.12) !important;
+      color: #1E88E5 !important;
+      border-color: rgba(30,136,229,0.4) !important;
+    }
+    .dean-stat-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .dean-stat-box .dsb-val {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .dean-stat-box .dsb-lbl {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
   </style>
 </head>
 
@@ -820,11 +992,12 @@
               <th>Branch</th>
               <th>Year</th>
               <th>Total Score</th>
+              <th>Proof</th>
             </tr>
           </thead>
           <tbody id="studentsTableBody">
             <tr>
-              <td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">Loading student records...</td>
+              <td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">Loading student records...</td>
             </tr>
           </tbody>
         </table>
@@ -841,8 +1014,95 @@
               oninput="filterEvents()">
           </div>
         </div>
-        <div id="eventsGrid" class="events-grid">
-          <!-- Loaded dynamically -->
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Event Title</th>
+                <th>Date</th>
+                <th>Venue</th>
+                <th>Host Faculty</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+              <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">Loading events...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- EVENT DETAIL PANEL -->
+      <div id="deanEventDetailPanel" style="display:none;margin-top:20px;">
+        <div class="card-panel" style="border:1px solid rgba(30,136,229,0.3);">
+
+          <!-- Panel Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div id="deanDetailEventTitle" style="font-size:18px;font-weight:800;color:var(--primary);">—</div>
+              <div id="deanDetailEventMeta" style="font-size:12px;color:var(--muted);margin-top:4px;">—</div>
+            </div>
+            <button onclick="closeDeanEventDetail()"
+              style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#dc2626;padding:7px 16px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;">✕ Close</button>
+          </div>
+
+          <!-- Stats Row -->
+          <div id="deanDetailStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px;"></div>
+
+          <!-- Sub-tabs -->
+          <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;flex-wrap:wrap;">
+            <button id="deanTabBtnOverview"  onclick="deanSwitchEventTab('overview')"  class="dean-ev-tab-btn dean-ev-tab-active">📋 Overview</button>
+            <button id="deanTabBtnStudents"  onclick="deanSwitchEventTab('students')"  class="dean-ev-tab-btn">👥 Registered Students</button>
+            <button id="deanTabBtnFeedback"  onclick="deanSwitchEventTab('feedback')"  class="dean-ev-tab-btn">💬 Feedback</button>
+          </div>
+
+          <!-- Overview sub-tab -->
+          <div id="deanEventTabOverview">
+            <div id="deanDetailOverviewBody" style="font-size:13px;color:var(--muted);padding:10px 0;">Loading...</div>
+          </div>
+
+          <!-- Students sub-tab -->
+          <div id="deanEventTabStudents" style="display:none;">
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Branch</th>
+                    <th>Attendance</th>
+                    <th>Score</th>
+                  </tr>
+                </thead>
+                <tbody id="deanDetailStudentsBody">
+                  <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Feedback sub-tab -->
+          <div id="deanEventTabFeedback" style="display:none;">
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Student</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Submitted</th>
+                  </tr>
+                </thead>
+                <tbody id="deanDetailFeedbackBody">
+                  <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -1812,11 +2072,13 @@
       const tbody = document.getElementById('studentsTableBody');
       document.getElementById('studentCountLabel').textContent = `Showing ${list.length} of ${allStudentsList.length} total enrolled students`;
       if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted);">No student records found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No student records found</td></tr>';
         return;
       }
       tbody.innerHTML = list.map((s, i) => {
         const totalScore = (s.score || 0) + (s.eventScore || 0);
+        const pin = s.pinNumber || s.studentId || s.username || '';
+        const sid = String(s._id || s.studentId || s.pinNumber || i);
         return `
           <tr>
             <td>${i + 1}</td>
@@ -1825,8 +2087,40 @@
             <td><span class="pill pill-blue">${s.branch || '—'}</span></td>
             <td>${s.year || '—'}</td>
             <td><strong style="color:var(--primary);">${totalScore}</strong></td>
+            <td>
+              <button class="dean-btn-proof"
+                data-sid="${sid}"
+                data-name="${encodeURIComponent(s.fullName || s.username || pin)}"
+                data-pin="${encodeURIComponent(pin)}"
+                data-branch="${encodeURIComponent(s.branch || '')}"
+                data-year="${encodeURIComponent(s.year || '')}"
+                data-score="${s.score || 0}"
+                data-eventscore="${s.eventScore || 0}"
+                data-sem3="${s.sem3Score || 0}"
+                data-sem4="${s.sem4Score || 0}"
+                title="View score breakdown">
+                👁️ View Proof
+              </button>
+            </td>
           </tr>`;
       }).join('');
+
+      // Attach click events
+      tbody.querySelectorAll('.dean-btn-proof').forEach(btn => {
+        btn.addEventListener('click', function () {
+          deanViewStudentProof({
+            sid: this.dataset.sid,
+            name: decodeURIComponent(this.dataset.name || ''),
+            pin: decodeURIComponent(this.dataset.pin || ''),
+            branch: decodeURIComponent(this.dataset.branch || ''),
+            year: decodeURIComponent(this.dataset.year || ''),
+            score: Number(this.dataset.score) || 0,
+            eventScore: Number(this.dataset.eventscore) || 0,
+            sem3Score: Number(this.dataset.sem3) || 0,
+            sem4Score: Number(this.dataset.sem4) || 0
+          });
+        });
+      });
     }
 
     function filterStudents() {
@@ -1895,21 +2189,27 @@
     }
 
     function renderEventsGrid(list) {
-      const grid = document.getElementById('eventsGrid');
+      const tbody = document.getElementById('eventsTableBody');
       if (!list.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);">No events found</div>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--muted);">No events found</td></tr>';
         return;
       }
-      grid.innerHTML = list.map(ev => `
-        <div class="event-card">
-          <div style="font-size:16px;font-weight:700;color:var(--primary);margin-bottom:8px;">${ev.title}</div>
-          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">${ev.description || 'No description'}</div>
-          <div style="font-size:12px;display:flex;flex-direction:column;gap:4px;">
-            <div>📅 <strong>Date:</strong> ${ev.date || 'TBA'} ${ev.time ? '@ ' + ev.time : ''}</div>
-            <div>📍 <strong>Venue:</strong> ${ev.venue || 'TBA'}</div>
-            <div>👤 <strong>Host:</strong> ${ev.faculty || 'Faculty'}</div>
-          </div>
-        </div>`).join('');
+      tbody.innerHTML = list.map((ev, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${ev.title || '—'}</strong></td>
+          <td>${ev.date ? new Date(ev.date).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : '—'}${ev.time ? ' <span style="color:var(--muted);font-size:11px;">@ '+ev.time+'</span>' : ''}</td>
+          <td>${ev.venue || '—'}</td>
+          <td><span class="pill pill-blue">${ev.faculty || ev.publishedBy || '—'}</span></td>
+          <td>
+            <button onclick="deanOpenEventDetail('${ev._id}', ${i})"
+              style="padding:6px 14px;border-radius:8px;border:1px solid rgba(34,197,94,0.35);background:rgba(34,197,94,0.1);color:#16a34a;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;"
+              onmouseover="this.style.background='#16a34a';this.style.color='#fff';"
+              onmouseout="this.style.background='rgba(34,197,94,0.1)';this.style.color='#16a34a';">
+              📊 View Details
+            </button>
+          </td>
+        </tr>`).join('');
     }
 
     function filterEvents() {
@@ -1920,6 +2220,237 @@
         (e.venue || '').toLowerCase().includes(q)
       );
       renderEventsGrid(filtered);
+    }
+
+    // ── DEAN EVENT DETAIL PANEL ────────────────────────────────
+    let _deanCurrentEvent = null;
+    let _deanCurrentRegs  = [];
+    let _deanCurrentFb    = [];
+
+    async function deanOpenEventDetail(eventId, idx) {
+      const ev = allEventsList.find(e => e._id === eventId) || allEventsList[idx] || {};
+      _deanCurrentEvent = ev;
+
+      // Populate header
+      document.getElementById('deanDetailEventTitle').textContent = '📅 ' + (ev.title || 'Event');
+      document.getElementById('deanDetailEventMeta').textContent =
+        `${ev.date ? new Date(ev.date).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : 'TBA'}` +
+        `${ev.time ? '  •  ' + ev.time : ''}` +
+        `  •  📍 ${ev.venue || 'TBA'}` +
+        `  •  👤 ${ev.faculty || ev.publishedBy || 'Faculty'}`;
+
+      // Show panel and scroll
+      const panel = document.getElementById('deanEventDetailPanel');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Reset to overview tab
+      deanSwitchEventTab('overview');
+
+      // Load data
+      await Promise.all([
+        _deanLoadEventRegistrations(eventId),
+        _deanLoadEventFeedback(eventId)
+      ]);
+
+      // Render overview
+      _deanRenderEventOverview(ev);
+    }
+
+    async function _deanLoadEventRegistrations(eventId) {
+      document.getElementById('deanDetailStudentsBody').innerHTML =
+        '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Loading...</td></tr>';
+      try {
+        const res = await fetch(`/api/department-head/event-registrations/${eventId}`);
+        _deanCurrentRegs = res.ok ? await res.json() : [];
+      } catch (e) { _deanCurrentRegs = []; }
+
+      const regs = _deanCurrentRegs;
+      const tbody = document.getElementById('deanDetailStudentsBody');
+      if (!regs.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">No registrations yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = regs.map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${r.studentName || '—'}</strong></td>
+          <td><code>${r.pinNumber || '—'}</code></td>
+          <td>${r.branch || '—'}</td>
+          <td>${r.attended
+            ? '<span style="background:rgba(46,125,50,0.1);color:#2e7d32;border:1px solid rgba(46,125,50,0.25);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✅ Present</span>'
+            : '<span style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.25);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">❌ Absent</span>'}</td>
+          <td><strong style="color:${(r.score||0)>0?'#2e7d32':'var(--muted)'};">${r.score ?? 0}</strong></td>
+        </tr>`).join('');
+    }
+
+    async function _deanLoadEventFeedback(eventId) {
+      document.getElementById('deanDetailFeedbackBody').innerHTML =
+        '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">Loading...</td></tr>';
+      try {
+        const res = await fetch(`/api/feedback/event/${eventId}`);
+        _deanCurrentFb = res.ok ? await res.json() : [];
+      } catch (e) { _deanCurrentFb = []; }
+
+      const fb = _deanCurrentFb;
+      const tbody = document.getElementById('deanDetailFeedbackBody');
+      if (!fb.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted);">No feedback submitted yet</td></tr>';
+        return;
+      }
+      const stars = n => '⭐'.repeat(Math.max(0, Math.min(5, n)));
+      tbody.innerHTML = fb.map((f, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${f.studentName || '—'}</strong></td>
+          <td>${stars(f.rating)} <strong style="color:#d97706;"> ${f.rating}/5</strong></td>
+          <td style="max-width:280px;word-break:break-word;">${f.comment || '<span style="color:var(--muted);">—</span>'}</td>
+          <td style="font-size:12px;">${f.submittedAt ? new Date(f.submittedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
+        </tr>`).join('');
+    }
+
+    function _deanRenderEventOverview(ev) {
+      const regs      = _deanCurrentRegs;
+      const fb        = _deanCurrentFb;
+      const total     = regs.length;
+      const attended  = regs.filter(r => r.attended).length;
+      const scored    = regs.filter(r => (r.score || 0) > 0).length;
+      const avgScore  = attended > 0
+        ? (regs.filter(r => r.attended).reduce((a, r) => a + (r.score || 0), 0) / attended).toFixed(1)
+        : 0;
+      const avgRating = fb.length > 0
+        ? (fb.reduce((a, f) => a + (f.rating || 0), 0) / fb.length).toFixed(1)
+        : 'N/A';
+      const attRate   = total > 0 ? ((attended / total) * 100).toFixed(1) : '0.0';
+
+      // Stats row
+      document.getElementById('deanDetailStats').innerHTML = `
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#1E88E5;">${total}</div>
+          <div class="dsb-lbl">Registered</div>
+        </div>
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#2e7d32;">${attended}</div>
+          <div class="dsb-lbl">Attended</div>
+        </div>
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#0F4C81;">${attRate}%</div>
+          <div class="dsb-lbl">Attendance Rate</div>
+        </div>
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#6a1b9a;">${scored}</div>
+          <div class="dsb-lbl">Students Scored</div>
+        </div>
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#d97706;">${avgScore}</div>
+          <div class="dsb-lbl">Avg Score</div>
+        </div>
+        <div class="dean-stat-box">
+          <div class="dsb-val" style="color:#e65100;">${avgRating}${avgRating !== 'N/A' ? '/5' : ''}</div>
+          <div class="dsb-lbl">Avg Rating (${fb.length} reviews)</div>
+        </div>`;
+
+      // Overview body — event info + score distribution
+      const scoreGroups = { '0': 0, '1-5': 0, '6-10': 0, '11-20': 0, '21+': 0 };
+      regs.filter(r => r.attended).forEach(r => {
+        const sc = r.score || 0;
+        if (sc === 0) scoreGroups['0']++;
+        else if (sc <= 5) scoreGroups['1-5']++;
+        else if (sc <= 10) scoreGroups['6-10']++;
+        else if (sc <= 20) scoreGroups['11-20']++;
+        else scoreGroups['21+']++;
+      });
+      const maxGrp = Math.max(...Object.values(scoreGroups), 1);
+
+      const ratingGroups = [1,2,3,4,5].map(n => ({ star: n, count: fb.filter(f => f.rating === n).length }));
+      const maxRating = Math.max(...ratingGroups.map(r => r.count), 1);
+
+      document.getElementById('deanDetailOverviewBody').innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap;">
+
+          <!-- Event Info -->
+          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;">📋 Event Information</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+              <div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Title:</span> <strong>${ev.title || '—'}</strong></div>
+              <div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Date:</span> ${ev.date ? new Date(ev.date).toLocaleDateString('en-IN',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) : 'TBA'}</div>
+              <div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Time:</span> ${ev.time || 'TBA'}</div>
+              <div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Venue:</span> ${ev.venue || 'TBA'}</div>
+              <div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Host:</span> ${ev.faculty || ev.publishedBy || '—'}</div>
+              ${ev.description ? `<div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Description:</span> ${ev.description}</div>` : ''}
+              ${ev.maxParticipants ? `<div><span style="color:var(--muted);font-weight:600;min-width:90px;display:inline-block;">Max Seats:</span> ${ev.maxParticipants}</div>` : ''}
+            </div>
+          </div>
+
+          <!-- Score Distribution -->
+          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;">📊 Score Distribution (Attended Students)</div>
+            ${attended === 0
+              ? '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No attended records yet</div>'
+              : Object.entries(scoreGroups).map(([range, count]) => `
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <div style="width:50px;font-size:12px;font-weight:600;color:var(--muted);">${range} pts</div>
+                    <div style="flex:1;background:#e2e8f0;border-radius:6px;height:18px;overflow:hidden;">
+                      <div style="width:${Math.round((count/maxGrp)*100)}%;height:100%;background:linear-gradient(90deg,#1E88E5,#0F4C81);border-radius:6px;transition:width 0.6s;"></div>
+                    </div>
+                    <div style="width:28px;font-size:12px;font-weight:700;text-align:right;color:${count>0?'#0F4C81':'var(--muted)'};">${count}</div>
+                  </div>`).join('')}
+          </div>
+
+          <!-- Rating Breakdown -->
+          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;">⭐ Rating Breakdown (${fb.length} responses)</div>
+            ${fb.length === 0
+              ? '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No feedback yet</div>'
+              : ratingGroups.reverse().map(({ star, count }) => `
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <div style="width:60px;font-size:12px;font-weight:600;color:#d97706;">${'⭐'.repeat(star)} ${star}</div>
+                    <div style="flex:1;background:#e2e8f0;border-radius:6px;height:18px;overflow:hidden;">
+                      <div style="width:${Math.round((count/maxRating)*100)}%;height:100%;background:linear-gradient(90deg,#FFC107,#FFA000);border-radius:6px;transition:width 0.6s;"></div>
+                    </div>
+                    <div style="width:28px;font-size:12px;font-weight:700;text-align:right;color:${count>0?'#d97706':'var(--muted)'};">${count}</div>
+                  </div>`).join('')}
+          </div>
+
+          <!-- Branch-wise Registrations -->
+          <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:12px;">🏫 Branch-wise Registrations</div>
+            ${(function() {
+              const branchMap = {};
+              regs.forEach(r => { const b = (r.branch||'Unknown').toUpperCase(); branchMap[b] = (branchMap[b]||0)+1; });
+              const entries = Object.entries(branchMap).sort((a,b)=>b[1]-a[1]);
+              if (!entries.length) return '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No data</div>';
+              const mx = Math.max(...entries.map(e=>e[1]),1);
+              return entries.map(([br,cnt]) => `
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                  <div style="width:54px;font-size:11px;font-weight:700;color:#1E88E5;">${br}</div>
+                  <div style="flex:1;background:#e2e8f0;border-radius:6px;height:18px;overflow:hidden;">
+                    <div style="width:${Math.round((cnt/mx)*100)}%;height:100%;background:linear-gradient(90deg,#1E88E5,#0F4C81);border-radius:6px;transition:width 0.6s;"></div>
+                  </div>
+                  <div style="width:24px;font-size:12px;font-weight:700;text-align:right;color:#0F4C81;">${cnt}</div>
+                </div>`).join('');
+            })()}
+          </div>
+
+        </div>`;
+    }
+
+    function deanSwitchEventTab(tab) {
+      ['overview','students','feedback'].forEach(t => {
+        const panel = document.getElementById('deanEventTab' + t.charAt(0).toUpperCase() + t.slice(1));
+        const btn   = document.getElementById('deanTabBtn'  + t.charAt(0).toUpperCase() + t.slice(1));
+        if (panel) panel.style.display = t === tab ? 'block' : 'none';
+        if (btn) {
+          btn.classList.toggle('dean-ev-tab-active', t === tab);
+        }
+      });
+    }
+
+    function closeDeanEventDetail() {
+      document.getElementById('deanEventDetailPanel').style.display = 'none';
+      _deanCurrentEvent = null;
+      _deanCurrentRegs  = [];
+      _deanCurrentFb    = [];
     }
 
     // PROFILE TAB LOGIC
@@ -2132,7 +2663,6 @@
           ? data.events.map((e, idx) => [
             idx + 1,
             e.title || 'Untitled',
-            e.category || 'General',
             e.date || 'N/A',
             e.facultyName || 'Faculty',
             e.registered || 0,
@@ -2140,11 +2670,11 @@
             e.attendanceRate || '0%',
             e.avgRating || 'N/A'
           ])
-          : [['-', 'No events recorded', '-', '-', '-', '-', '-', '-', '-']];
+          : [['-', 'No events recorded', '-', '-', '-', '-', '-', '-']];
 
         doc.autoTable({
           startY: finalY + 4,
-          head: [['#', 'Event Title', 'Category', 'Date', 'Host', 'Reg', 'Att', 'Rate', 'Rating']],
+          head: [['#', 'Event Title', 'Date', 'Host', 'Reg', 'Att', 'Rate', 'Rating']],
           body: eventRows,
           theme: 'striped',
           headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
@@ -2163,8 +2693,323 @@
       if (!deanId) return alert('Session expired. Please log in again.');
       window.location.href = `/api/admin/dean/export-excel/${deanId}`;
     }
+
+    // ── DEAN: VIEW STUDENT SCORE PROOF MODAL ──────────────────
+    function deanViewStudentProof(d) {
+      const modal = document.getElementById('deanProofModal');
+      const body  = document.getElementById('deanProofModalBody');
+      if (!modal) return;
+
+      const displayName = d.name || d.pin || 'Student';
+      const pin         = d.pin || d.sid || '';
+      const branch      = d.branch || '—';
+      const year        = d.year  || '—';
+      const sem3Score   = d.sem3Score   || 0;
+      const sem4Score   = d.sem4Score   || 0;
+      const baseScore   = d.score       || 0;
+      const eventScore  = d.eventScore  || 0;
+      const totalScore  = baseScore + eventScore;
+
+      document.getElementById('deanProofAvatar').textContent    = displayName.charAt(0).toUpperCase() || 'S';
+      document.getElementById('deanProofName').textContent      = displayName;
+      document.getElementById('deanProofPin').textContent       = `PIN: ${pin}`;
+      document.getElementById('deanProofBranch').textContent    = `Branch: ${branch}`;
+      document.getElementById('deanProofYear').textContent      = `Year: ${year}`;
+
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      body.innerHTML = `
+        <div class="dp-summary-grid">
+          <div class="dp-card dp-highlight">
+            <div class="dp-label">🏆 Grand Total Score</div>
+            <div class="dp-value">${totalScore}</div>
+            <div class="dp-desc">Academic + Events + Certs</div>
+          </div>
+          <div class="dp-card">
+            <div class="dp-label">📘 3rd Semester</div>
+            <div class="dp-value" style="color:#0F4C81;">${sem3Score}</div>
+            <div class="dp-desc">Semester 3 Score</div>
+          </div>
+          <div class="dp-card">
+            <div class="dp-label">📗 4th Semester</div>
+            <div class="dp-value" style="color:#1565C0;">${sem4Score}</div>
+            <div class="dp-desc">Semester 4 Score</div>
+          </div>
+          <div class="dp-card">
+            <div class="dp-label">🎪 Event Score</div>
+            <div class="dp-value" style="color:#2e7d32;">${eventScore}</div>
+            <div class="dp-desc">Events Participated</div>
+          </div>
+        </div>
+
+        <div class="dp-section" style="background:#f1f5f9;border-color:#cbd5e1;">
+          <div class="dp-section-header">
+            <div class="dp-section-title">📘 Academic Score Breakdown</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:8px 0;">
+            <div style="background:#e3f2fd;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
+              <div style="font-size:26px;font-weight:800;color:#0F4C81;">${baseScore}</div>
+            </div>
+            <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#2e7d32;">${sem3Score}</div>
+            </div>
+            <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#1565C0;">${sem4Score}</div>
+            </div>
+            <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
+              <div style="font-size:26px;font-weight:800;color:#6a1b9a;">${eventScore}</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="deanProofEventsSection">
+          <div style="text-align:center;padding:24px;color:#6B7280;">
+            <div style="font-size:20px;margin-bottom:6px;">⏳</div>
+            <div style="font-size:13px;">Loading event &amp; certificate records...</div>
+          </div>
+        </div>
+      `;
+
+      _deanLoadProofDetails(pin || d.sid);
+    }
+
+    async function _deanLoadProofDetails(pinOrId) {
+      try {
+        const res = await fetch(`/api/department-head/student-score-proof/${encodeURIComponent(pinOrId)}`);
+        const apiData = res.ok ? await res.json() : null;
+        const events  = (apiData && apiData.events)            || [];
+        const certs   = (apiData && apiData.otherCertificates) || [];
+        const sum     = (apiData && apiData.summary)           || {};
+        const totalOtherCertsScore = sum.totalOtherCertsScore  || 0;
+
+        let html = `
+          <div class="dp-section">
+            <div class="dp-section-header">
+              <div class="dp-section-title">🎪 College Events Attended (${events.length})</div>
+              <span style="font-size:12px;font-weight:600;color:#2e7d32;background:#e8f5e9;border:1px solid rgba(46,125,50,0.2);padding:3px 10px;border-radius:20px;">
+                ${events.reduce((a, r) => a + (r.score || 0), 0)} pts
+              </span>
+            </div>`;
+
+        if (events.length === 0) {
+          html += `<div style="text-align:center;padding:22px;color:#6B7280;font-size:13px;"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
+        } else {
+          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>#</th><th>Event</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+          events.forEach((ev, i) => {
+            const evDate = ev.date ? new Date(ev.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+            const certBtn = ev.certificateUrl
+              ? `<button onclick="deanOpenDocPreview('${encodeURIComponent(ev.certificateUrl)}','${encodeURIComponent(ev.title || 'Certificate')}')" class="dp-link-btn">📜 View</button>`
+              : `<span style="color:#6B7280;font-size:11px;">Not uploaded</span>`;
+            html += `<tr>
+              <td>${i + 1}</td>
+              <td><strong>${ev.title || 'Event'}</strong><br><span style="font-size:11px;color:#6B7280;">${ev.venue || 'Campus'}</span></td>
+              <td style="font-size:12px;">${evDate}</td>
+              <td><strong style="color:#2e7d32;font-size:14px;">+${ev.score || 0} pts</strong></td>
+              <td>${certBtn}</td>
+            </tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        html += `</div>`;
+
+        html += `
+          <div class="dp-section">
+            <div class="dp-section-header">
+              <div class="dp-section-title">📜 External Certificates (${certs.length})</div>
+              <span style="font-size:12px;font-weight:600;color:#e65100;background:#fff3e0;border:1px solid rgba(230,81,0,0.2);padding:3px 10px;border-radius:20px;">
+                ${totalOtherCertsScore} marks
+              </span>
+            </div>`;
+
+        if (certs.length === 0) {
+          html += `<div style="text-align:center;padding:22px;color:#6B7280;font-size:13px;"><div style="font-size:22px;margin-bottom:6px;">📭</div>No external certificates uploaded.</div>`;
+        } else {
+          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>#</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
+          certs.forEach((c, i) => {
+            const cDate = c.uploadedAt ? new Date(c.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+            let badge = `<span style="background:rgba(255,193,7,0.15);color:#d97706;border:1px solid rgba(255,193,7,0.3);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Pending</span>`;
+            if (c.status === 'approved') badge = `<span style="background:rgba(46,125,50,0.1);color:#2e7d32;border:1px solid rgba(46,125,50,0.25);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">✅ Approved</span>`;
+            else if (c.status === 'rejected') badge = `<span style="background:rgba(239,68,68,0.1);color:#dc2626;border:1px solid rgba(239,68,68,0.25);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">❌ Rejected</span>`;
+            html += `<tr>
+              <td>${i + 1}</td>
+              <td><strong>${c.certificateName || 'Certificate'}</strong></td>
+              <td style="font-size:12px;">${cDate}</td>
+              <td>${badge}</td>
+              <td><strong style="color:${c.marksAwarded ? '#2e7d32' : '#6B7280'}">${c.marksAwarded || 0} marks</strong></td>
+              <td><button onclick="deanOpenOtherCertProof(event,'${c.uploadId}','${encodeURIComponent(c.fileUrl || '')}','${encodeURIComponent(c.certificateName || 'Certificate')}')" class="dp-link-btn">📄 View</button></td>
+            </tr>`;
+          });
+          html += `</tbody></table></div>`;
+        }
+        html += `</div>`;
+
+        const sec = document.getElementById('deanProofEventsSection');
+        if (sec) sec.innerHTML = html;
+
+      } catch (err) {
+        console.error('Dean proof load error:', err);
+        const sec = document.getElementById('deanProofEventsSection');
+        if (sec) sec.innerHTML = `<div style="text-align:center;padding:20px;color:#c62828;"><b>⚠️ Could not load records</b><br><span style="font-size:12px;">${err.message}</span></div>`;
+      }
+    }
+
+    function closeDeanProofModal() {
+      const modal = document.getElementById('deanProofModal');
+      if (modal) modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    async function deanOpenOtherCertProof(event, uploadId, encodedUrl, encodedTitle) {
+      const url   = decodeURIComponent(encodedUrl   || '');
+      const title = decodeURIComponent(encodedTitle || 'Certificate');
+      if (url && url !== 'null' && url !== 'undefined' && url !== '') {
+        deanOpenDocPreview(encodeURIComponent(url), encodeURIComponent(title));
+        return;
+      }
+      try {
+        const btn = event?.currentTarget || event?.target;
+        const origText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '⏳ Loading...';
+        const res  = await fetch(`/api/other-certs/view/${uploadId}`);
+        const data = await res.json();
+        if (btn) btn.innerHTML = origText;
+        if (data.fileUrl) deanOpenDocPreview(encodeURIComponent(data.fileUrl), encodeURIComponent(title));
+        else alert(data.message || 'Document unavailable.');
+      } catch (e) { alert('Could not open certificate: ' + e.message); }
+    }
+
+    function deanOpenDocPreview(encodedUrl, encodedTitle) {
+      const url   = decodeURIComponent(encodedUrl   || '');
+      const title = decodeURIComponent(encodedTitle || 'Document');
+      if (!url) { alert('Document URL is missing.'); return; }
+
+      const overlay    = document.getElementById('deanDocPreviewOverlay');
+      const titleEl    = document.getElementById('deanDocPreviewTitle');
+      const bodyEl     = document.getElementById('deanDocPreviewBody');
+      const openTabBtn = document.getElementById('deanDocOpenTab');
+      const dlBtn      = document.getElementById('deanDocDownload');
+      if (!overlay) return;
+
+      // Clean Cloudinary attachment flags
+      const inlineUrl = url.replace(/fl_attachment,?/gi, '').replace(/flags=attachment&?/gi, '');
+
+      titleEl.textContent = '📄 ' + title;
+      openTabBtn.href     = inlineUrl;
+      dlBtn.href          = inlineUrl;
+
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      const isImage = inlineUrl.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp)(\?|$)/i)
+        || (!inlineUrl.match(/\.[a-z0-9]{2,5}(\?|$)/i) && inlineUrl.match(/\/image\/upload\//i));
+
+      if (isImage) {
+        bodyEl.innerHTML = `<img src="${inlineUrl}" alt="${title}"
+          style="max-width:100%;max-height:75vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12);margin:16px;">`;
+        return;
+      }
+
+      // For PDFs and other files — fetch as blob and render inline
+      bodyEl.innerHTML = `<div style="text-align:center;padding:40px;color:#6B7280;">
+        <div style="font-size:28px;margin-bottom:10px;">⏳</div>
+        <div style="font-size:13px;">Loading document...</div>
+      </div>`;
+
+      fetch(inlineUrl)
+        .then(r => {
+          if (!r.ok) throw new Error('Failed to fetch file (status ' + r.status + ')');
+          return r.blob();
+        })
+        .then(blob => {
+          const blobUrl = URL.createObjectURL(blob);
+          overlay.dataset.blobUrl = blobUrl;
+          openTabBtn.href = blobUrl;
+          dlBtn.href      = blobUrl;
+          bodyEl.innerHTML = `<iframe src="${blobUrl}" title="${title}"
+            style="width:100%;height:70vh;border:none;background:#fff;"></iframe>`;
+        })
+        .catch(err => {
+          bodyEl.innerHTML = `
+            <div style="text-align:center;padding:40px;">
+              <div style="font-size:36px;margin-bottom:12px;">📄</div>
+              <p style="font-weight:700;color:#1F2937;margin-bottom:8px;">${title}</p>
+              <p style="font-size:13px;color:#6B7280;margin-bottom:20px;">Cannot preview inline — click below to open the file.</p>
+              <a href="${inlineUrl}" target="_blank"
+                style="display:inline-block;padding:12px 28px;border-radius:10px;background:#1E88E5;color:#fff;font-weight:700;font-size:14px;text-decoration:none;">
+                🔗 Open File in New Tab
+              </a>
+            </div>`;
+        });
+    }
+
+    function closeDeanDocPreview() {
+      const overlay = document.getElementById('deanDocPreviewOverlay');
+      if (overlay) {
+        if (overlay.dataset.blobUrl) {
+          URL.revokeObjectURL(overlay.dataset.blobUrl);
+          delete overlay.dataset.blobUrl;
+        }
+        overlay.classList.remove('active');
+        document.getElementById('deanDocPreviewBody').innerHTML = '';
+        document.body.style.overflow = '';
+      }
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const docOverlay = document.getElementById('deanDocPreviewOverlay');
+        if (docOverlay && docOverlay.classList.contains('active')) closeDeanDocPreview();
+        else closeDeanProofModal();
+      }
+    });
   </script>
 
-</body>
+  <!-- DEAN: STUDENT SCORE PROOF MODAL -->
+  <div id="deanProofModal" onclick="if(event.target===this)closeDeanProofModal()"
+    style="display:none;position:fixed;inset:0;background:rgba(15,23,42,0.72);backdrop-filter:blur(8px);z-index:10000;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;width:100%;max-width:900px;max-height:90vh;border-radius:20px;box-shadow:0 25px 60px rgba(15,76,129,0.25);display:flex;flex-direction:column;overflow:hidden;animation:deanProofIn 0.25s ease;">
+      <div style="background:linear-gradient(135deg,#0F4C81,#1E88E5);color:#fff;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div id="deanProofAvatar" style="width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;">S</div>
+          <div>
+            <h3 id="deanProofName" style="font-size:17px;font-weight:700;margin:0 0 4px;color:#fff;">Student Score Proof</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span id="deanProofPin"    style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;">PIN: —</span>
+              <span id="deanProofBranch" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;">Branch: —</span>
+              <span id="deanProofYear"   style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.28);color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;">Year: —</span>
+            </div>
+          </div>
+        </div>
+        <button onclick="closeDeanProofModal()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.18)'">✕</button>
+      </div>
+      <div id="deanProofModalBody" style="padding:22px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:18px;background:#f8fafc;">
+        <div style="text-align:center;padding:40px;color:#6B7280;"><div style="font-size:24px;margin-bottom:8px;">⏳</div>Loading...</div>
+      </div>
+    </div>
+  </div>
 
+  <!-- DEAN: DOCUMENT PREVIEW MODAL -->
+  <div id="deanDocPreviewOverlay" onclick="if(event.target===this)closeDeanDocPreview()"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);z-index:20000;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;width:100%;max-width:960px;max-height:92vh;border-radius:16px;box-shadow:0 25px 70px rgba(0,0,0,0.45);display:flex;flex-direction:column;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#1e293b,#334155);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div id="deanDocPreviewTitle" style="font-size:14px;font-weight:700;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 Document</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <a id="deanDocOpenTab" href="#" target="_blank" style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;">🔗 New Tab</a>
+          <a id="deanDocDownload" href="#" download style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;">⬇️ Download</a>
+          <button onclick="closeDeanDocPreview()" style="background:rgba(239,68,68,0.25);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">✕ Close</button>
+        </div>
+      </div>
+      <div id="deanDocPreviewBody" style="flex:1;overflow:auto;background:#f8fafc;display:flex;align-items:center;justify-content:center;min-height:300px;">
+        <div style="text-align:center;padding:40px;color:#6B7280;"><div style="font-size:24px;margin-bottom:8px;">📄</div>Select a document to preview</div>
+      </div>
+    </div>
+  </div>
+
+</body>
 </html>
