@@ -206,18 +206,28 @@ async function accessOtherCertificate(uploadId, fallbackUrl) {
     if (fallbackUrl) window.open(fallbackUrl, '_blank');
     return;
   }
+  // Pre-open tab synchronously to avoid browser popup blockers after async fetch
+  const win = window.open('about:blank', '_blank');
   try {
     const res = await fetch('/api/other-certs/view/' + uploadId);
     const data = await res.json();
     if (res.ok && data.fileUrl) {
-      window.open(data.fileUrl, '_blank');
+      if (win) win.location.href = data.fileUrl;
+      else window.open(data.fileUrl, '_blank');
     } else if (fallbackUrl) {
-      window.open(fallbackUrl, '_blank');
+      if (win) win.location.href = fallbackUrl;
+      else window.open(fallbackUrl, '_blank');
     } else {
+      if (win) win.close();
       alert(data.message || 'Unable to access certificate file.');
     }
   } catch (e) {
-    if (fallbackUrl) window.open(fallbackUrl, '_blank');
-    else alert('Error accessing certificate file.');
+    if (fallbackUrl) {
+      if (win) win.location.href = fallbackUrl;
+      else window.open(fallbackUrl, '_blank');
+    } else {
+      if (win) win.close();
+      alert('Error accessing certificate file.');
+    }
   }
 }

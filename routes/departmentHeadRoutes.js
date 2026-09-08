@@ -5,6 +5,9 @@ const DepartmentHead = require("../models/DepartmentHead");
 const Faculty = require("../models/Faculty");
 const Student = require("../models/Student");
 const Event = require("../models/Event");
+const Registration = require("../models/Registration");
+const OtherCertUpload = require("../models/OtherCertUpload");
+const OtherCertificate = require("../models/OtherCertificate");
 
 // ── DEPARTMENT HEAD LOGIN ──────────────────────────────────────────
 router.post("/login", async (req, res) => {
@@ -213,6 +216,139 @@ router.get("/students/:departmentHeadId", async (req, res) => {
     res.json(students);
   } catch (e) {
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+// ── STUDENT SCORE PROOF & BREAKDOWN ──────────────────────────────
+router.get("/student-score-proof/:pinOrId", async (req, res) => {
+  try {
+    const { pinOrId } = req.params;
+    if (!pinOrId) return res.status(400).json({ message: "Student PIN or ID is required" });
+
+    const trimmed = decodeURIComponent(pinOrId).trim();
+    let student = null;
+
+    if (mongoose.Types.ObjectId.isValid(trimmed)) {
+      student = await Student.findById(trimmed).select("-password");
+    }
+    if (!student) {
+      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      student = await Student.findOne({
+        $or: [
+          { pinNumber: pinRegex },
+          { studentId: pinRegex },
+          { username: pinRegex }
+        ]
+      }).select("-password");
+    }
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const pin = student.pinNumber || student.studentId || student.username;
+    const pinRegex = new RegExp(`^${pin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+
+    const Registration = require("../models/Registration");
+    const OtherCertUpload = require("../models/OtherCertUpload");
+
+    // 1. Attended college event registrations
+    const registrations = await Registration.find({
+      $or: [
+        { pinNumber: pinRegex },
+        { pinNumber: student.pinNumber },
+        { pinNumber: student.studentId }
+      ].filter(Boolean),
+      attended: true
+    })
+      .populate("eventId")
+      .sort({ _id: -1 });
+
+    // 2. External / other certificates uploaded
+    const otherUploads = await OtherCertUpload.find({
+      $or: [
+        { studentPin: pinRegex },
+        { studentPin: student.pinNumber },
+        { studentPin: student.studentId }
+      ].filter(Boolean)
+    })
+      .populate("certificateId")
+      .sort({ uploadedAt: -1 });
+
+    // Calculate score details
+    const sem3Score = Number(student.sem3Score) || 0;
+    const sem4Score = Number(student.sem4Score) || 0;
+    const baseScore = Number(student.score) || 0;
+    const baseAcademicScore = (sem3Score || sem4Score) ? (sem3Score + sem4Score) : baseScore;
+
+    const totalEventScore = registrations.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+
+    const approvedOtherCerts = otherUploads.filter(u => u.status === 'approved');
+    const totalOtherCertsScore = approvedOtherCerts.reduce((sum, u) => sum + (Number(u.marksAwarded) || 0), 0);
+
+    const grandTotalScore = (student.score || 0) + (student.eventScore || 0);
+
+    const eventList = registrations.map(r => {
+      const ev = r.eventId || {};
+      return {
+        registrationId: r._id,
+        eventId: ev._id || null,
+        title: ev.title || 'Event Record',
+        category: ev.category || 'General',
+        date: ev.date || null,
+        time: ev.time || null,
+        venue: ev.venue || 'Campus',
+        score: Number(r.score) || 0,
+        attended: r.attended,
+        certificateUrl: r.certificateUrl || null,
+        hasCertificate: !!(r.certificateUrl || r.hasCertificate)
+      };
+    });
+
+    const certList = otherUploads.map(u => {
+      const oc = u.certificateId || {};
+      return {
+        uploadId: u._id,
+        certificateName: u.certificateName || oc.certificateName || 'External Certificate',
+        status: u.status || 'pending',
+        marksAwarded: Number(u.marksAwarded) || 0,
+        fileUrl: u.fileUrl || null,
+        fileName: u.fileName || '',
+        hasBackup: !!u.fileBackupId,
+        uploadedAt: u.uploadedAt,
+        reviewedAt: u.reviewedAt
+      };
+    });
+
+    res.json({
+      student: {
+        _id: student._id,
+        fullName: student.fullName || student.username,
+        pinNumber: student.pinNumber || student.studentId,
+        studentId: student.studentId,
+        branch: student.branch,
+        year: student.year,
+        profileImage: student.profileImage,
+        score: student.score || 0,
+        sem3Score,
+        sem4Score,
+        eventScore: student.eventScore || 0
+      },
+      summary: {
+        baseScore,
+        sem3Score,
+        sem4Score,
+        baseAcademicScore,
+        totalEventScore,
+        totalOtherCertsScore,
+        grandTotalScore
+      },
+      events: eventList,
+      otherCertificates: certList
+    });
+  } catch (err) {
+    console.error("Student score proof error:", err);
+    res.status(500).json({ message: "Error fetching student score proof: " + err.message });
   }
 });
 
