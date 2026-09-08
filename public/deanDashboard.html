@@ -2183,9 +2183,36 @@
     async function loadEventsData() {
       try {
         const res = await fetch('/api/admin/events');
-        allEventsList = await res.json();
+        const allEvents = await res.json();
+        // Filter: only show events published by faculty within this dean's allowed branches
+        allEventsList = allEvents.filter(ev => isEventAllowedForDean(ev, currentDean));
         renderEventsGrid(allEventsList);
       } catch (e) { console.error('Events load error:', e); }
+    }
+
+    function isEventAllowedForDean(ev, dean) {
+      if (!dean) return true;
+      const deanBranchesStr = (dean.branches || 'ALL').trim();
+      // Dean with ALL branches sees everything
+      if (!deanBranchesStr || deanBranchesStr.toUpperCase() === 'ALL') return true;
+
+      const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+
+      // Match via publishedByFacultyId — look up the faculty in the already-filtered allFacultyList
+      if (ev.publishedByFacultyId && allFacultyList.length) {
+        const matchedFaculty = allFacultyList.find(f =>
+          f._id === ev.publishedByFacultyId ||
+          String(f._id) === String(ev.publishedByFacultyId)
+        );
+        if (matchedFaculty) {
+          const dept = (matchedFaculty.department || '').trim().toUpperCase();
+          return allowedBranches.includes(dept);
+        }
+      }
+
+      // Fallback: match via faculty name string on the event (less reliable but a safety net)
+      // If we can't determine the department, don't show it to a branch-restricted dean
+      return false;
     }
 
     function renderEventsGrid(list) {
