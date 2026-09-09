@@ -7,6 +7,9 @@ const SystemSetting  = require('../models/SystemSetting');
 const CERT_DIR       = path.join(__dirname, '../uploads/certificates');
 const OTHER_CERT_DIR = path.join(__dirname, '../uploads/other-certs');
 
+const ALT_CERT_DIR       = path.join(__dirname, '../public/certificates');
+const ALT_OTHER_CERT_DIR = path.join(__dirname, '../public/other-certs');
+
 /**
  * Clean up generated event certificate files older than the retention period.
  * Deletes the file from disk and sets certificateUrl to null.
@@ -31,13 +34,14 @@ async function cleanupExpiredCertificates() {
     let cleanedCount = 0;
     for (const reg of expiredRegs) {
       try {
-        // Delete file from disk
+        // Delete file from disk (checking both uploads/certificates and public/certificates)
         const filename = reg.certificateCloudinaryPublicId || (reg.certificateUrl && path.basename(reg.certificateUrl));
         if (filename) {
-          const filePath = path.join(CERT_DIR, path.basename(filename));
-          if (fs.existsSync(filePath)) {
-            try { fs.unlinkSync(filePath); } catch(e) { console.error(`[Cleanup] File delete error: ${filePath}`, e.message); }
-          }
+          const bname = path.basename(filename);
+          const p1 = path.join(CERT_DIR, bname);
+          const p2 = path.join(ALT_CERT_DIR, bname);
+          if (fs.existsSync(p1)) { try { fs.unlinkSync(p1); } catch(e) {} }
+          if (fs.existsSync(p2)) { try { fs.unlinkSync(p2); } catch(e) {} }
         }
 
         reg.certificateUrl                = null;
@@ -83,11 +87,13 @@ async function cleanupExpiredOtherCertificates() {
     let cleanedCount = 0;
     for (const upload of expiredUploads) {
       try {
-        if (upload.fileName) {
-          const filePath = path.join(OTHER_CERT_DIR, upload.fileName);
-          if (fs.existsSync(filePath)) {
-            try { fs.unlinkSync(filePath); } catch(e) { console.error(`[OtherCert Cleanup] File delete error: ${filePath}`, e.message); }
-          }
+        const fname = upload.fileName || (upload.fileUrl ? path.basename(upload.fileUrl) : null);
+        if (fname) {
+          const bname = path.basename(fname);
+          const p1 = path.join(OTHER_CERT_DIR, bname);
+          const p2 = path.join(ALT_OTHER_CERT_DIR, bname);
+          if (fs.existsSync(p1)) { try { fs.unlinkSync(p1); } catch(e) {} }
+          if (fs.existsSync(p2)) { try { fs.unlinkSync(p2); } catch(e) {} }
         }
 
         upload.fileUrl = null;
