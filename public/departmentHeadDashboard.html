@@ -1256,28 +1256,57 @@
       </div>
 
       <!-- Detail Panel -->
-      <div id="eventDetailPanel" style="display:none;">
-        <div class="table-box" style="border-color:rgba(30,136,229,0.3);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-            <h3 id="detailEventTitle" style="font-size:16px;font-weight:700;color:var(--blue-dark);">—</h3>
+      <div id="eventDetailPanel" style="display:none;margin-top:20px;">
+        <div class="table-box" style="border-color:rgba(30,136,229,0.3);padding:24px;">
+          <!-- Panel Header -->
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:12px;">
+            <div>
+              <span class="badge badge-blue" id="dhDetailCategory" style="margin-bottom:6px;display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(30,136,229,0.12);color:#1E88E5;">Category</span>
+              <h3 id="detailEventTitle" style="font-size:20px;font-weight:800;color:var(--blue-dark);margin:4px 0;">—</h3>
+              <div id="dhDetailEventMeta" style="font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:14px;margin-top:6px;">
+                <span>📅 Date & Time</span>
+                <span>📍 Venue</span>
+                <span>👤 Host</span>
+              </div>
+            </div>
             <div style="display:flex;gap:8px;">
-              <button onclick="switchDetail('analysis')" id="btnAnalysis" style="padding:6px 14px;border-radius:8px;border:1px solid rgba(255,193,7,0.4);
+              <button onclick="switchDetail('analysis')" id="btnAnalysis" style="padding:8px 16px;border-radius:10px;border:1px solid rgba(255,193,7,0.4);
                      background:rgba(255,193,7,0.1);color:#d97706;font-family:'Poppins',sans-serif;
-                     font-size:12px;font-weight:600;cursor:pointer;">📊 Analysis</button>
+                     font-size:12px;font-weight:600;cursor:pointer;">📊 Branch Analysis</button>
               <button onclick="closeDetail()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);
-                     color:#dc2626;padding:6px 14px;border-radius:8px;cursor:pointer;
+                     color:#dc2626;padding:8px 16px;border-radius:10px;cursor:pointer;
                      font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;">✕ Close</button>
             </div>
           </div>
 
+          <!-- Live Stat Cards -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:22px;">
+            <div style="background:rgba(30,136,229,0.08);padding:14px;border-radius:12px;border:1px solid rgba(30,136,229,0.2);text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#1565C0;margin-bottom:4px;">👥 Total Registered</div>
+              <div id="dhDetailStatRegistered" style="font-size:22px;font-weight:900;color:#1E88E5;">0</div>
+            </div>
+            <div style="background:rgba(46,125,50,0.08);padding:14px;border-radius:12px;border:1px solid rgba(46,125,50,0.2);text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#2E7D32;margin-bottom:4px;">✅ Total Attended</div>
+              <div id="dhDetailStatAttended" style="font-size:22px;font-weight:900;color:#2E7D32;">0</div>
+            </div>
+            <div style="background:rgba(255,193,7,0.08);padding:14px;border-radius:12px;border:1px solid rgba(255,193,7,0.2);text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#b45309;margin-bottom:4px;">📈 Attendance Rate</div>
+              <div id="dhDetailStatRate" style="font-size:22px;font-weight:900;color:#d97706;">0%</div>
+            </div>
+            <div style="background:rgba(147,51,234,0.08);padding:14px;border-radius:12px;border:1px solid rgba(147,51,234,0.2);text-align:center;">
+              <div style="font-size:11px;font-weight:700;color:#7e22ce;margin-bottom:4px;">⭐ Student Rating</div>
+              <div id="dhDetailStatRating" style="font-size:22px;font-weight:900;color:#9333ea;">N/A</div>
+            </div>
+          </div>
+
           <!-- Tabs inside panel -->
-          <div style="display:flex;gap:8px;margin-bottom:18px;">
+          <div style="display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:12px;flex-wrap:wrap;">
             <button onclick="switchDetail('regs')" id="btnRegs" style="padding:8px 18px;border-radius:8px;border:1px solid rgba(30,136,229,0.4);
                    background:rgba(30,136,229,0.12);color:#1E88E5;font-family:'Poppins',sans-serif;
                    font-size:13px;font-weight:600;cursor:pointer;">👥 Registered Students</button>
             <button onclick="switchDetail('fb')" id="btnFb" style="padding:8px 18px;border-radius:8px;border:1px solid var(--border);
                    background:#f8fafc;color:var(--muted);font-family:'Poppins',sans-serif;
-                   font-size:13px;font-weight:600;cursor:pointer;">💬 Feedback</button>
+                   font-size:13px;font-weight:600;cursor:pointer;">💬 Student Feedback</button>
           </div>
 
           <!-- Registrations sub-table -->
@@ -1288,14 +1317,15 @@
                   <tr>
                     <th>#</th>
                     <th>Student Name</th>
-                    <th>Student ID</th>
-                    <th>Attended</th>
+                    <th>Student ID / PIN</th>
+                    <th>Branch</th>
+                    <th>Attendance</th>
                     <th>Score</th>
                   </tr>
                 </thead>
                 <tbody id="regsDetailBody">
                   <tr>
-                    <td colspan="5" class="no-data">Loading...</td>
+                    <td colspan="6" class="no-data">Loading...</td>
                   </tr>
                 </tbody>
               </table>
@@ -1312,7 +1342,7 @@
                     <th>Student</th>
                     <th>Rating</th>
                     <th>Comment</th>
-                    <th>Date</th>
+                    <th>Submitted Date</th>
                   </tr>
                 </thead>
                 <tbody id="fbDetailBody">
@@ -1648,6 +1678,18 @@
           title="View score breakdown for this student">
           👁️ View Proof
         </button>
+        <button class="btn-edit-score"
+          data-sid="${sid}"
+          data-name="${encodeURIComponent(s.fullName || s.username || pin)}"
+          data-pin="${encodeURIComponent(pin)}"
+          data-score="${s.score || 0}"
+          data-eventscore="${s.eventScore || 0}"
+          data-sem3="${s.sem3Score || 0}"
+          data-sem4="${s.sem4Score || 0}"
+          title="Edit student score"
+          style="padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:'Poppins',sans-serif;box-shadow:0 2px 8px rgba(245,158,11,0.25);">
+          ✏️ Edit Score
+        </button>
       </td>
     </tr>`;
       }).join('');
@@ -1667,6 +1709,21 @@
             sem4Score: Number(this.dataset.sem4) || 0
           };
           viewStudentProof(data);
+        });
+      });
+
+      tbody.querySelectorAll('.btn-edit-score').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const data = {
+            sid: this.dataset.sid,
+            name: decodeURIComponent(this.dataset.name || ''),
+            pin: decodeURIComponent(this.dataset.pin || ''),
+            score: Number(this.dataset.score) || 0,
+            eventScore: Number(this.dataset.eventscore) || 0,
+            sem3Score: Number(this.dataset.sem3) || 0,
+            sem4Score: Number(this.dataset.sem4) || 0
+          };
+          openEditScoreModal(data);
         });
       });
 
@@ -1838,11 +1895,54 @@
 
     async function openDetail(eventId, title) {
       document.getElementById('eventDetailPanel').style.display = 'block';
-      document.getElementById('detailEventTitle').textContent = '📅 ' + title;
-      document.getElementById('eventDetailPanel').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('detailEventTitle').textContent = '📅 ' + (title || 'Event Details');
+      document.getElementById('eventDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      // Find event object or fetch from endpoint
+      let ev = (typeof allEventsData !== 'undefined' && Array.isArray(allEventsData)) ? allEventsData.find(e => e._id === eventId) : null;
+      try {
+        const res = await fetch(`/api/events/detail/${eventId}`);
+        if (res.ok) {
+          const detail = await res.json();
+          ev = { ...ev, ...detail };
+        }
+      } catch (e) {}
+
+      if (ev) {
+        document.getElementById('dhDetailCategory').textContent = ev.category || 'General';
+        const dStr = ev.date ? new Date(ev.date).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : 'TBA';
+        const tStr = ev.time ? `@ ${ev.time}` : '';
+        const host = ev.publishedByName || ev.faculty || ev.coordinatorName || 'Faculty';
+        document.getElementById('dhDetailEventMeta').innerHTML = `
+          <span>📅 <strong>Date:</strong> ${dStr} ${tStr}</span>
+          <span>📍 <strong>Venue:</strong> ${ev.venue || 'TBA'}</span>
+          <span>👤 <strong>Host:</strong> ${host}</span>
+        `;
+      }
+
       switchDetail('regs');
-      await loadRegs(eventId);
-      await loadFeedback(eventId);
+      
+      const [regs, fb] = await Promise.all([
+        loadRegs(eventId),
+        loadFeedback(eventId)
+      ]);
+
+      // Calculate Stats
+      const regCount = Array.isArray(regs) ? regs.length : 0;
+      const attCount = Array.isArray(regs) ? regs.filter(r => r.attended).length : 0;
+      const rate = regCount > 0 ? Math.round((attCount / regCount) * 100) : 0;
+
+      let avgRating = 'N/A';
+      if (Array.isArray(fb) && fb.length > 0) {
+        const sum = fb.reduce((acc, item) => acc + (Number(item.rating) || 0), 0);
+        avgRating = (sum / fb.length).toFixed(1) + ' ⭐';
+      }
+
+      document.getElementById('dhDetailStatRegistered').textContent = regCount;
+      document.getElementById('dhDetailStatAttended').textContent = attCount;
+      document.getElementById('dhDetailStatRate').textContent = rate + '%';
+      document.getElementById('dhDetailStatRating').textContent = avgRating;
+
       renderAnalysis(eventId);
     }
 
@@ -1876,21 +1976,29 @@
 
     async function loadRegs(eventId) {
       const tbody = document.getElementById('regsDetailBody');
-      tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="no-data">Loading...</td></tr>';
       try {
         const r = await fetch(`/api/department-head/event-registrations/${eventId}`);
         const regs = await r.json();
-        window._currentRegs = regs; // cache for analysis tab
-        if (!regs.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No registrations yet</td></tr>'; return; }
+        window._currentRegs = Array.isArray(regs) ? regs : []; // cache for analysis tab
+        if (!Array.isArray(regs) || !regs.length) { 
+          tbody.innerHTML = '<tr><td colspan="6" class="no-data">No registrations yet</td></tr>'; 
+          return []; 
+        }
         tbody.innerHTML = regs.map((reg, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${reg.studentName || '—'}</td>
+        <td><strong>${reg.studentName || '—'}</strong></td>
         <td><span class="badge badge-green">${reg.pinNumber || '—'}</span></td>
+        <td>${reg.branch || '—'}</td>
         <td>${reg.attended ? '<span class="badge badge-green">✅ Present</span>' : '<span class="badge" style="background:rgba(239,68,68,0.1);color:#f87171;border:1px solid rgba(239,68,68,0.25);">Absent</span>'}</td>
-        <td>${reg.score ?? '—'}</td>
+        <td><strong style="color:${(reg.score||0)>0?'#2E7D32':'var(--muted)'};">+${reg.score ?? 0} pts</strong></td>
       </tr>`).join('');
-      } catch (e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
+        return regs;
+      } catch (e) { 
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">Error loading registrations</td></tr>'; 
+        return [];
+      }
     }
 
     function renderAnalysis() {
@@ -1933,19 +2041,26 @@
       const tbody = document.getElementById('fbDetailBody');
       tbody.innerHTML = '<tr><td colspan="5" class="no-data">Loading...</td></tr>';
       try {
-        const r = await fetch(`/api/department-head/event-feedback/${eventId}`);
+        const r = await fetch(`/api/feedback/event/${eventId}`);
         const fb = await r.json();
-        if (!fb.length) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback submitted yet</td></tr>'; return; }
-        const stars = n => '⭐'.repeat(n);
+        if (!Array.isArray(fb) || !fb.length) { 
+          tbody.innerHTML = '<tr><td colspan="5" class="no-data">No feedback submitted yet</td></tr>'; 
+          return []; 
+        }
+        const stars = n => '⭐'.repeat(Math.max(0, Math.min(5, n || 0)));
         tbody.innerHTML = fb.map((f, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${f.studentName || '—'}</td>
+        <td><strong>${f.studentName || '—'}</strong></td>
         <td>${stars(f.rating)} <span style="color:var(--gold);font-weight:700;">${f.rating}/5</span></td>
-        <td style="max-width:300px;">${f.comment || '—'}</td>
-        <td>${f.submittedAt ? new Date(f.submittedAt).toLocaleDateString() : '—'}</td>
+        <td style="max-width:300px;word-break:break-word;">${f.comment || '—'}</td>
+        <td>${f.submittedAt ? new Date(f.submittedAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : '—'}</td>
       </tr>`).join('');
-      } catch (e) { tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading</td></tr>'; }
+        return fb;
+      } catch (e) { 
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data">Error loading feedback</td></tr>'; 
+        return [];
+      }
     }
 
 
@@ -2491,6 +2606,11 @@
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        const editModal = document.getElementById('editScoreModal');
+        if (editModal && editModal.style.display !== 'none') {
+          closeEditScoreModal();
+          return;
+        }
         const docOverlay = document.getElementById('docPreviewOverlay');
         if (docOverlay && docOverlay.classList.contains('active')) {
           closeDocPreviewModal();
@@ -2499,6 +2619,102 @@
         }
       }
     });
+
+    // ── EDIT STUDENT SCORE MODAL LOGIC ──
+    let currentEditStudent = null;
+
+    function openEditScoreModal(student) {
+      currentEditStudent = student;
+      document.getElementById('editStudentId').value = student.sid || student.pin;
+      document.getElementById('editScoreStudentName').textContent = student.name || 'Student';
+      document.getElementById('editScoreStudentInfo').textContent = `PIN: ${student.pin} • Academic Score Update`;
+      document.getElementById('editBaseScore').value = student.score || 0;
+      document.getElementById('editSem3Score').value = student.sem3Score || 0;
+      document.getElementById('editSem4Score').value = student.sem4Score || 0;
+      document.getElementById('editEventScoreDisplay').textContent = `+${student.eventScore || 0} pts`;
+      updateScorePreview();
+      
+      const modal = document.getElementById('editScoreModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeEditScoreModal() {
+      const modal = document.getElementById('editScoreModal');
+      if (modal) modal.style.display = 'none';
+      currentEditStudent = null;
+    }
+
+    function updateSemScoreSum() {
+      const s3 = Number(document.getElementById('editSem3Score').value) || 0;
+      const s4 = Number(document.getElementById('editSem4Score').value) || 0;
+      if (s3 > 0 || s4 > 0) {
+        document.getElementById('editBaseScore').value = s3 + s4;
+      }
+      updateScorePreview();
+    }
+
+    function updateScorePreview() {
+      const base = Number(document.getElementById('editBaseScore').value) || 0;
+      const ev = currentEditStudent ? (currentEditStudent.eventScore || 0) : 0;
+      const total = base + ev;
+      document.getElementById('editTotalScorePreview').textContent = `${total} pts`;
+    }
+
+    async function saveStudentScore(e) {
+      e.preventDefault();
+      if (!currentEditStudent) return;
+      const studentId = currentEditStudent.sid || currentEditStudent.pin;
+      const score = Number(document.getElementById('editBaseScore').value) || 0;
+      const sem3Score = Number(document.getElementById('editSem3Score').value) || 0;
+      const sem4Score = Number(document.getElementById('editSem4Score').value) || 0;
+
+      const endpoints = [
+        `/api/department-head/student-score/${encodeURIComponent(studentId)}`,
+        `/api/hod/student-score/${encodeURIComponent(studentId)}`,
+        `/api/student/profile/${encodeURIComponent(studentId)}`
+      ];
+
+      let lastError = '';
+      for (const url of endpoints) {
+        try {
+          const res = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score, sem3Score, sem4Score })
+          });
+
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            if (res.ok) {
+              const updatedTotal = (data.student && data.student.totalScore != null)
+                ? data.student.totalScore
+                : (score + (currentEditStudent.eventScore || 0));
+
+              alert(`✅ Score updated successfully for ${currentEditStudent.name}! Updated score: ${updatedTotal} pts`);
+              closeEditScoreModal();
+              
+              if (typeof fetchDepartmentStudents === 'function') {
+                fetchDepartmentStudents();
+              } else if (typeof loadStudents === 'function') {
+                loadStudents();
+              } else {
+                window.location.reload();
+              }
+              return;
+            } else {
+              lastError = data.message || 'Server error';
+            }
+          } else {
+            lastError = `HTTP ${res.status}: Route not loaded in running server memory. Please restart server.js.`;
+          }
+        } catch (err) {
+          lastError = err.message;
+        }
+      }
+
+      alert('❌ Error updating score: ' + (lastError || 'Please restart node server.js to load new endpoints.'));
+    }
   </script>
 
   <!-- STUDENT SCORE PROOF MODAL -->
@@ -2545,6 +2761,57 @@
           <div>Select a document to preview</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- EDIT STUDENT SCORE MODAL -->
+  <div class="proof-modal-overlay" id="editScoreModal" style="display:none;" onclick="if(event.target===this)closeEditScoreModal()">
+    <div class="proof-modal-box" style="max-width:500px;padding:28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
+        <h3 style="margin:0;color:var(--blue-dark);font-size:18px;">✏️ Edit Student Score</h3>
+        <button onclick="closeEditScoreModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+
+      <div style="margin-bottom:16px;background:#eff6ff;padding:12px 16px;border-radius:12px;border:1px solid #bfdbfe;">
+        <strong id="editScoreStudentName" style="color:#1e3a8a;font-size:15px;display:block;">Student Name</strong>
+        <span id="editScoreStudentInfo" style="font-size:12px;color:#3b82f6;">PIN: — • Academic Score Update</span>
+      </div>
+
+      <form id="editScoreForm" onsubmit="saveStudentScore(event)">
+        <input type="hidden" id="editStudentId">
+        
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Base Academic Score</label>
+          <input type="number" id="editBaseScore" min="0" required style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;outline:none;" oninput="updateScorePreview()">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">3rd Sem Score</label>
+            <input type="number" id="editSem3Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">4th Sem Score</label>
+            <input type="number" id="editSem4Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+        </div>
+
+        <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:#475569;">
+            <span>Event Participation Score:</span>
+            <strong id="editEventScoreDisplay" style="color:#2563eb;">+0 pts</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#0f172a;border-top:1px solid #e2e8f0;padding-top:8px;">
+            <span>Combined Total Score:</span>
+            <strong id="editTotalScorePreview" style="color:#16a34a;font-size:16px;">0 pts</strong>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" onclick="closeEditScoreModal()" style="padding:10px 18px;border:1.5px solid #cbd5e1;border-radius:10px;background:none;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">Cancel</button>
+          <button type="submit" style="padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 14px rgba(37,99,235,0.3);">💾 Save Updated Score</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>

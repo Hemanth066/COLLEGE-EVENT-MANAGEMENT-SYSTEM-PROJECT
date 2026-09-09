@@ -200,15 +200,48 @@ function renderStudents(list) {
 
   tbody.innerHTML = sortedList.map((s, i) => {
     const totalScore = (s.score || 0) + (s.eventScore || 0);
+    const sid = String(s._id || s.studentId || s.pinNumber || i);
+    const pin = s.pinNumber || s.studentId || s.username || '';
     return `<tr>
       <td>${i + 1}</td>
-      <td>${s.fullName || s.username || '—'}</td>
+      <td><strong>${s.fullName || s.username || '—'}</strong></td>
       <td>${s.studentId || s.pinNumber || '—'}</td>
       <td>${s.branch || '—'}</td>
       <td>${s.year || '—'}</td>
       <td><strong style="color:var(--blue-dark);">${totalScore}</strong></td>
+      <td>
+        <button class="btn-edit-score"
+          data-sid="${sid}"
+          data-name="${encodeURIComponent(s.fullName || s.username || pin)}"
+          data-pin="${encodeURIComponent(pin)}"
+          data-score="${s.score || 0}"
+          data-eventscore="${s.eventScore || 0}"
+          data-sem3="${s.sem3Score || 0}"
+          data-sem4="${s.sem4Score || 0}"
+          title="Edit student score"
+          style="padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">
+          ✏️ Edit Score
+        </button>
+      </td>
     </tr>`;
   }).join('');
+
+  tbody.querySelectorAll('.btn-edit-score').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const data = {
+        sid: this.dataset.sid,
+        name: decodeURIComponent(this.dataset.name || ''),
+        pin: decodeURIComponent(this.dataset.pin || ''),
+        score: Number(this.dataset.score) || 0,
+        eventScore: Number(this.dataset.eventscore) || 0,
+        sem3Score: Number(this.dataset.sem3) || 0,
+        sem4Score: Number(this.dataset.sem4) || 0
+      };
+      if (typeof openEditScoreModal === 'function') {
+        openEditScoreModal(data);
+      }
+    });
+  });
 
   if (downloadWrap) downloadWrap.style.display = 'block';
 }

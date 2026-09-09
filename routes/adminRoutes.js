@@ -9,6 +9,9 @@ const Registration = require("../models/Registration");
 const Hod      = require("../models/DepartmentHead");  // reuse existing DepartmentHead model
 const Dean     = require("../models/Dean");
 const Branch   = require("../models/Branch");
+const Notification = require("../models/Notification");
+const Feedback     = require("../models/Feedback");
+const { resyncStudentScores } = require("../utils/scoreSync");
 // ── LOGIN ──────────────────────────────────────────────
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -177,8 +180,17 @@ router.get("/events", async (_req, res) => {
 
 router.delete("/events/:id", async (req, res) => {
   try {
-    await Event.findByIdAndDelete(req.params.id);
-    await Registration.deleteMany({ eventId: req.params.id });
+    const eventId = req.params.id;
+    const affectedRegs = await Registration.find({ eventId }, 'pinNumber');
+    const affectedPins = Array.from(new Set(affectedRegs.map(r => r.pinNumber).filter(Boolean)));
+
+    await Event.findByIdAndDelete(eventId);
+    await Registration.deleteMany({ eventId });
+    await Notification.deleteMany({ eventId });
+    await Feedback.deleteMany({ eventId });
+
+    await resyncStudentScores(affectedPins);
+
     res.json({ message: "Event removed ✅" });
   } catch (e) { res.status(400).json({ message: e.message }); }
 });

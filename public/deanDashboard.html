@@ -1393,9 +1393,9 @@
       // Check Assigned Branches
       const deanBranchesStr = (dean.branches || 'ALL').trim();
       if (deanBranchesStr && deanBranchesStr.toUpperCase() !== 'ALL') {
-        const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase());
+        const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
         const studentBranch = (s.branch || '').trim().toUpperCase();
-        if (studentBranch && !allowedBranches.includes(studentBranch)) {
+        if (!studentBranch || !allowedBranches.includes(studentBranch)) {
           return false;
         }
       }
@@ -1403,7 +1403,7 @@
       // Check Assigned Years
       const deanYearStr = String(dean.year || 'ALL').trim();
       if (deanYearStr && deanYearStr.toUpperCase() !== 'ALL') {
-        const allowedYears = deanYearStr.split(',').map(y => y.trim().toLowerCase());
+        const allowedYears = deanYearStr.split(',').map(y => y.trim().toLowerCase()).filter(Boolean);
         const sYr = String(s.year || '').trim().toLowerCase();
         const sDigit = sYr.replace(/[^0-9]/g, '');
 
@@ -1887,50 +1887,80 @@
 
     async function loadStats() {
       try {
-        const res = await fetch('/api/admin/stats');
-        if (!res.ok) return;
-        const s = await res.json();
+        const [resF, resC, resStud, resEv] = await Promise.all([
+          fetch('/api/admin/faculty').catch(() => null),
+          fetch('/api/admin/coordinators').catch(() => null),
+          fetch('/api/admin/students').catch(() => null),
+          fetch('/api/admin/events').catch(() => null)
+        ]);
 
-        const resF = await fetch('/api/admin/faculty');
-        if (resF.ok) {
-          const rawF = await resF.json();
-          allFacultyList = rawF.filter(f => isFacultyAllowedForDean(f, currentDean));
-          document.getElementById('statFacultyCount').textContent = allFacultyList.length;
-        } else {
-          document.getElementById('statFacultyCount').textContent = s.faculty || 0;
-        }
+        let rawF = [], rawC = [], rawS = [], rawE = [];
 
-        const resC = await fetch('/api/admin/coordinators');
-        if (resC.ok) {
-          const rawC = await resC.json();
-          allCoordinatorsList = rawC.filter(c => isCoordinatorAllowedForDean(c, currentDean));
-          document.getElementById('statCoordinatorCount').textContent = allCoordinatorsList.length;
-        } else {
-          document.getElementById('statCoordinatorCount').textContent = s.coordinators || 0;
-        }
+        if (resF && resF.ok) rawF = await resF.json();
+        if (resC && resC.ok) rawC = await resC.json();
+        if (resStud && resStud.ok) rawS = await resStud.json();
+        if (resEv && resEv.ok) rawE = await resE.json();
 
-        document.getElementById('statStudentCount').textContent = allStudentsList.length || s.students || 0;
-        document.getElementById('statEventCount').textContent = s.events || 0;
+        allFacultyList = Array.isArray(rawF) ? rawF.filter(f => isFacultyAllowedForDean(f, currentDean)) : [];
+        allCoordinatorsList = Array.isArray(rawC) ? rawC.filter(c => isCoordinatorAllowedForDean(c, currentDean)) : [];
+        allStudentsList = Array.isArray(rawS) ? rawS.filter(s => isStudentAllowedForDean(s, currentDean)) : [];
+        allEventsList = Array.isArray(rawE) ? rawE.filter(ev => isEventAllowedForDean(ev, currentDean, rawF)) : [];
 
-        // Load branch breakdown
-        const resStud = await fetch('/api/admin/students');
-        if (resStud.ok) {
-          const students = await resStud.json();
-          const filteredStudents = students.filter(st => isStudentAllowedForDean(st, currentDean));
-          const branchMap = {};
-          filteredStudents.forEach(st => {
-            const b = (st.branch || 'OTHER').trim().toUpperCase();
-            branchMap[b] = (branchMap[b] || 0) + 1;
-          });
+        const statFac = document.getElementById('statFacultyCount');
+        if (statFac) statFac.textContent = allFacultyList.length;
 
-          const grid = document.getElementById('branchBreakdownGrid');
-          grid.innerHTML = Object.entries(branchMap).sort().map(([b, cnt]) => `
-            <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div style="font-size:24px;font-weight:800;color:var(--primary);">${cnt}</div>
-              <div style="font-size:12px;font-weight:700;color:var(--muted);">${b}</div>
-            </div>`).join('');
-        }
+        const statCoord = document.getElementById('statCoordinatorCount');
+        if (statCoord) statCoord.textContent = allCoordinatorsList.length;
+
+        const statStud = document.getElementById('statStudentCount');
+        if (statStud) statStud.textContent = allStudentsList.length;
+
+        const statEv = document.getElementById('statEventCount');
+        if (statEv) statEv.textContent = allEventsList.length;
+
+        // Render branch breakdown
+        renderBranchBreakdownGrid();
       } catch (e) { console.error('Stats error:', e); }
+    }
+
+    function renderBranchBreakdownGrid() {
+      const grid = document.getElementById('branchBreakdownGrid');
+      if (!grid) return;
+
+      const ALL_BRANCHES = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT', 'DS', 'AIML', 'MCA', 'MBA'];
+      const deanBranchesRaw = (currentDean?.branches || 'ALL').trim();
+      let assignedBranches = [];
+
+      if (deanBranchesRaw.toUpperCase() === 'ALL') {
+        assignedBranches = ALL_BRANCHES;
+      } else {
+        assignedBranches = deanBranchesRaw.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+      }
+
+      const branchMap = {};
+      assignedBranches.forEach(b => { branchMap[b] = 0; });
+
+      (allStudentsList || []).forEach(st => {
+        const b = (st.branch || 'OTHER').trim().toUpperCase();
+        if (branchMap[b] !== undefined) {
+          branchMap[b]++;
+        } else if (!assignedBranches.length || assignedBranches.includes(b)) {
+          branchMap[b] = (branchMap[b] || 0) + 1;
+        }
+      });
+
+      const entries = Object.entries(branchMap).sort();
+
+      if (!entries.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--muted);">No branch data found</div>';
+        return;
+      }
+
+      grid.innerHTML = entries.map(([b, cnt]) => `
+        <div style="background:#F8FAFC;padding:16px;border-radius:12px;border:1px solid var(--border);text-align:center;">
+          <div style="font-size:24px;font-weight:800;color:var(--primary);">${cnt}</div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted);">${b}</div>
+        </div>`).join('');
     }
 
     async function loadFacultyData() {
@@ -2183,35 +2213,59 @@
     async function loadEventsData() {
       try {
         const res = await fetch('/api/admin/events');
-        const allEvents = await res.json();
-        // Filter: only show events published by faculty within this dean's allowed branches
-        allEventsList = allEvents.filter(ev => isEventAllowedForDean(ev, currentDean));
+        if (res.ok) {
+          const allEvents = await res.json();
+          allEventsList = Array.isArray(allEvents) ? allEvents.filter(ev => isEventAllowedForDean(ev, currentDean, allFacultyList)) : [];
+        } else {
+          allEventsList = [];
+        }
         renderEventsGrid(allEventsList);
+        const statEv = document.getElementById('statEventCount');
+        if (statEv) statEv.textContent = allEventsList.length;
       } catch (e) { console.error('Events load error:', e); }
     }
 
-    function isEventAllowedForDean(ev, dean) {
+    function isEventAllowedForDean(ev, dean, rawFacultyList) {
       if (!dean) return true;
       const deanBranchesStr = (dean.branches || 'ALL').trim();
-      // Dean with ALL branches sees everything
       if (!deanBranchesStr || deanBranchesStr.toUpperCase() === 'ALL') return true;
 
       const allowedBranches = deanBranchesStr.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
 
-      // Match via publishedByFacultyId — look up the faculty in the already-filtered allFacultyList
-      if (ev.publishedByFacultyId && allFacultyList.length) {
-        const matchedFaculty = allFacultyList.find(f =>
+      // 1. Direct branch/department check on event
+      const evBranch = (ev.branch || ev.department || ev.category || '').trim().toUpperCase();
+      if (evBranch && allowedBranches.includes(evBranch)) return true;
+
+      // 2. Match via publishedByFacultyId against faculty list
+      const facultyList = rawFacultyList || allFacultyList || [];
+      if (ev.publishedByFacultyId && facultyList.length) {
+        const matchedFaculty = facultyList.find(f =>
           f._id === ev.publishedByFacultyId ||
           String(f._id) === String(ev.publishedByFacultyId)
         );
         if (matchedFaculty) {
-          const dept = (matchedFaculty.department || '').trim().toUpperCase();
-          return allowedBranches.includes(dept);
+          const dept = (matchedFaculty.department || matchedFaculty.coordinatorBranch || '').trim().toUpperCase();
+          if (allowedBranches.includes(dept)) return true;
         }
       }
 
-      // Fallback: match via faculty name string on the event (less reliable but a safety net)
-      // If we can't determine the department, don't show it to a branch-restricted dean
+      // 3. Match via publishedBy / faculty name string
+      if ((ev.publishedBy || ev.faculty) && facultyList.length) {
+        const pubName = (ev.publishedBy || ev.faculty).trim().toLowerCase();
+        const matchedByName = facultyList.find(f =>
+          (f.fullName && f.fullName.trim().toLowerCase() === pubName) ||
+          (f.username && f.username.trim().toLowerCase() === pubName)
+        );
+        if (matchedByName) {
+          const dept = (matchedByName.department || matchedByName.coordinatorBranch || '').trim().toUpperCase();
+          if (allowedBranches.includes(dept)) return true;
+        }
+      }
+
+      // 4. Match if ev.faculty or ev.publishedBy is directly a branch name string
+      const facStr = (ev.faculty || ev.publishedBy || '').trim().toUpperCase();
+      if (facStr && allowedBranches.includes(facStr)) return true;
+
       return false;
     }
 

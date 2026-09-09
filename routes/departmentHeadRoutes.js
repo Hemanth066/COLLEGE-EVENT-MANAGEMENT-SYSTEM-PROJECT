@@ -226,6 +226,68 @@ router.get("/students/:departmentHeadId", async (req, res) => {
   }
 });
 
+// ── UPDATE STUDENT SCORE ──────────────────────────────────────────
+router.put("/student-score/:studentId", async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { score, sem3Score, sem4Score } = req.body;
+
+    const trimmed = decodeURIComponent(studentId).trim();
+    let student = null;
+
+    if (mongoose.Types.ObjectId.isValid(trimmed)) {
+      student = await Student.findById(trimmed);
+    }
+    if (!student) {
+      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      student = await Student.findOne({
+        $or: [
+          { pinNumber: pinRegex },
+          { studentId: pinRegex },
+          { username: pinRegex }
+        ]
+      });
+    }
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (score !== undefined && score !== null && !isNaN(score)) {
+      student.score = Number(score);
+    }
+    if (sem3Score !== undefined && sem3Score !== null && !isNaN(sem3Score)) {
+      student.sem3Score = Number(sem3Score);
+    }
+    if (sem4Score !== undefined && sem4Score !== null && !isNaN(sem4Score)) {
+      student.sem4Score = Number(sem4Score);
+    }
+
+    if (sem3Score !== undefined || sem4Score !== undefined) {
+      student.score = (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
+    }
+
+    await student.save();
+
+    res.json({
+      message: "Student score updated successfully ✅",
+      student: {
+        _id: student._id,
+        fullName: student.fullName || student.username,
+        pinNumber: student.pinNumber || student.studentId,
+        score: student.score,
+        sem3Score: student.sem3Score,
+        sem4Score: student.sem4Score,
+        eventScore: student.eventScore,
+        totalScore: (student.score || 0) + (student.eventScore || 0)
+      }
+    });
+  } catch (err) {
+    console.error("Error updating student score:", err);
+    res.status(500).json({ message: "Server error: " + err.message });
+  }
+});
+
 // ── STUDENT SCORE PROOF & BREAKDOWN ──────────────────────────────
 router.get("/student-score-proof/:pinOrId", async (req, res) => {
   try {

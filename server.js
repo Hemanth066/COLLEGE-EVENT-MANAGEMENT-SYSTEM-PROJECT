@@ -105,6 +105,7 @@ app.get("/api/branches", async (_req, res) => {
   }
 });
 app.use("/api/department-head", departmentHeadRoutes);
+app.use("/api/hod", departmentHeadRoutes);
 app.use("/api/certificates", certificateRoutes);
 app.use("/api/other-certs", otherCertRoutes);
 app.use("/api/past-events", pastEventRoutes);
@@ -134,17 +135,22 @@ function startServer(port, attemptsLeft) {
   const server = app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 
-    // Schedule Certificate Cleanup (runs once on startup, then every 6 hours)
+    // Schedule Certificate Cleanup & Score Resync (runs once on startup, then every 6 hours)
     try {
       const { cleanupExpiredCertificates, cleanupExpiredOtherCertificates } = require('./utils/certificateCleanup');
+      const { cleanupOrphanedRegistrationsAndSync } = require('./utils/scoreSync');
+
       cleanupExpiredCertificates().catch(err => console.error('[Event Cleanup Init Error]:', err.message));
       cleanupExpiredOtherCertificates().catch(err => console.error('[OtherCert Cleanup Init Error]:', err.message));
+      cleanupOrphanedRegistrationsAndSync().catch(err => console.error('[Score Sync Init Error]:', err.message));
+
       setInterval(() => {
         cleanupExpiredCertificates().catch(err => console.error('[Event Cleanup Interval Error]:', err.message));
         cleanupExpiredOtherCertificates().catch(err => console.error('[OtherCert Cleanup Interval Error]:', err.message));
+        cleanupOrphanedRegistrationsAndSync().catch(err => console.error('[Score Sync Interval Error]:', err.message));
       }, 6 * 60 * 60 * 1000); // 6 hours
     } catch (e) {
-      console.error('Failed to initialize certificate cleanup task:', e.message);
+      console.error('Failed to initialize background tasks:', e.message);
     }
   });
 

@@ -4,6 +4,9 @@ const Event = require('../models/Event');
 const Registration = require('../models/Registration');
 const Notification = require('../models/Notification');
 
+const Feedback = require('../models/Feedback');
+const { resyncStudentScores } = require('../utils/scoreSync');
+
 // Publish Event (POST /api/events)
 router.post('/', async (req, res) => {
   try {
@@ -104,6 +107,23 @@ router.get('/faculty/:facultyId', async (req, res) => {
   }
 });
 
+// Get Single Event Detail by ID
+router.get('/detail/:id', async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    const registrationCount = await Registration.countDocuments({ eventId: event._id });
+    const obj = event.toObject();
+    obj.registrationCount = registrationCount;
+
+    res.json(obj);
+  } catch (err) {
+    console.error('Error fetching event details:', err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 // Update Event
 router.put('/:id', async (req, res) => {
   try {
@@ -118,6 +138,10 @@ router.put('/:id', async (req, res) => {
       updatedAt: new Date()
     };
 
+    // Find affected student PINs before deleting registrations
+    const affectedRegs = await Registration.find({ eventId: req.params.id }, 'pinNumber');
+    const affectedPins = Array.from(new Set(affectedRegs.map(r => r.pinNumber).filter(Boolean)));
+
     // Clear all existing registrations
     const deleted = await Registration.deleteMany({
       eventId: req.params.id
@@ -126,6 +150,9 @@ router.put('/:id', async (req, res) => {
     console.log(
       `Cleared ${deleted.deletedCount} registrations for updated event: ${req.params.id}`
     );
+
+    // Resync student scores for cleared registrations
+    await resyncStudentScores(affectedPins);
 
     const event = await Event.findByIdAndUpdate(
       req.params.id,
@@ -157,11 +184,31 @@ router.put('/:id', async (req, res) => {
 // Delete Event
 router.delete('/:id', async (req, res) => {
   try {
-    await Event.findByIdAndDelete(req.params.id);
+    const eventId = req.params.id;
+    const currentEvent = await Event.findById(eventId);
+    if (!currentEvent) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
+
+    // Collect affected student PINs before deletion
+    const affectedRegs = await Registration.find({ eventId }, 'pinNumber');
+    const affectedPins = Array.from(new Set(affectedRegs.map(r => r.pinNumber).filter(Boolean)));
+
+    // Delete associated registrations, notifications, and feedback
+    await Registration.deleteMany({ eventId });
+    await Notification.deleteMany({ eventId });
+    await Feedback.deleteMany({ eventId });
+
+    // Delete event
+    await Event.findByIdAndDelete(eventId);
+
+    // Recalculate event score for all affected students
+    await resyncStudentScores(affectedPins);
+
     res.json({ message: 'Event Deleted Successfully' });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Error deleting event:', err);
+    res.status(500).json({ message: 'Server Error: ' + err.message });
   }
 });
 
