@@ -30,9 +30,14 @@ async function findFacultyByIdentifier(id) {
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const faculty = await Faculty.findOne({ username, password });
+  const faculty = await Faculty.findOne({ username });
 
   if (!faculty) {
+    return res.status(401).json({ message: "Invalid Faculty Credentials ❌" });
+  }
+
+  const authResult = await faculty.comparePassword(password);
+  if (!authResult.isValid) {
     return res.status(401).json({ message: "Invalid Faculty Credentials ❌" });
   }
 
@@ -46,6 +51,7 @@ router.post("/login", async (req, res) => {
   const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   faculty.isLoggedIn = true;
   faculty.sessionId = newSessionId;
+  if (authResult.isLegacyPlaintext) faculty.password = password; // pre-save hook will hash it
   await faculty.save();
 
   res.json({
@@ -78,12 +84,17 @@ router.post("/logout", async (req, res) => {
 router.post("/force-logout", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const faculty = await Faculty.findOne({ username, password });
+    const faculty = await Faculty.findOne({ username });
     if (!faculty) {
+      return res.status(401).json({ message: "Invalid credentials ❌" });
+    }
+    const authResult = await faculty.comparePassword(password);
+    if (!authResult.isValid) {
       return res.status(401).json({ message: "Invalid credentials ❌" });
     }
     faculty.isLoggedIn = false;
     faculty.sessionId = null;
+    if (authResult.isLegacyPlaintext) faculty.password = password;
     await faculty.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
@@ -162,7 +173,8 @@ router.put("/change-password/:facultyId", async (req, res) => {
     const faculty = await findFacultyByIdentifier(req.params.facultyId);
     if (!faculty) return res.status(404).json({ message: "Faculty not found" });
 
-    if (faculty.password !== currentPassword) {
+    const authResult = await faculty.comparePassword(currentPassword);
+    if (!authResult.isValid) {
       return res.status(400).json({ message: "Current password is incorrect" });
     }
     if (newPassword.length < 6) {

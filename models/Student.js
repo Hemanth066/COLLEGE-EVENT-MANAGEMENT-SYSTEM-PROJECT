@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { isHashed, hashPassword, verifyPassword } = require("../utils/passwordUtils");
 
 const studentSchema = new mongoose.Schema({
   studentId: String,
@@ -19,4 +20,16 @@ const studentSchema = new mongoose.Schema({
   sessionId: { type: String, default: null }
 });
 
+studentSchema.pre("save", async function(next) {
+  if (this.isModified("password") && this.password && !isHashed(this.password)) {
+    this.password = await hashPassword(this.password);
+  }
+  next();
+});
+
+studentSchema.methods.comparePassword = async function(candidatePassword) {
+  return await verifyPassword(candidatePassword, this.password);
+};
+
 module.exports = mongoose.model("Student", studentSchema);
+

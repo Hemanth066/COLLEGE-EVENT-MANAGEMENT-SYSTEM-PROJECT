@@ -9,8 +9,11 @@ const Event = require("../models/Event");
 // ── HOD LOGIN ──────────────────────────────────────────
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const hod = await Hod.findOne({ username, password });
+  const hod = await Hod.findOne({ username });
   if (!hod) return res.status(401).json({ message: "Invalid HOD credentials ❌" });
+
+  const authResult = await hod.comparePassword(password);
+  if (!authResult.isValid) return res.status(401).json({ message: "Invalid HOD credentials ❌" });
 
   if (hod.isLoggedIn) {
     return res.status(400).json({
@@ -22,6 +25,7 @@ router.post("/login", async (req, res) => {
   const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   hod.isLoggedIn = true;
   hod.sessionId = newSessionId;
+  if (authResult.isLegacyPlaintext) hod.password = password; // pre-save hook will hash it
   await hod.save();
 
   res.json({ message: "HOD login successful ✅", hod, sessionId: newSessionId });
@@ -49,9 +53,13 @@ router.post("/logout", async (req, res) => {
 router.post("/force-logout", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const h = await Hod.findOne({ username, password });
+    const h = await Hod.findOne({ username });
     if (!h) return res.status(401).json({ message: "Invalid credentials ❌" });
+    const authResult = await h.comparePassword(password);
+    if (!authResult.isValid) return res.status(401).json({ message: "Invalid credentials ❌" });
     h.isLoggedIn = false;
+    h.sessionId = null;
+    if (authResult.isLegacyPlaintext) h.password = password;
     await h.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
@@ -238,7 +246,8 @@ router.put("/change-password/:hodId", async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const hod = await Hod.findById(req.params.hodId);
     if (!hod) return res.status(404).json({ message: "HOD not found" });
-    if (hod.password !== currentPassword) return res.status(400).json({ message: "Current password is incorrect" });
+    const authResult = await hod.comparePassword(currentPassword);
+    if (!authResult.isValid) return res.status(400).json({ message: "Current password is incorrect" });
     if (newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
     hod.password = newPassword;
     await hod.save();

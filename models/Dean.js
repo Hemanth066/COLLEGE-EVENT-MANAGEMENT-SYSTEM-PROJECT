@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const { isHashed, hashPassword, verifyPassword } = require("../utils/passwordUtils");
+
 const deanSchema = new mongoose.Schema({
   username:     { type: String, required: true, unique: true },
   password:     { type: String, required: true },
@@ -12,4 +14,17 @@ const deanSchema = new mongoose.Schema({
   isLoggedIn:   { type: Boolean, default: false },
   sessionId:    { type: String, default: null }
 });
+
+deanSchema.pre("save", async function(next) {
+  if (this.isModified("password") && this.password && !isHashed(this.password)) {
+    this.password = await hashPassword(this.password);
+  }
+  next();
+});
+
+deanSchema.methods.comparePassword = async function(candidatePassword) {
+  return await verifyPassword(candidatePassword, this.password);
+};
+
 module.exports = mongoose.model("Dean", deanSchema);
+

@@ -12,8 +12,11 @@ const Branch   = require("../models/Branch");
 // ── LOGIN ──────────────────────────────────────────────
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const admin = await Admin.findOne({ username, password });
+  const admin = await Admin.findOne({ username });
   if (!admin) return res.status(401).json({ message: "Invalid admin credentials ❌" });
+
+  const authResult = await admin.comparePassword(password);
+  if (!authResult.isValid) return res.status(401).json({ message: "Invalid admin credentials ❌" });
 
   if (admin.isLoggedIn) {
     return res.status(400).json({
@@ -25,6 +28,7 @@ router.post("/login", async (req, res) => {
   const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   admin.isLoggedIn = true;
   admin.sessionId = newSessionId;
+  if (authResult.isLegacyPlaintext) admin.password = password; // pre-save hook will hash it
   await admin.save();
 
   res.json({ message: "Admin login successful ✅", admin, sessionId: newSessionId });
@@ -53,10 +57,13 @@ router.post("/logout", async (req, res) => {
 router.post("/force-logout", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const admin = await Admin.findOne({ username, password });
+    const admin = await Admin.findOne({ username });
     if (!admin) return res.status(401).json({ message: "Invalid credentials ❌" });
+    const authResult = await admin.comparePassword(password);
+    if (!authResult.isValid) return res.status(401).json({ message: "Invalid credentials ❌" });
     admin.isLoggedIn = false;
     admin.sessionId = null;
+    if (authResult.isLegacyPlaintext) admin.password = password;
     await admin.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
@@ -248,8 +255,14 @@ router.post("/hod/login", async (req, res) => {
 router.post("/dean/login", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const dean = await Dean.findOne({ username, password });
+    const dean = await Dean.findOne({ username });
     if (!dean) return res.status(401).json({ message: "Invalid Dean credentials ❌" });
+    const authResult = await dean.comparePassword(password);
+    if (!authResult.isValid) return res.status(401).json({ message: "Invalid Dean credentials ❌" });
+    if (authResult.isLegacyPlaintext) {
+      dean.password = password;
+      await dean.save();
+    }
     res.json({ message: "Dean login successful ✅", dean });
   } catch (e) { res.status(500).json({ message: "Server error" }); }
 });
@@ -321,7 +334,8 @@ router.put("/dean/change-password/:id", async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     const dean = await Dean.findById(req.params.id);
     if (!dean) return res.status(404).json({ message: "Dean not found" });
-    if (dean.password !== currentPassword) return res.status(400).json({ message: "Current password is incorrect" });
+    const authResult = await dean.comparePassword(currentPassword);
+    if (!authResult.isValid) return res.status(400).json({ message: "Current password is incorrect" });
     if (newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters" });
     dean.password = newPassword;
     await dean.save();

@@ -7,9 +7,14 @@ const Student = require("../models/Student");
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
-  const student = await Student.findOne({ username, password });
+  const student = await Student.findOne({ username });
 
   if (!student) {
+    return res.status(401).json({ message: "Invalid Student Credentials ❌" });
+  }
+
+  const authResult = await student.comparePassword(password);
+  if (!authResult.isValid) {
     return res.status(401).json({ message: "Invalid Student Credentials ❌" });
   }
 
@@ -23,6 +28,7 @@ router.post("/login", async (req, res) => {
   const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   student.isLoggedIn = true;
   student.sessionId = newSessionId;
+  if (authResult.isLegacyPlaintext) student.password = password; // pre-save hook will hash it
   await student.save();
 
   res.json({
@@ -55,12 +61,17 @@ router.post("/logout", async (req, res) => {
 router.post("/force-logout", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const student = await Student.findOne({ username, password });
+    const student = await Student.findOne({ username });
     if (!student) {
+      return res.status(401).json({ message: "Invalid credentials ❌" });
+    }
+    const authResult = await student.comparePassword(password);
+    if (!authResult.isValid) {
       return res.status(401).json({ message: "Invalid credentials ❌" });
     }
     student.isLoggedIn = false;
     student.sessionId = null;
+    if (authResult.isLegacyPlaintext) student.password = password;
     await student.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
@@ -178,10 +189,13 @@ router.put("/change-password/:studentId", async (req, res) => {
     const { currentPassword, newPassword } = req.body;
 
     let student = await Student.findOne({ studentId: req.params.studentId });
-    if (!student) student = await Student.findById(req.params.studentId);
+    if (!student && mongoose.Types.ObjectId.isValid(req.params.studentId)) {
+      student = await Student.findById(req.params.studentId);
+    }
     if (!student) return res.status(404).json({ message: "Student not found" });
 
-    if (student.password !== currentPassword) {
+    const authResult = await student.comparePassword(currentPassword);
+    if (!authResult.isValid) {
       return res.status(400).json({ message: "Current password is incorrect" });
     }
     if (newPassword.length < 6) {

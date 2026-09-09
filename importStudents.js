@@ -13,6 +13,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const XLSX     = require('xlsx');
 const path     = require('path');
+const { hashPasswordSync } = require('./utils/passwordUtils');
 
 // ── MongoDB connection ──────────────────────────────────────────────────────
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/CEM';
@@ -120,7 +121,8 @@ async function run() {
     if (!doc.pinNumber) doc.pinNumber = doc.studentId || '';
 
     // Default password = studentId if not in sheet
-    if (!doc.password) doc.password = doc.studentId || 'student123';
+    const rawPass = doc.password || doc.studentId || 'student123';
+    doc.password = hashPasswordSync(rawPass);
 
     // score as number
     doc.score = doc.score ? Number(doc.score) || 0 : 0;

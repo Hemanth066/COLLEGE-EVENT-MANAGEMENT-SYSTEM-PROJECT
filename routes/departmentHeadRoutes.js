@@ -12,8 +12,11 @@ const OtherCertificate = require("../models/OtherCertificate");
 // ── DEPARTMENT HEAD LOGIN ──────────────────────────────────────────
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  const departmentHead = await DepartmentHead.findOne({ username, password });
+  const departmentHead = await DepartmentHead.findOne({ username });
   if (!departmentHead) return res.status(401).json({ message: "Invalid Department Head credentials ❌" });
+
+  const authResult = await departmentHead.comparePassword(password);
+  if (!authResult.isValid) return res.status(401).json({ message: "Invalid Department Head credentials ❌" });
 
   if (departmentHead.isLoggedIn) {
     return res.status(400).json({
@@ -25,6 +28,7 @@ router.post("/login", async (req, res) => {
   const newSessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
   departmentHead.isLoggedIn = true;
   departmentHead.sessionId = newSessionId;
+  if (authResult.isLegacyPlaintext) departmentHead.password = password; // pre-save hook will hash it
   await departmentHead.save();
 
   res.json({ message: "Department Head login successful ✅", departmentHead, sessionId: newSessionId });
@@ -52,10 +56,13 @@ router.post("/logout", async (req, res) => {
 router.post("/force-logout", async (req, res) => {
   try {
     const { username, password } = req.body;
-    const dh = await DepartmentHead.findOne({ username, password });
+    const dh = await DepartmentHead.findOne({ username });
     if (!dh) return res.status(401).json({ message: "Invalid credentials ❌" });
+    const authResult = await dh.comparePassword(password);
+    if (!authResult.isValid) return res.status(401).json({ message: "Invalid credentials ❌" });
     dh.isLoggedIn = false;
     dh.sessionId = null;
+    if (authResult.isLegacyPlaintext) dh.password = password;
     await dh.save();
     res.json({ message: "Previous session cleared. You can now log in ✅" });
   } catch (err) {
