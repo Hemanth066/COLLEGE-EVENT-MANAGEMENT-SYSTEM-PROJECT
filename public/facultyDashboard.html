@@ -1385,10 +1385,341 @@
     }
 
     .main-content {
-      margin-left: var(--sidebar-w, 260px) !important;
-      width: calc(100% - var(--sidebar-w, 260px)) !important;
-      max-width: calc(100% - var(--sidebar-w, 260px)) !important;
       box-sizing: border-box !important;
+    }
+
+    /* ── VIEW SCORE PROOF BUTTON & MODAL ── */
+    .btn-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(30, 136, 229, 0.35);
+      background: rgba(30, 136, 229, 0.08);
+      color: #0F4C81;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Poppins', sans-serif;
+      white-space: nowrap;
+    }
+    .btn-proof:hover {
+      background: #1E88E5;
+      color: #ffffff;
+      border-color: #1E88E5;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
+    }
+    .btn-proof:active {
+      transform: translateY(0);
+    }
+
+    .proof-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .proof-modal-overlay.active {
+      display: flex;
+    }
+    .proof-modal-box {
+      background: #ffffff;
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      border-radius: 20px;
+      box-shadow: 0 25px 60px rgba(15, 76, 129, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: proofModalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    @keyframes proofModalIn {
+      from { opacity: 0; transform: scale(0.95) translateY(12px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .proof-modal-header {
+      background: linear-gradient(135deg, #0F4C81 0%, #1E88E5 100%);
+      color: #ffffff;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+    .proof-modal-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .proof-student-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    .proof-modal-header-title h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 0 0 4px 0;
+      color: #ffffff;
+    }
+    .proof-modal-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .proof-header-badge {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .proof-modal-close {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .proof-modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+    .proof-modal-body {
+      padding: 22px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      background: #f8fafc;
+    }
+    .proof-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .proof-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .proof-card.highlight {
+      background: linear-gradient(135deg, rgba(30, 136, 229, 0.08), rgba(15, 76, 129, 0.04));
+      border-color: rgba(30, 136, 229, 0.35);
+    }
+    .proof-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .proof-card-value {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .proof-card.highlight .proof-card-value {
+      color: var(--blue-dark);
+    }
+    .proof-card-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .proof-section {
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      padding: 16px 18px;
+    }
+    .proof-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .proof-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .proof-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    .proof-table th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-align: left;
+      padding: 9px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .proof-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text);
+      vertical-align: middle;
+    }
+    .proof-table tr:last-child td {
+      border-bottom: none;
+    }
+    .proof-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      font-size: 11px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .proof-link-btn:hover {
+      background: #1d4ed8;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .proof-empty-hint {
+      text-align: center;
+      padding: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ── INLINE DOCUMENT PREVIEW MODAL ── */
+    .doc-preview-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 20000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .doc-preview-overlay.active {
+      display: flex;
+    }
+    .doc-preview-box {
+      background: #ffffff;
+      width: 100%;
+      max-width: 960px;
+      max-height: 92vh;
+      border-radius: 16px;
+      box-shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: docPreviewIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes docPreviewIn {
+      from { opacity: 0; transform: scale(0.93) translateY(16px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .doc-preview-header {
+      background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+      color: #ffffff;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .doc-preview-title {
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+    .doc-preview-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .doc-preview-actions a, .doc-preview-actions button {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .doc-preview-actions a:hover, .doc-preview-actions button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .doc-preview-body {
+      padding: 0;
+      flex: 1;
+      overflow: auto;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
     }
   </style>
 
@@ -3607,15 +3938,25 @@
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <input type="text" id="facStudentSearch" class="search-input" placeholder="🔍 Search name, PIN..."
               oninput="filterFacultyStudentsList()"
-              style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:var(--text);font-size:13px;outline:none;width:220px;">
-            <select id="facScoreFilter" class="search-input" onchange="filterFacultyStudentsList()"
+              style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:var(--text);font-size:13px;outline:none;width:200px;">
+            <select id="facBranchFilter" class="search-input" onchange="filterFacultyStudentsList()"
               style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:var(--text);font-size:13px;outline:none;">
-              <option value="">All Scores</option>
-              <option value="0">Score = 0</option>
-              <option value="10">Score &lt;= 10</option>
-              <option value="25">Score &lt;= 25</option>
-              <option value="50">Score &lt;= 50</option>
+              <option value="">All Assigned Branches</option>
             </select>
+            <select id="facYearFilter" class="search-input" onchange="filterFacultyStudentsList()"
+              style="padding:9px 14px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:var(--text);font-size:13px;outline:none;">
+              <option value="">All Years</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <label for="facScoreFilter" style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;">Max Score:</label>
+              <input type="number" id="facScoreFilter" min="0" placeholder="Max"
+                style="width:85px;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:#f8fafc;color:var(--text);font-size:13px;outline:none;"
+                oninput="filterFacultyStudentsList()">
+            </div>
             <button onclick="clearFacultyStudentFilters()"
               style="padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:#f1f5f9;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;">Clear</button>
             <button onclick="downloadFacultyStudentsCSV()"
@@ -3645,11 +3986,14 @@
                 <th
                   style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--border);">
                   Total Score</th>
+                <th
+                  style="padding:11px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;background:#f8fafc;border-bottom:1px solid var(--border);">
+                  Proof / Action</th>
               </tr>
             </thead>
             <tbody id="facStudentsBody">
               <tr>
-                <td colspan="6" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">Loading
+                <td colspan="7" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">Loading
                   students...</td>
               </tr>
             </tbody>
@@ -4181,6 +4525,60 @@
       let allFacultyBranchStudents = [];
       let displayedFacultyBranchStudents = [];
 
+      function parseYearNum(yr) {
+        if (yr === null || yr === undefined) return '';
+        const match = String(yr).match(/\d+/);
+        return match ? match[0] : String(yr).trim().toLowerCase();
+      }
+
+      function populateFacultyYearDropdown(students, allowedYears = []) {
+        const yearSelect = document.getElementById('facYearFilter');
+        if (!yearSelect) return;
+        const currentVal = yearSelect.value;
+
+        const targetYears = (allowedYears && allowedYears.length)
+          ? allowedYears.map(parseYearNum).filter(Boolean)
+          : ['1', '2', '3', '4'];
+
+        const sortedYears = Array.from(new Set(targetYears)).sort((a, b) => Number(a) - Number(b));
+
+        let html = '<option value="">All Assigned Years</option>';
+        sortedYears.forEach(yNum => {
+          let label = `Year ${yNum}`;
+          if (yNum === '1') label = '1st Year';
+          else if (yNum === '2') label = '2nd Year';
+          else if (yNum === '3') label = '3rd Year';
+          else if (yNum === '4') label = '4th Year';
+          html += `<option value="${yNum}">${label}</option>`;
+        });
+
+        yearSelect.innerHTML = html;
+        if (currentVal && sortedYears.includes(currentVal)) {
+          yearSelect.value = currentVal;
+        } else {
+          yearSelect.value = '';
+        }
+      }
+
+      function populateFacultyBranchDropdown(allowedBranches = []) {
+        const branchSelect = document.getElementById('facBranchFilter');
+        if (!branchSelect) return;
+
+        const currentVal = branchSelect.value;
+        let html = '<option value="">All Assigned Branches</option>';
+        if (allowedBranches && allowedBranches.length) {
+          allowedBranches.forEach(b => {
+            html += `<option value="${b}">${b}</option>`;
+          });
+        }
+        branchSelect.innerHTML = html;
+        if (currentVal && allowedBranches.includes(currentVal)) {
+          branchSelect.value = currentVal;
+        } else {
+          branchSelect.value = '';
+        }
+      }
+
       async function loadFacultyBranchStudents() {
         if (!currentFaculty) currentFaculty = JSON.parse(localStorage.getItem('facultyData')) || JSON.parse(localStorage.getItem('user')) || JSON.parse(localStorage.getItem('faculty'));
         if (!currentFaculty) return;
@@ -4188,19 +4586,35 @@
         if (!fId) return;
 
         const tbody = document.getElementById('facStudentsBody');
-        if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">Loading branch students...</td></tr>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">Loading branch students...</td></tr>';
 
         try {
           const res = await fetch(`/api/faculty/branch-students/${fId}`);
           if (!res.ok) throw new Error('Failed to load students');
           const data = await res.json();
 
-          allFacultyBranchStudents = data.students || [];
+          let fetchedStudents = data.students || [];
+
+          if (data.coordinatorYears && data.coordinatorYears.length) {
+            const allowedNums = data.coordinatorYears.map(parseYearNum).filter(Boolean);
+            fetchedStudents = fetchedStudents.filter(s => {
+              const sNum = parseYearNum(s.year);
+              return !sNum || allowedNums.includes(String(sNum));
+            });
+          }
+
+          allFacultyBranchStudents = fetchedStudents;
           displayedFacultyBranchStudents = [...allFacultyBranchStudents];
 
-          const branchName = data.department || currentFaculty.department || currentFaculty.coordinatorBranch || 'All Departments';
+          const cBranches = (Array.isArray(data.coordinatorBranches) && data.coordinatorBranches.length)
+            ? data.coordinatorBranches
+            : ((data.department || currentFaculty.coordinatorBranch) ? (data.department || currentFaculty.coordinatorBranch).split(',').map(b=>b.trim()) : [currentFaculty.department || 'All']);
+
+          const branchBadgesHtml = cBranches.map(b => `<span style="background:rgba(255,255,255,0.25);border:1px solid rgba(255,255,255,0.4);color:white;padding:3px 10px;border-radius:12px;font-weight:700;margin-right:6px;font-size:12px;">${b}</span>`).join('');
+          const branchNameStr = cBranches.join(', ');
+
           const deptEl = document.getElementById('facBranchName');
-          if (deptEl) deptEl.textContent = branchName;
+          if (deptEl) deptEl.innerHTML = branchBadgesHtml || branchNameStr || 'All Departments';
 
           const badgeEl = document.getElementById('facStudentCountBadge');
           if (badgeEl) {
@@ -4208,7 +4622,7 @@
               badgeEl.textContent = `${allFacultyBranchStudents.length} Students (Showing All Branches)`;
               badgeEl.style.background = 'rgba(251,191,36,0.3)';
             } else {
-              badgeEl.textContent = `${allFacultyBranchStudents.length} Students (${branchName})`;
+              badgeEl.textContent = `${allFacultyBranchStudents.length} Students (${branchNameStr})`;
               badgeEl.style.background = 'rgba(255,255,255,0.2)';
             }
           }
@@ -4216,14 +4630,16 @@
           const countEl = document.getElementById('facStudentCount');
           if (countEl) {
             countEl.textContent = data.isFallbackAll
-              ? `${allFacultyBranchStudents.length} Total Students (0 specific to ${branchName})`
-              : `${allFacultyBranchStudents.length} Students (${branchName})`;
+              ? `${allFacultyBranchStudents.length} Total Students (0 specific to ${branchNameStr})`
+              : `${allFacultyBranchStudents.length} Students (${branchNameStr})`;
           }
 
+          populateFacultyBranchDropdown(data.coordinatorBranches || [branchNameStr]);
+          populateFacultyYearDropdown(allFacultyBranchStudents, data.coordinatorYears || []);
           renderFacultyStudents(allFacultyBranchStudents);
         } catch (err) {
           console.error('Error loading branch students:', err);
-          if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="no-data" style="text-align:center;padding:40px;color:#ef4444;">Error loading students</td></tr>';
+          if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="no-data" style="text-align:center;padding:40px;color:#ef4444;">Error loading students</td></tr>';
         }
       }
 
@@ -4233,27 +4649,64 @@
         if (!tbody) return;
 
         if (!list || !list.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">No students found</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">No students found</td></tr>';
           return;
         }
 
         tbody.innerHTML = list.map((s, i) => {
           const totalScore = (s.score || 0) + (s.eventScore || 0);
+          const sid = String(s._id || s.studentId || s.pinNumber || i);
+          const pin = s.pinNumber || s.studentId || s.username || '';
+          const name = s.fullName || s.username || pin;
+
           return `<tr style="border-bottom:1px solid #f1f5f9;">
       <td style="padding:12px 14px;font-size:13px;">${i + 1}</td>
-      <td style="padding:12px 14px;font-size:13px;font-weight:600;color:var(--text);">${s.fullName || s.username || '—'}</td>
-      <td style="padding:12px 14px;font-size:13px;font-family:monospace;color:var(--muted);">${s.studentId || s.pinNumber || '—'}</td>
+      <td style="padding:12px 14px;font-size:13px;font-weight:600;color:var(--text);">${name}</td>
+      <td style="padding:12px 14px;font-size:13px;font-family:monospace;color:var(--muted);">${pin || '—'}</td>
       <td style="padding:12px 14px;font-size:13px;"><span class="badge blue" style="padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(30,136,229,0.12);color:#1E88E5;border:1px solid rgba(30,136,229,0.25);">${s.branch || '—'}</span></td>
       <td style="padding:12px 14px;font-size:13px;">${s.year ? 'Year ' + s.year : '—'}</td>
       <td style="padding:12px 14px;font-size:13px;"><strong style="color:var(--blue-dark);font-size:14px;">${totalScore}</strong> pts</td>
+      <td style="padding:12px 14px;font-size:13px;">
+        <button class="btn-proof btn-fac-proof"
+          data-sid="${sid}"
+          data-name="${encodeURIComponent(name)}"
+          data-pin="${encodeURIComponent(pin)}"
+          data-branch="${encodeURIComponent(s.branch || '')}"
+          data-year="${s.year || ''}"
+          data-score="${s.score || 0}"
+          data-eventscore="${s.eventScore || 0}"
+          data-sem3="${s.sem3Score || 0}"
+          data-sem4="${s.sem4Score || 0}">
+          👁️ View Proof
+        </button>
+      </td>
     </tr>`;
         }).join('');
+
+        tbody.querySelectorAll('.btn-fac-proof').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const data = {
+              sid: this.dataset.sid,
+              name: decodeURIComponent(this.dataset.name || ''),
+              pin: decodeURIComponent(this.dataset.pin || ''),
+              branch: decodeURIComponent(this.dataset.branch || ''),
+              year: this.dataset.year || '',
+              score: Number(this.dataset.score) || 0,
+              eventScore: Number(this.dataset.eventscore) || 0,
+              sem3Score: Number(this.dataset.sem3) || 0,
+              sem4Score: Number(this.dataset.sem4) || 0
+            };
+            viewStudentProof(data);
+          });
+        });
       }
 
       function filterFacultyStudentsList() {
         const q = (document.getElementById('facStudentSearch')?.value || '').toLowerCase().trim();
+        const yearVal = document.getElementById('facYearFilter')?.value || '';
+        const branchVal = document.getElementById('facBranchFilter')?.value || '';
         const maxScoreVal = document.getElementById('facScoreFilter')?.value;
-        const threshold = maxScoreVal !== '' && maxScoreVal !== null ? Number(maxScoreVal) : null;
+        const threshold = (maxScoreVal !== '' && maxScoreVal !== null && !isNaN(maxScoreVal)) ? Number(maxScoreVal) : null;
 
         let filtered = allFacultyBranchStudents.filter(s => {
           const nameMatch = !q ||
@@ -4262,18 +4715,32 @@
             (s.studentId || '').toLowerCase().includes(q) ||
             (s.pinNumber || '').toLowerCase().includes(q);
 
+          const studentYearNum = parseYearNum(s.year);
+          const filterYearNum = parseYearNum(yearVal);
+          const yearMatch = !filterYearNum || (studentYearNum === filterYearNum);
+
+          const branchMatch = !branchVal || (s.branch || '').toLowerCase() === branchVal.toLowerCase();
+
           const totalScore = (s.score || 0) + (s.eventScore || 0);
           const scoreMatch = threshold === null || totalScore <= threshold;
 
-          return nameMatch && scoreMatch;
+          return nameMatch && yearMatch && branchMatch && scoreMatch;
         });
 
         displayedFacultyBranchStudents = filtered;
 
         const countEl = document.getElementById('facStudentCount');
         if (countEl) {
-          countEl.textContent = threshold !== null
-            ? `${filtered.length} of ${allFacultyBranchStudents.length} students (Score <= ${threshold})`
+          let filterInfo = [];
+          if (branchVal) filterInfo.push(branchVal);
+          if (yearVal) {
+            const yNum = parseYearNum(yearVal);
+            const label = yNum === '1' ? '1st Year' : yNum === '2' ? '2nd Year' : yNum === '3' ? '3rd Year' : yNum === '4' ? '4th Year' : `Year ${yNum}`;
+            filterInfo.push(label);
+          }
+          if (threshold !== null) filterInfo.push(`Max Score <= ${threshold}`);
+          countEl.textContent = filterInfo.length
+            ? `${filtered.length} of ${allFacultyBranchStudents.length} students (${filterInfo.join(', ')})`
             : `${filtered.length} of ${allFacultyBranchStudents.length} students`;
         }
 
@@ -4282,14 +4749,290 @@
 
       function clearFacultyStudentFilters() {
         const search = document.getElementById('facStudentSearch');
+        const year = document.getElementById('facYearFilter');
+        const branch = document.getElementById('facBranchFilter');
         const score = document.getElementById('facScoreFilter');
         if (search) search.value = '';
+        if (year) year.value = '';
+        if (branch) branch.value = '';
         if (score) score.value = '';
 
         displayedFacultyBranchStudents = [...allFacultyBranchStudents];
         const countEl = document.getElementById('facStudentCount');
         if (countEl) countEl.textContent = `${allFacultyBranchStudents.length} Students`;
         renderFacultyStudents(allFacultyBranchStudents);
+      }
+
+      // ── VIEW STUDENT SCORE PROOF MODAL LOGIC ──────────────────
+      function viewStudentProof(d) {
+        console.log('[ViewProof Coordinator] Called with data:', d);
+
+        const modal = document.getElementById('studentProofModal');
+        const body = document.getElementById('proofModalBody');
+        const avatarEl = document.getElementById('proofModalAvatar');
+        const nameEl = document.getElementById('proofModalStudentName');
+        const pinEl = document.getElementById('proofModalPin');
+        const branchEl = document.getElementById('proofModalBranch');
+        const yearEl = document.getElementById('proofModalYear');
+
+        if (!modal) { console.error('Modal not found!'); return; }
+
+        const displayName = d.name || d.pin || 'Student';
+        const pin = d.pin || '';
+        const branch = d.branch || (currentFaculty && (currentFaculty.coordinatorBranch || currentFaculty.department)) || '—';
+        const year = d.year || '—';
+        const sem3Score = d.sem3Score || 0;
+        const sem4Score = d.sem4Score || 0;
+        const baseScore = d.score || 0;
+        const eventScore = d.eventScore || 0;
+        const totalScore = baseScore + eventScore;
+
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        if (nameEl) nameEl.textContent = displayName;
+        if (pinEl) pinEl.textContent = `PIN: ${pin || d.sid}`;
+        if (branchEl) branchEl.textContent = `Branch: ${branch}`;
+        if (yearEl) yearEl.textContent = `Year: ${year}`;
+        if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase() || 'S';
+
+        body.innerHTML = `
+          <div class="proof-summary-grid">
+            <div class="proof-card highlight">
+              <div class="proof-card-label">🏆 Grand Total Score</div>
+              <div class="proof-card-value">${totalScore}</div>
+              <div class="proof-card-desc">Academic + Events + Certs</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-card-label">📘 3rd Semester</div>
+              <div class="proof-card-value" style="color:#0F4C81;">${sem3Score}</div>
+              <div class="proof-card-desc">Semester 3 Score</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-card-label">📗 4th Semester</div>
+              <div class="proof-card-value" style="color:#1565C0;">${sem4Score}</div>
+              <div class="proof-card-desc">Semester 4 Score</div>
+            </div>
+            <div class="proof-card">
+              <div class="proof-card-label">🎪 Event Score</div>
+              <div class="proof-card-value" style="color:var(--green, #16a34a);">${eventScore}</div>
+              <div class="proof-card-desc">Events Participated</div>
+            </div>
+          </div>
+
+          <div class="proof-section" style="background:#f1f5f9;border-color:#cbd5e1;">
+            <div class="proof-section-header" style="border-bottom-color:#e2e8f0;">
+              <div class="proof-section-title"><span>📘</span> Academic Score Breakdown</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:8px 0;">
+              <div style="background:#e3f2fd;border-radius:12px;padding:14px 18px;">
+                <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
+                <div style="font-size:28px;font-weight:800;color:#0F4C81;">${baseScore}</div>
+              </div>
+              <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
+                <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
+                <div style="font-size:28px;font-weight:800;color:#2e7d32;">${sem3Score}</div>
+              </div>
+              <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
+                <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
+                <div style="font-size:28px;font-weight:800;color:#1565C0;">${sem4Score}</div>
+              </div>
+              <div style="background:#f3e5f5;border-radius:12px;padding:14px 18px;">
+                <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
+                <div style="font-size:28px;font-weight:800;color:#6a1b9a;">${eventScore}</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="proofEventsSection">
+            <div style="text-align:center;padding:24px;color:var(--muted);">
+              <div style="font-size:20px;margin-bottom:6px;">⏳</div>
+              <div style="font-size:13px;">Loading event & certificate records...</div>
+            </div>
+          </div>
+        `;
+
+        _loadProofDetails(pin || d.sid);
+      }
+
+      async function _loadProofDetails(pinOrId) {
+        try {
+          let res = await fetch(`/api/faculty/student-score-proof/${encodeURIComponent(pinOrId)}`);
+          if (!res.ok) {
+            res = await fetch(`/api/department-head/student-score-proof/${encodeURIComponent(pinOrId)}`);
+          }
+          const apiData = res.ok ? await res.json() : null;
+          const events = (apiData && apiData.events) || [];
+          const certs = (apiData && apiData.otherCertificates) || [];
+          const sum = (apiData && apiData.summary) || {};
+          const totalOtherCertsScore = sum.totalOtherCertsScore || 0;
+
+          let evHtml = `
+            <div class="proof-section">
+              <div class="proof-section-header">
+                <div class="proof-section-title"><span>🎪</span> College Events Attended (${events.length})</div>
+                <span class="count-badge" style="background:#e8f5e9;color:#2e7d32;">${events.reduce((a,r)=>a+(r.score||0),0)} pts</span>
+              </div>
+          `;
+          if (events.length === 0) {
+            evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
+          } else {
+            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+            events.forEach((ev, i) => {
+              const d = ev.date ? new Date(ev.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+              const cert = ev.certificateUrl
+                ? `<button onclick="openDocPreviewModal('${encodeURIComponent(ev.certificateUrl)}','${encodeURIComponent(ev.title||'Certificate')}')" class="proof-link-btn">📜 View</button>`
+                : `<span style="color:var(--muted);font-size:11px;">Not uploaded</span>`;
+              evHtml += `<tr><td>${i+1}</td><td><strong>${ev.title||'Event'}</strong><br><span style="font-size:11px;color:var(--muted);">${ev.venue||'Campus'}</span></td><td><span class="badge badge-gold" style="font-size:11px;">${ev.category||'General'}</span></td><td style="font-size:12px;">${d}</td><td><strong style="color:var(--green, #16a34a);font-size:14px;">+${ev.score||0} pts</strong></td><td>${cert}</td></tr>`;
+            });
+            evHtml += `</tbody></table></div>`;
+          }
+          evHtml += `</div>`;
+
+          evHtml += `
+            <div class="proof-section">
+              <div class="proof-section-header">
+                <div class="proof-section-title"><span>📜</span> External Certificates (${certs.length})</div>
+                <span class="count-badge" style="background:#fff3e0;color:#e65100;">${totalOtherCertsScore} marks</span>
+              </div>
+          `;
+          if (certs.length === 0) {
+            evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No external certificates uploaded.</div>`;
+          } else {
+            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
+            certs.forEach((c, i) => {
+              const d = c.uploadedAt ? new Date(c.uploadedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+              let badge = '<span class="badge badge-gold" style="font-size:11px;">Pending</span>';
+              if (c.status==='approved') badge='<span class="badge badge-green" style="font-size:11px;">✅ Approved</span>';
+              else if (c.status==='rejected') badge='<span class="badge badge-red" style="font-size:11px;">❌ Rejected</span>';
+              evHtml += `<tr><td>${i+1}</td><td><strong>${c.certificateName||'Certificate'}</strong></td><td style="font-size:12px;">${d}</td><td>${badge}</td><td><strong style="color:${c.marksAwarded?'var(--green, #16a34a)':'var(--muted)'}">${c.marksAwarded||0} marks</strong></td><td><button onclick="openOtherCertProof(event,'${c.uploadId}','${encodeURIComponent(c.fileUrl||'')}','${encodeURIComponent(c.certificateName||'Certificate')}')" class="proof-link-btn">📄 View</button></td></tr>`;
+            });
+            evHtml += `</tbody></table></div>`;
+          }
+          evHtml += `</div>`;
+
+          const sec = document.getElementById('proofEventsSection');
+          if (sec) sec.innerHTML = evHtml;
+
+        } catch (err) {
+          console.error('Proof load error:', err);
+          const sec = document.getElementById('proofEventsSection');
+          if (sec) sec.innerHTML = `<div style="text-align:center;padding:20px;color:#c62828;"><b>⚠️ Could not load event/cert records</b><br><span style="font-size:12px;">${err.message}</span></div>`;
+        }
+      }
+
+      function closeStudentProofModal() {
+        const modal = document.getElementById('studentProofModal');
+        if (modal) modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+
+      function handleProofBackdropClick(e) {
+        if (e.target && e.target.id === 'studentProofModal') {
+          closeStudentProofModal();
+        }
+      }
+
+      async function openOtherCertProof(event, uploadId, encodedDirectUrl, encodedTitle) {
+        const directUrl = decodeURIComponent(encodedDirectUrl || '');
+        const title = decodeURIComponent(encodedTitle || 'Certificate');
+        if (directUrl && directUrl !== 'null' && directUrl !== 'undefined' && directUrl !== '') {
+          openDocPreviewModal(encodeURIComponent(directUrl), encodeURIComponent(title));
+          return;
+        }
+
+        try {
+          const btn = event?.currentTarget || event?.target;
+          const originalText = btn ? btn.innerHTML : '';
+          if (btn) btn.innerHTML = '⏳ Loading file...';
+          const res = await fetch(`/api/other-certs/view/${uploadId}`);
+          const data = await res.json();
+          if (btn) btn.innerHTML = originalText;
+
+          if (data.fileUrl) {
+            openDocPreviewModal(encodeURIComponent(data.fileUrl), encodeURIComponent(title));
+          } else {
+            alert(data.message || 'Proof document is unavailable or expired.');
+          }
+        } catch (e) {
+          console.error('Error viewing proof document:', e);
+          alert('Could not open certificate proof: ' + e.message);
+        }
+      }
+
+      function openDocPreviewModal(encodedUrl, encodedTitle) {
+        const url   = decodeURIComponent(encodedUrl   || '');
+        const title = decodeURIComponent(encodedTitle || 'Document Preview');
+        if (!url) { alert('Document URL is missing.'); return; }
+
+        const overlay      = document.getElementById('docPreviewOverlay');
+        const titleEl      = document.getElementById('docPreviewTitle');
+        const bodyEl       = document.getElementById('docPreviewBody');
+        const openTabLink  = document.getElementById('docPreviewOpenTab');
+        const downloadLink = document.getElementById('docPreviewDownload');
+        if (!overlay) return;
+
+        const inlineUrl = url.replace(/fl_attachment,?/gi, '').replace(/flags=attachment&?/gi, '');
+
+        titleEl.textContent  = '📄 ' + title;
+        openTabLink.href     = inlineUrl;
+        downloadLink.href    = inlineUrl;
+
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        const isImage = inlineUrl.match(/\.(png|jpg|jpeg|gif|webp|svg|bmp)(\?|$)/i)
+          || (!inlineUrl.match(/\.[a-z0-9]{2,5}(\?|$)/i) && inlineUrl.match(/\/image\/upload\//i));
+
+        if (isImage) {
+          bodyEl.innerHTML = `<img src="${inlineUrl}" alt="${title}"
+            style="max-width:100%;max-height:75vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.12);margin:16px;">`;
+          return;
+        }
+
+        bodyEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted);">
+          <div style="font-size:28px;margin-bottom:10px;">⏳</div>
+          <div style="font-size:13px;">Loading document...</div>
+        </div>`;
+
+        fetch(inlineUrl)
+          .then(r => {
+            if (!r.ok) throw new Error('Failed to fetch file (status ' + r.status + ')');
+            return r.blob();
+          })
+          .then(blob => {
+            const blobUrl = URL.createObjectURL(blob);
+            overlay.dataset.blobUrl = blobUrl;
+            openTabLink.href    = blobUrl;
+            downloadLink.href   = blobUrl;
+            bodyEl.innerHTML = `<iframe src="${blobUrl}" title="${title}"
+              style="width:100%;height:70vh;border:none;background:#fff;"></iframe>`;
+          })
+          .catch(err => {
+            bodyEl.innerHTML = `
+              <div style="text-align:center;padding:40px;">
+                <div style="font-size:36px;margin-bottom:12px;">📄</div>
+                <p style="font-weight:700;color:#1F2937;margin-bottom:8px;">${title}</p>
+                <p style="font-size:13px;color:#6B7280;margin-bottom:20px;">Cannot preview inline — click below to open the file.</p>
+                <a href="${inlineUrl}" target="_blank"
+                  style="display:inline-block;padding:12px 28px;border-radius:10px;background:#1E88E5;color:#fff;font-weight:700;font-size:14px;text-decoration:none;">
+                  🔗 Open File in New Tab
+                </a>
+              </div>`;
+          });
+      }
+
+      function closeDocPreviewModal() {
+        const overlay = document.getElementById('docPreviewOverlay');
+        if (overlay) {
+          if (overlay.dataset.blobUrl) {
+            URL.revokeObjectURL(overlay.dataset.blobUrl);
+            delete overlay.dataset.blobUrl;
+          }
+          overlay.classList.remove('active');
+          document.getElementById('docPreviewBody').innerHTML = '';
+          document.body.style.overflow = '';
+        }
       }
 
       function downloadFacultyStudentsCSV() {
@@ -6632,13 +7375,21 @@
 
           setVal('profileDepartment', p.department);
 
-          const isCoord = p.isCoordinator || currentFaculty.isCoordinator;
-          const coordBranch = p.coordinatorBranch || currentFaculty.coordinatorBranch || p.department;
+          const isCoord = Boolean(p.isCoordinator || currentFaculty.isCoordinator);
+          const cBranches = (Array.isArray(p.coordinatorBranches) && p.coordinatorBranches.length)
+            ? p.coordinatorBranches
+            : ((p.coordinatorBranch || currentFaculty.coordinatorBranch) ? (p.coordinatorBranch || currentFaculty.coordinatorBranch).split(',').map(b=>b.trim()) : [p.department || '']);
+          const coordBranch = cBranches.join(', ');
+
+          const cYears = (Array.isArray(p.coordinatorYears) && p.coordinatorYears.length) ? p.coordinatorYears : (currentFaculty.coordinatorYears || ['1','2','3','4']);
+          const sortedYLabels = cYears.map(parseYearNum).filter(Boolean).sort((a,b)=>Number(a)-Number(b)).map(y => y==='1'?'1st':y==='2'?'2nd':y==='3'?'3rd':'4th');
+          const yearsStr = sortedYLabels.length ? `(Years ${sortedYLabels.join(', ')})` : '(All Years)';
+
           const coordEl = document.getElementById('profileCoordinatorTag');
           if (coordEl) {
             if (isCoord) {
               coordEl.style.display = 'inline-block';
-              coordEl.textContent = `⭐ Branch Coordinator - ${coordBranch} (Years 2, 3 & 4)`;
+              coordEl.textContent = `⭐ Branch Coordinator - ${coordBranch} ${yearsStr}`;
             } else {
               coordEl.style.display = 'none';
             }
@@ -7499,7 +8250,7 @@
                 section: get('section', 'sec'),
 
 
-                score: get('score', 'marks', 'points'),
+                score: (get('score', 'marks', 'points') !== '' && !isNaN(Number(get('score', 'marks', 'points')))) ? Number(get('score', 'marks', 'points')) : 0,
 
 
                 attended: get('attended', 'attendance', 'present')
@@ -9050,6 +9801,53 @@
       <div id="facDetailTabFb" style="display:none;">
         <div id="facDetailFbList" style="display:flex;flex-direction:column;gap:12px;">
           <div style="text-align:center;padding:30px;color:var(--muted);">Loading feedback...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STUDENT SCORE PROOF MODAL FOR FACULTY / COORDINATOR -->
+  <div class="proof-modal-overlay" id="studentProofModal" onclick="handleProofBackdropClick(event)">
+    <div class="proof-modal-box">
+      <div class="proof-modal-header">
+        <div class="proof-modal-header-left">
+          <div id="proofModalAvatar" class="proof-student-avatar">S</div>
+          <div class="proof-modal-header-title">
+            <h3 id="proofModalStudentName">Student Score Proof</h3>
+            <div class="proof-modal-badges">
+              <span class="proof-header-badge" id="proofModalPin">PIN: —</span>
+              <span class="proof-header-badge" id="proofModalBranch">Branch: —</span>
+              <span class="proof-header-badge" id="proofModalYear">Year: —</span>
+            </div>
+          </div>
+        </div>
+        <button class="proof-modal-close" onclick="closeStudentProofModal()" title="Close">✕</button>
+      </div>
+
+      <div class="proof-modal-body" id="proofModalBody">
+        <div style="text-align:center;padding:40px;color:var(--muted);">
+          <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+          <div>Loading student score proofs...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INLINE DOCUMENT PREVIEW MODAL -->
+  <div class="doc-preview-overlay" id="docPreviewOverlay" onclick="if(event.target===this)closeDocPreviewModal()">
+    <div class="doc-preview-box">
+      <div class="doc-preview-header">
+        <div class="doc-preview-title" id="docPreviewTitle">📄 Document Preview</div>
+        <div class="doc-preview-actions">
+          <a id="docPreviewOpenTab" href="#" target="_blank">🔗 New Tab</a>
+          <a id="docPreviewDownload" href="#" download>⬇️ Download</a>
+          <button class="doc-preview-close" onclick="closeDocPreviewModal()">✕ Close</button>
+        </div>
+      </div>
+      <div class="doc-preview-body" id="docPreviewBody">
+        <div style="text-align:center;padding:40px;color:var(--muted);">
+          <div style="font-size:24px;margin-bottom:8px;">📄</div>
+          <div>Select a document to preview</div>
         </div>
       </div>
     </div>

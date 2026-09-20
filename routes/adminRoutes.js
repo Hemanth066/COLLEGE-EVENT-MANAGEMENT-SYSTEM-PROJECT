@@ -149,6 +149,69 @@ router.get("/students", async (_req, res) => {
   res.json(list);
 });
 
+router.post("/students/bulk-import", async (req, res) => {
+  try {
+    const { students } = req.body;
+    if (!Array.isArray(students) || !students.length) {
+      return res.status(400).json({ message: "No student records provided" });
+    }
+
+    let inserted = 0, updated = 0;
+    for (const item of students) {
+      const studentId = (item.studentId || item.pinNumber || item.username || '').trim().toUpperCase();
+      if (!studentId) continue;
+
+      const rawScore = item.score;
+      const parsedScore = Number(rawScore);
+      const scoreVal = (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
+
+      const studentData = {
+        studentId,
+        username: item.username || studentId,
+        pinNumber: item.pinNumber || studentId,
+        fullName: item.fullName || item.name || studentId,
+        branch: (item.branch || 'CSE').trim().toUpperCase(),
+        year: item.year || '1',
+        section: item.section || '1',
+        email: item.email || '',
+        phone: item.phone || '',
+        score: scoreVal
+      };
+
+      const existing = await Student.findOne({
+        $or: [{ studentId }, { pinNumber: studentData.pinNumber }, { username: studentData.username }]
+      });
+
+      if (existing) {
+        if (item.password) existing.password = item.password;
+        existing.fullName = studentData.fullName || existing.fullName;
+        existing.branch = studentData.branch || existing.branch;
+        existing.year = studentData.year || existing.year;
+        existing.section = studentData.section || existing.section;
+        if (studentData.email) existing.email = studentData.email;
+        if (studentData.phone) existing.phone = studentData.phone;
+        existing.score = scoreVal;
+        await existing.save();
+        updated++;
+      } else {
+        studentData.password = item.password || studentId || 'student123';
+        const s = new Student(studentData);
+        await s.save();
+        inserted++;
+      }
+    }
+
+    res.json({
+      message: `Excel import complete! ${inserted} new students added, ${updated} existing updated ✅`,
+      inserted,
+      updated
+    });
+  } catch (e) {
+    console.error('Bulk import error:', e);
+    res.status(400).json({ message: e.message });
+  }
+});
+
 router.post("/students", async (req, res) => {
   try {
     const s = new Student(req.body);
@@ -287,32 +350,88 @@ router.get("/coordinators", async (_req, res) => {
   } catch (e) { res.status(500).json({ message: "Server error" }); }
 });
 
+function parseBranchArray(branches, singleBranch) {
+  let list = [];
+  if (Array.isArray(branches) && branches.length) {
+    list = branches.map(b => String(b).trim().toUpperCase()).filter(Boolean);
+  } else if (typeof branches === 'string' && branches.trim()) {
+    list = branches.split(',').map(b => b.trim().toUpperCase()).filter(Boolean);
+  } else if (singleBranch) {
+    list = [String(singleBranch).trim().toUpperCase()];
+  }
+  return list;
+}
+
 router.post("/coordinators", async (req, res) => {
   try {
-    const { facultyId, branch } = req.body;
-    if (!facultyId || !branch) {
-      return res.status(400).json({ message: "Please select both a Faculty member and a Branch" });
+    const { facultyId, branch, branches, years } = req.body;
+    if (!facultyId) {
+      return res.status(400).json({ message: "Please select a Faculty member" });
     }
 
-    // Unassign existing coordinator for this branch
-    await Faculty.updateMany({ coordinatorBranch: branch }, { $set: { isCoordinator: false, coordinatorBranch: '' } });
+    const assignedBranches = parseBranchArray(branches, branch);
+    if (!assignedBranches.length) {
+      return res.status(400).json({ message: "Please select at least one assigned branch" });
+    }
 
-    // Assign new coordinator
+    const assignedYears = Array.isArray(years) && years.length ? years.map(String) : ['1', '2', '3', '4'];
+    const branchString = assignedBranches.join(', ');
+
     const updated = await Faculty.findByIdAndUpdate(
       facultyId,
-      { isCoordinator: true, coordinatorBranch: branch },
+      {
+        isCoordinator: true,
+        coordinatorBranch: branchString,
+        coordinatorBranches: assignedBranches,
+        coordinatorYears: assignedYears
+      },
       { new: true }
     ).select("-password");
 
     if (!updated) return res.status(404).json({ message: "Faculty member not found" });
 
-    res.json({ message: `Assigned as Coordinator for ${branch} ✅`, coordinator: updated });
+    res.json({ message: `Assigned as Coordinator for ${branchString} ✅`, coordinator: updated });
+  } catch (e) { res.status(400).json({ message: e.message }); }
+});
+
+router.put("/coordinators/:id", async (req, res) => {
+  try {
+    const { facultyId, branch, branches, years } = req.body;
+    const targetId = facultyId || req.params.id;
+    const assignedBranches = parseBranchArray(branches, branch);
+    const assignedYears = Array.isArray(years) && years.length ? years.map(String) : ['1', '2', '3', '4'];
+
+    if (!assignedBranches.length) {
+      return res.status(400).json({ message: "Please select at least one assigned branch" });
+    }
+
+    const branchString = assignedBranches.join(', ');
+
+    const updated = await Faculty.findByIdAndUpdate(
+      targetId,
+      {
+        isCoordinator: true,
+        coordinatorBranch: branchString,
+        coordinatorBranches: assignedBranches,
+        coordinatorYears: assignedYears
+      },
+      { new: true }
+    ).select("-password");
+
+    if (!updated) return res.status(404).json({ message: "Coordinator not found" });
+
+    res.json({ message: `Coordinator details updated for ${branchString} ✅`, coordinator: updated });
   } catch (e) { res.status(400).json({ message: e.message }); }
 });
 
 router.delete("/coordinators/:id", async (req, res) => {
   try {
-    await Faculty.findByIdAndUpdate(req.params.id, { isCoordinator: false, coordinatorBranch: '' });
+    await Faculty.findByIdAndUpdate(req.params.id, {
+      isCoordinator: false,
+      coordinatorBranch: '',
+      coordinatorBranches: [],
+      coordinatorYears: []
+    });
     res.json({ message: "Coordinator role removed ✅" });
   } catch (e) { res.status(400).json({ message: e.message }); }
 });

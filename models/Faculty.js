@@ -13,6 +13,8 @@ const facultySchema = new mongoose.Schema({
   signatureUrl: { type: String, default: '' },
   isCoordinator: { type: Boolean, default: false },
   coordinatorBranch: { type: String, default: '' },
+  coordinatorBranches: { type: [String], default: [] },
+  coordinatorYears: { type: [String], default: ['1', '2', '3', '4'] },
   isLoggedIn: { type: Boolean, default: false },
   sessionId: { type: String, default: null }
 });

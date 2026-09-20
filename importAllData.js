@@ -87,12 +87,19 @@ function parseExcelFile(filePath) {
       let year = cleanString(rowObj['year']);
       if (!year || year === '3') year = '3rd';
 
-      // Score logic: 3rd sem + 4th sem or score column
-      let sem3 = Number(rowObj['3rd sem']) || 0;
-      let sem4 = Number(rowObj['4th sem']) || 0;
-      let score = Number(rowObj['score']);
-      if (isNaN(score) || score === 0) {
+      // Score logic: 3rd sem + 4th sem or score column (default 0 if blank)
+      let sem3 = Number(rowObj['3rd sem']);
+      if (isNaN(sem3)) sem3 = 0;
+      let sem4 = Number(rowObj['4th sem']);
+      if (isNaN(sem4)) sem4 = 0;
+
+      let rawScore = rowObj['score'] || rowObj['total score'] || rowObj['points'] || rowObj['total points'];
+      let score = Number(rawScore);
+      if (isNaN(score) || rawScore === undefined || rawScore === null || String(rawScore).trim() === '') {
         score = sem3 + sem4;
+      }
+      if (isNaN(score) || score === null || score === undefined) {
+        score = 0;
       }
 
       if (scoreCorrections.hasOwnProperty(studentId)) {

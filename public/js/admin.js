@@ -850,18 +850,46 @@ async function modalSave() {
     closeModal(); showPopup('✅', 'Done', d.message); loadDeans();
   }
 
-  if (modalMode === 'assignCoordinator') {
-    const branch = get('mCoordBranch');
+  if (modalMode === 'assignCoordinator' || modalMode === 'editCoordinator') {
     const facultyId = get('mCoordFaculty');
-    if (!branch || !facultyId) { alert('Please select both Branch and Faculty Member'); return; }
-    const r = await fetch('/api/admin/coordinators', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ facultyId, branch })
-    });
-    const d = await r.json();
-    if (!r.ok) { alert(d.message || 'Assignment failed'); return; }
-    closeModal(); showPopup('✅', 'Done', d.message); loadCoordinators();
+    
+    let branches = [];
+    const allBranchMaster = document.getElementById('mCoordBranchAll');
+    if (allBranchMaster && allBranchMaster.checked) {
+      const branchesList = allBranches.length ? allBranches.map(b => b.name) : ['CSE','ECE','EEE','MECH','CIVIL','IT','DS','AIML'];
+      branches = branchesList;
+    } else {
+      const branchBoxes = document.querySelectorAll('input[name="mCoordBranch"]:checked');
+      branches = Array.from(branchBoxes).map(cb => cb.value);
+    }
+
+    const yearBoxes = document.querySelectorAll('input[name="mCoordYear"]:checked');
+    const years = Array.from(yearBoxes).map(cb => cb.value);
+
+    if (!facultyId) { alert('Please select a Faculty Member'); return; }
+    if (!branches.length) { alert('Please select at least one assigned branch (tick mark)'); return; }
+    if (!years.length) { alert('Please select at least one assigned academic year (tick mark)'); return; }
+
+    try {
+      const url = modalMode === 'editCoordinator' ? `/api/admin/coordinators/${modalId}` : '/api/admin/coordinators';
+      const method = modalMode === 'editCoordinator' ? 'PUT' : 'POST';
+
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ facultyId, branch: branches.join(', '), branches, years })
+      });
+
+      const d = await r.json();
+      if (!r.ok) { alert(d.message || 'Saving failed'); return; }
+
+      closeModal();
+      showPopup('✅', 'Done', d.message || 'Coordinator details updated successfully!');
+      loadCoordinators();
+    } catch (err) {
+      console.error('Error saving coordinator:', err);
+      alert('Error saving coordinator: ' + err.message);
+    }
   }
 }
 
@@ -1118,84 +1146,277 @@ async function loadCoordinators() {
 }
 
 function renderCoordinators() {
+  filterCoordinators();
+}
+
+function toggleCoordAllBranches(master) {
+  const cbs = document.querySelectorAll('.coord-branch-cb');
+  cbs.forEach(cb => { cb.checked = master.checked; });
+}
+
+function uncheckCoordBranchAll() {
+  const master = document.getElementById('mCoordBranchAll');
+  if (master) {
+    const cbs = document.querySelectorAll('.coord-branch-cb');
+    const checked = document.querySelectorAll('.coord-branch-cb:checked');
+    master.checked = (cbs.length > 0 && cbs.length === checked.length);
+  }
+}
+
+function filterCoordinators() {
   const tbody = document.getElementById('coordinatorsBody');
   if (!tbody) return;
 
-  const branches = allBranches.length
-    ? allBranches.map(b => b.name)
-    : ['CSE','ECE','EEE','MECH','CIVIL','IT','DS','AIML'];
-  
-  tbody.innerHTML = branches.map((b, i) => {
-    const c = allCoordinators.find(x => x.coordinatorBranch === b);
+  const nameQ = (document.getElementById('filterCoordName')?.value || '').toLowerCase().trim();
+  const branchQ = (document.getElementById('filterCoordBranch')?.value || '').trim().toLowerCase();
+  const yearQ = (document.getElementById('filterCoordYear')?.value || '').trim();
+
+  const activeCoords = allCoordinators.filter(c => {
+    if (!c.isCoordinator) return false;
+    
+    if (nameQ) {
+      const matchName = (c.fullName || '').toLowerCase().includes(nameQ) ||
+                        (c.username || '').toLowerCase().includes(nameQ) ||
+                        (c.email || '').toLowerCase().includes(nameQ);
+      if (!matchName) return false;
+    }
+
+    const cBranches = Array.isArray(c.coordinatorBranches) && c.coordinatorBranches.length
+      ? c.coordinatorBranches
+      : (c.coordinatorBranch ? c.coordinatorBranch.split(',').map(b=>b.trim()) : [c.department]);
+
+    if (branchQ && !cBranches.some(b => b.toLowerCase() === branchQ)) {
+      return false;
+    }
+
+    const cYears = Array.isArray(c.coordinatorYears) && c.coordinatorYears.length
+      ? c.coordinatorYears
+      : ['1', '2', '3', '4'];
+
+    if (yearQ && !cYears.includes(String(yearQ))) {
+      return false;
+    }
+
+    return true;
+  });
+
+  if (!activeCoords.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="no-data" style="text-align:center;padding:30px;">No coordinators match the selected filter</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = activeCoords.map((c, i) => {
+    const cBranches = Array.isArray(c.coordinatorBranches) && c.coordinatorBranches.length
+      ? c.coordinatorBranches
+      : (c.coordinatorBranch ? c.coordinatorBranch.split(',').map(b=>b.trim()) : [c.department]);
+
+    const branchesBadge = cBranches.map(b => `<span style="font-size:11px;background:#e0f2fe;color:#0369a1;border:1px solid #7dd3fc;padding:3px 10px;border-radius:12px;font-weight:700;margin-right:4px;">${b}</span>`).join('');
+
+    const cYears = Array.isArray(c.coordinatorYears) && c.coordinatorYears.length
+      ? c.coordinatorYears
+      : ['1', '2', '3', '4'];
+
+    const yearsBadge = cYears.map(y => `<span style="font-size:11px;background:#fef3c7;color:#b45309;border:1px solid #fde68a;padding:3px 8px;border-radius:12px;font-weight:600;margin-right:4px;">Year ${y}</span>`).join('');
+
     return `
       <tr>
-        <td>${i+1}</td>
-        <td><strong style="color:var(--blue-dark);">${b}</strong></td>
-        <td>${c ? `<strong>${c.fullName || c.username}</strong> <span style="font-size:11px;background:rgba(234,179,8,0.15);color:#b45309;padding:2px 8px;border-radius:12px;font-weight:600;margin-left:4px;">⭐ Coordinator</span>` : '<span style="color:var(--muted);font-style:italic;">Not Assigned</span>'}</td>
-        <td>${c?.username || '—'}</td>
-        <td>${c?.department || '—'}</td>
-        <td>${c?.email || '—'}</td>
-        <td>${c?.phone || '—'}</td>
-        <td>
-          ${c ? `<button class="btn btn-danger btn-sm" onclick="removeCoordinator('${c._id}','${b}')">Unassign</button>` : `<button class="btn btn-primary btn-sm" onclick="openAssignCoordinator('${b}')">Assign</button>`}
+        <td>${i + 1}</td>
+        <td><strong>${c.fullName || c.username}</strong> <span style="font-size:11px;background:rgba(234,179,8,0.15);color:#b45309;padding:2px 8px;border-radius:12px;font-weight:600;margin-left:4px;">⭐ Coordinator</span></td>
+        <td>${branchesBadge}</td>
+        <td>${yearsBadge}</td>
+        <td><span class="badge badge-blue">${c.username}</span></td>
+        <td>${c.department || '—'}</td>
+        <td>${c.email || '—'}</td>
+        <td>${c.phone || '—'}</td>
+        <td style="display:flex;gap:6px;">
+          <button class="btn btn-warning btn-sm" style="padding:5px 12px;font-size:12px;font-weight:600;" onclick="openEditCoordinator('${c._id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" style="padding:5px 12px;font-size:12px;font-weight:600;" onclick="removeCoordinator('${c._id}','${cBranches.join(', ')}')">Unassign</button>
         </td>
       </tr>`;
   }).join('');
 }
 
-function updateCoordFacultyList(selectedBranch) {
-  const select = document.getElementById('mCoordFaculty');
-  if (!select) return;
-  const selB = (selectedBranch || '').trim().toLowerCase();
+function openAssignCoordinator(defaultBranch = '', editCoord = null) {
+  modalMode = editCoord ? 'editCoordinator' : 'assignCoordinator';
+  modalId = editCoord ? editCoord._id : '';
+  document.getElementById('modalTitle').textContent = editCoord ? '✏️ Edit Coordinator Details' : '⭐ Assign Branch Coordinator';
 
-  const filteredFaculty = allFaculty.filter(f => {
-    if (!selB) return true;
-    const dept = (f.department || '').trim().toLowerCase();
-    return dept === selB;
-  });
-
-  if (!filteredFaculty.length) {
-    select.innerHTML = `<option value="">No faculty members found for ${selectedBranch || 'this branch'}</option>`;
-    return;
-  }
-
-  select.innerHTML = '<option value="">Select Faculty Member</option>' +
-    filteredFaculty.map(f => `<option value="${f._id}">${f.fullName || f.username} (${f.department || 'No Dept'})</option>`).join('');
-}
-
-function openAssignCoordinator(defaultBranch = '') {
-  modalMode = 'assignCoordinator'; modalId = '';
-  document.getElementById('modalTitle').textContent = 'Assign Branch Coordinator';
-  
-  const branches = allBranches.length
+  const branchesList = allBranches.length
     ? allBranches.map(b => b.name)
     : ['CSE','ECE','EEE','MECH','CIVIL','IT','DS','AIML'];
-  const branchOpts = branches.map(b => `<option value="${b}" ${defaultBranch===b?'selected':''}>${b}</option>`).join('');
-  
+
+  let assignedBranches = [];
+  if (editCoord) {
+    if (Array.isArray(editCoord.coordinatorBranches) && editCoord.coordinatorBranches.length) {
+      assignedBranches = editCoord.coordinatorBranches;
+    } else if (editCoord.coordinatorBranch) {
+      assignedBranches = editCoord.coordinatorBranch.split(',').map(b => b.trim().toUpperCase());
+    }
+  } else if (defaultBranch) {
+    assignedBranches = [defaultBranch.toUpperCase()];
+  }
+
+  const isAllBranches = assignedBranches.includes('ALL') || (assignedBranches.length === branchesList.length && branchesList.length > 0);
+
+  const branchCbs = `
+    <label style="font-weight:700;color:var(--blue);display:flex;align-items:center;gap:8px;cursor:pointer;padding-bottom:4px;border-bottom:1px solid #cbd5e1;width:100%;">
+      <input type="checkbox" id="mCoordBranchAll" onchange="toggleCoordAllBranches(this)" ${isAllBranches ? 'checked' : ''} style="width:16px;height:16px;"> All Branches
+    </label>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:8px;width:100%;margin-top:6px;">
+      ${branchesList.map(b => `
+        <label style="font-size:13px;display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;">
+          <input type="checkbox" class="coord-branch-cb" name="mCoordBranch" value="${b}" ${isAllBranches || assignedBranches.includes(b) ? 'checked' : ''} onchange="uncheckCoordBranchAll()" style="width:16px;height:16px;"> ${b}
+        </label>
+      `).join('')}
+    </div>`;
+
+  const selectedFacultyId = editCoord ? editCoord._id : '';
+  const facultyOpts = '<option value="">Select Faculty Member</option>' +
+    allFaculty.map(f => `<option value="${f._id}" ${selectedFacultyId === f._id ? 'selected' : ''}>${f.fullName || f.username} (${f.department || 'No Dept'})</option>`).join('');
+
+  const selectedYears = editCoord && Array.isArray(editCoord.coordinatorYears) && editCoord.coordinatorYears.length
+    ? editCoord.coordinatorYears
+    : ['1', '2', '3', '4'];
+
+  const yrChecked = (y) => selectedYears.includes(String(y)) ? 'checked' : '';
+
   document.getElementById('modalBody').innerHTML = `
     <div class="form-group">
-      <label>Select Branch *</label>
-      <select id="mCoordBranch" onchange="updateCoordFacultyList(this.value)"><option value="">Select Branch</option>${branchOpts}</select>
+      <label>Select Faculty Member *</label>
+      <select id="mCoordFaculty">${facultyOpts}</select>
     </div>
     <div class="form-group">
-      <label>Select Faculty Member *</label>
-      <select id="mCoordFaculty"><option value="">Select Faculty</option></select>
+      <label>Assigned Branch(es) * (Selected with tick marks)</label>
+      <div style="display:flex;flex-direction:column;gap:8px;max-height:180px;overflow-y:auto;background:#f8fafc;padding:12px;border-radius:10px;border:1px solid #cbd5e1;margin-top:4px;">
+        ${branchCbs}
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Assign Academic Years *</label>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;margin-top:4px;">
+        <label style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" name="mCoordYear" value="1" ${yrChecked(1)}> 1st Year
+        </label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" name="mCoordYear" value="2" ${yrChecked(2)}> 2nd Year
+        </label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" name="mCoordYear" value="3" ${yrChecked(3)}> 3rd Year
+        </label>
+        <label style="font-size:13px;font-weight:600;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;">
+          <input type="checkbox" name="mCoordYear" value="4" ${yrChecked(4)}> 4th Year
+        </label>
+      </div>
     </div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px;">
-      ℹ️ Only faculty belonging to the selected branch are displayed. This faculty will be designated as Coordinator for Years 2, 3 & 4.
+      ℹ️ Select assigned branches and academic years for this coordinator using tick marks.
     </div>`;
 
   document.getElementById('modalOverlay').classList.add('show');
-  updateCoordFacultyList(defaultBranch);
+}
+
+function openEditCoordinator(coordId) {
+  const coord = allCoordinators.find(x => x._id === coordId);
+  if (!coord) { alert('Coordinator details not found'); return; }
+  openAssignCoordinator('', coord);
 }
 
 async function removeCoordinator(id, branch) {
-  if (!confirm(`Remove Coordinator role for branch "${branch}"?`)) return;
+  if (!confirm(`Remove Coordinator role for branch(es) "${branch}"?`)) return;
   const r = await fetch(`/api/admin/coordinators/${id}`, { method:'DELETE' });
   const d = await r.json();
   showPopup('✅', 'Done', d.message);
   loadCoordinators();
 }
+function triggerStudentExcelUpload() {
+  const fileInput = document.getElementById('excelStudentFileInput');
+  if (fileInput) {
+    fileInput.value = '';
+    fileInput.click();
+  }
+}
+
+async function handleStudentExcelUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    alert('Excel parser library loading... Please try again in 2 seconds.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (!rows || !rows.length) {
+        showPopup('⚠️', 'Empty File', 'No data rows found in the uploaded Excel file.', 'error');
+        return;
+      }
+
+      const cleanStr = val => (val === undefined || val === null) ? '' : String(val).trim();
+
+      const parsedStudents = rows.map(r => {
+        const getVal = (...keys) => {
+          for (const k of keys) {
+            const matchKey = Object.keys(r).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
+            if (matchKey && r[matchKey] !== '') return cleanStr(r[matchKey]);
+          }
+          return '';
+        };
+
+        const sId = getVal('student id', 'studentid', 'student_id', 'pin number', 'pin', 'pinnumber', 'id', 'username', 'roll no', 'roll number');
+        if (!sId) return null;
+
+        const rawScore = getVal('score', 'total score', 'points', 'total points', 'marks');
+        const parsedScore = Number(rawScore);
+        const scoreVal = (rawScore !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
+
+        return {
+          studentId: sId,
+          username: getVal('username') || sId,
+          pinNumber: getVal('pin number', 'pin', 'pinnumber', 'pin_number') || sId,
+          fullName: getVal('full name', 'fullname', 'name', 'student name'),
+          branch: getVal('branch', 'dept', 'department') || 'CSE',
+          year: getVal('year', 'sem') || '1',
+          section: getVal('section', 'sec') || '1',
+          email: getVal('email', 'mail'),
+          phone: getVal('phone', 'mobile', 'contact'),
+          score: scoreVal
+        };
+      }).filter(Boolean);
+
+      if (!parsedStudents.length) {
+        showPopup('⚠️', 'No Valid Records', 'Could not detect any valid student rows with a Student ID/PIN column.', 'error');
+        return;
+      }
+
+      showPopup('⌛', 'Importing Data', `Uploading ${parsedStudents.length} student records...`);
+
+      const res = await fetch('/api/admin/students/bulk-import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ students: parsedStudents })
+      });
+
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.message || 'Import failed');
+
+      showPopup('✅', 'Import Complete', d.message || `Successfully imported ${parsedStudents.length} students!`);
+      loadStudents();
+      loadStats();
+    } catch (err) {
+      console.error('Error importing Excel:', err);
+      showPopup('❌', 'Import Failed', err.message || 'Failed to import student Excel file.', 'error');
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
 function toggleSidebar(e) {
   if (e && e.stopPropagation) e.stopPropagation();
   const sidebar = document.querySelector(".sidebar");

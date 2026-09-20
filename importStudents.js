@@ -124,8 +124,10 @@ async function run() {
     const rawPass = doc.password || doc.studentId || 'student123';
     doc.password = hashPasswordSync(rawPass);
 
-    // score as number
-    doc.score = doc.score ? Number(doc.score) || 0 : 0;
+    // score as number — default to 0 if blank, empty, undefined, null, or NaN
+    const rawScore = doc.score;
+    const parsedScore = Number(rawScore);
+    doc.score = (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
 
     // Leave email and phone blank — students fill these in their profile
     doc.email = doc.email || '';

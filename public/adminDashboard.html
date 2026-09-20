@@ -7,6 +7,7 @@
   <title>Admin Dashboard | CEM</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <style>
     *,
     *::before,
@@ -1008,7 +1009,9 @@
               <option>3</option>
               <option>4</option>
             </select>
+            <button class="btn btn-primary" onclick="triggerStudentExcelUpload()">📥 Import Excel</button>
             <button class="btn btn-success" onclick="openAddStudent()">+ Add Student</button>
+            <input type="file" id="excelStudentFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleStudentExcelUpload(event)">
           </div>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="studentCount"></div>
@@ -1197,19 +1200,43 @@
     <div id="coordinators" class="tab-content">
       <div class="table-box">
         <div class="table-box-header">
-          <h3>⭐ Branch Coordinators (Years 2, 3 & 4)</h3>
-          <button class="btn btn-success" onclick="openAssignCoordinator()">+ Assign Coordinator</button>
+          <h3>⭐ Manage Branch Coordinators</h3>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input class="search-input" id="filterCoordName" placeholder="🔍 Search Coordinator..." oninput="filterCoordinators()">
+            <select class="search-input" id="filterCoordBranch" onchange="filterCoordinators()" style="width:150px;">
+              <option value="">All Branches</option>
+              <option>CSE</option>
+              <option>ECE</option>
+              <option>EEE</option>
+              <option>MECH</option>
+              <option>CIVIL</option>
+              <option>IT</option>
+              <option>DS</option>
+              <option>AIML</option>
+              <option>MCA</option>
+              <option>MBA</option>
+            </select>
+            <select class="search-input" id="filterCoordYear" onchange="filterCoordinators()" style="width:140px;">
+              <option value="">All Years</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
+            <button class="btn btn-success" onclick="openAssignCoordinator()">+ Assign Coordinator</button>
+          </div>
         </div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">
-          Each branch has 1 designated Faculty Coordinator managing 2nd, 3rd, and 4th-year students.
+          Assign designated Faculty Coordinators and select their managed academic years (1st, 2nd, 3rd, or 4th Year).
         </div>
         <div style="overflow-x:auto;">
           <table>
             <thead>
               <tr>
                 <th>#</th>
-                <th>Branch</th>
                 <th>Coordinator Name</th>
+                <th>Assigned Branch(es)</th>
+                <th>Assigned Years</th>
                 <th>Username</th>
                 <th>Department</th>
                 <th>Email</th>
@@ -1219,7 +1246,7 @@
             </thead>
             <tbody id="coordinatorsBody">
               <tr>
-                <td colspan="8" class="no-data">Loading...</td>
+                <td colspan="9" class="no-data">Loading...</td>
               </tr>
             </tbody>
           </table>
