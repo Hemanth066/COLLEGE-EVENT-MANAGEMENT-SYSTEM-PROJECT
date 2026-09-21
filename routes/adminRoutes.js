@@ -12,6 +12,7 @@ const Branch   = require("../models/Branch");
 const Notification = require("../models/Notification");
 const Feedback     = require("../models/Feedback");
 const { resyncStudentScores } = require("../utils/scoreSync");
+const { hashPasswordSync, isHashed } = require("../utils/passwordUtils");
 // ── LOGIN ──────────────────────────────────────────────
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
@@ -156,16 +157,29 @@ router.post("/students/bulk-import", async (req, res) => {
       return res.status(400).json({ message: "No student records provided" });
     }
 
-    let inserted = 0, updated = 0;
+    const operations = [];
     for (const item of students) {
       const studentId = (item.studentId || item.pinNumber || item.username || '').trim().toUpperCase();
       if (!studentId) continue;
 
+      const sem1Val = !isNaN(Number(item.sem1Score)) ? Number(item.sem1Score) : 0;
+      const sem2Val = !isNaN(Number(item.sem2Score)) ? Number(item.sem2Score) : 0;
+      const sem3Val = !isNaN(Number(item.sem3Score)) ? Number(item.sem3Score) : 0;
+      const sem4Val = !isNaN(Number(item.sem4Score)) ? Number(item.sem4Score) : 0;
+
       const rawScore = item.score;
       const parsedScore = Number(rawScore);
-      const scoreVal = (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
+      let scoreVal = 0;
+      if (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) {
+        scoreVal = parsedScore;
+      } else {
+        scoreVal = sem1Val + sem2Val + sem3Val + sem4Val;
+      }
 
-      const studentData = {
+      const pass = item.password || studentId || 'student123';
+      const hashedPass = isHashed(pass) ? pass : hashPasswordSync(pass);
+
+      const updateObj = {
         studentId,
         username: item.username || studentId,
         pinNumber: item.pinNumber || studentId,
@@ -173,33 +187,41 @@ router.post("/students/bulk-import", async (req, res) => {
         branch: (item.branch || 'CSE').trim().toUpperCase(),
         year: item.year || '1',
         section: item.section || '1',
-        email: item.email || '',
-        phone: item.phone || '',
-        score: scoreVal
+        score: scoreVal,
+        sem1Score: sem1Val,
+        sem2Score: sem2Val,
+        sem3Score: sem3Val,
+        sem4Score: sem4Val,
+        password: hashedPass
       };
 
-      const existing = await Student.findOne({
-        $or: [{ studentId }, { pinNumber: studentData.pinNumber }, { username: studentData.username }]
-      });
+      const setOnInsert = {};
+      if (item.email) updateObj.email = item.email;
+      else setOnInsert.email = '';
 
-      if (existing) {
-        if (item.password) existing.password = item.password;
-        existing.fullName = studentData.fullName || existing.fullName;
-        existing.branch = studentData.branch || existing.branch;
-        existing.year = studentData.year || existing.year;
-        existing.section = studentData.section || existing.section;
-        if (studentData.email) existing.email = studentData.email;
-        if (studentData.phone) existing.phone = studentData.phone;
-        existing.score = scoreVal;
-        await existing.save();
-        updated++;
-      } else {
-        studentData.password = item.password || studentId || 'student123';
-        const s = new Student(studentData);
-        await s.save();
-        inserted++;
-      }
+      if (item.phone) updateObj.phone = item.phone;
+      else setOnInsert.phone = '';
+
+      operations.push({
+        updateOne: {
+          filter: { studentId },
+          update: {
+            $set: updateObj,
+            $setOnInsert: setOnInsert
+          },
+          upsert: true
+        }
+      });
     }
+
+    if (operations.length === 0) {
+      return res.status(400).json({ message: "No valid student operations created" });
+    }
+
+    const result = await Student.bulkWrite(operations, { ordered: false });
+
+    const inserted = result.upsertedCount || 0;
+    const updated = result.modifiedCount || 0;
 
     res.json({
       message: `Excel import complete! ${inserted} new students added, ${updated} existing updated ✅`,
@@ -208,7 +230,7 @@ router.post("/students/bulk-import", async (req, res) => {
     });
   } catch (e) {
     console.error('Bulk import error:', e);
-    res.status(400).json({ message: e.message });
+    res.status(500).json({ message: "Error importing student data: " + e.message });
   }
 });
 

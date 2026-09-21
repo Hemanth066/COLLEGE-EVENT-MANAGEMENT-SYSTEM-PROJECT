@@ -1172,11 +1172,8 @@
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span class="count-badge" id="studentCount">0 students</span>
             <input class="search-input" placeholder="🔍 Search name/ID..." oninput="filterStudents(this.value)">
-            <select class="search-input" id="filterYr" onchange="filterStudents()" style="width:120px;">
-              <option value="">All Years</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
+            <select class="search-input" id="filterYr" onchange="filterStudents()" style="min-width:140px;">
+              <option value="">All Assigned Years</option>
             </select>
             <div style="display:flex;align-items:center;gap:6px;">
               <label for="scoreFilter" style="font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;">Max
@@ -1550,6 +1547,8 @@
       currentHod = JSON.parse(localStorage.getItem('departmentHeadData'));
       if (!currentHod) { window.location.href = 'index.html'; return; }
 
+      populateHodYearFilterOptions(currentHod);
+
       const name = currentHod.fullName || currentHod.username || 'HOD';
       document.getElementById('profileName').textContent = name;
       document.getElementById('welcomeBadge').textContent = name;
@@ -1646,7 +1645,23 @@
     function renderStudents(list) {
       const sortedList = sortStudentsByPinAscending(list);
       displayedStudents = sortedList;
-      document.getElementById('studentCount').textContent = `${sortedList.length} students`;
+
+      const countEl = document.getElementById('studentCount');
+      const maxScore = document.getElementById('scoreFilter')?.value;
+      const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
+      const yr = document.getElementById('filterYr')?.value;
+
+      if (countEl) {
+        if (threshold !== null && yr) {
+          countEl.textContent = `${sortedList.length} students (Year ${yr}, Max Score: ${threshold})`;
+        } else if (threshold !== null) {
+          countEl.textContent = `${sortedList.length} students (Max Score: ${threshold})`;
+        } else if (yr) {
+          countEl.textContent = `${sortedList.length} students (Year ${yr})`;
+        } else {
+          countEl.textContent = `${sortedList.length} students`;
+        }
+      }
       const tbody = document.getElementById('studentsBody');
       const wrap = document.getElementById('studentDownloadWrap');
       if (!sortedList.length) {
@@ -1742,19 +1757,53 @@
           (s.studentId || '').toLowerCase().includes(query) ||
           (s.pinNumber || '').toLowerCase().includes(query) ||
           (s.username || '').toLowerCase().includes(query);
-        const yrMatch = !yr || String(s.year || '').trim() === String(yr).trim();
+
+        let yrMatch = true;
+        if (yr) {
+          const sYr = String(s.year || '').trim().toLowerCase();
+          const selYr = yr.toLowerCase();
+          const sDigit = sYr.replace(/[^0-9]/g, '');
+          const selDigit = selYr.replace(/[^0-9]/g, '');
+          yrMatch = (sYr === selYr) || Boolean(sDigit && selDigit && sDigit === selDigit);
+        }
+
         const totalScore = (s.score || 0) + (s.eventScore || 0);
         const scoreMatch = threshold === null || totalScore <= threshold;
         return nameMatch && yrMatch && scoreMatch;
       });
 
-      const countEl = document.getElementById('studentCount');
-      if (countEl) {
-        countEl.textContent = threshold !== null
-          ? `${filtered.length} students (Max Score: ${threshold})`
-          : `${filtered.length} students`;
-      }
       renderStudents(filtered);
+    }
+
+    function populateHodYearFilterOptions(hod) {
+      const filterSelect = document.getElementById('filterYr');
+      if (!filterSelect) return;
+
+      const rawYear = (hod && hod.year ? String(hod.year) : '').trim();
+      let years = [];
+
+      if (!rawYear || rawYear.toLowerCase() === 'all' || rawYear === '1-2-3-4' || rawYear === '1,2,3,4') {
+        years = ['1', '2', '3', '4'];
+      } else if (rawYear === '2-3-4' || rawYear === '2,3,4') {
+        years = ['2', '3', '4'];
+      } else {
+        const matches = rawYear.match(/[1-4]/g);
+        years = matches && matches.length ? matches : ['1', '2', '3', '4'];
+      }
+
+      years = Array.from(new Set(years)).sort((a, b) => Number(a) - Number(b));
+
+      let labelText = 'All Assigned Years';
+      if (years.length > 1) {
+        labelText = `All Assigned Years (${years.join(', ')})`;
+      }
+
+      let html = `<option value="">${labelText}</option>`;
+      years.forEach(y => {
+        html += `<option value="${y}">Year ${y}</option>`;
+      });
+
+      filterSelect.innerHTML = html;
     }
 
     function clearStudentFilters() {
@@ -1764,7 +1813,6 @@
       const scEl = document.getElementById('scoreFilter');
       if (yrEl) yrEl.value = '';
       if (scEl) scEl.value = '';
-      document.getElementById('studentCount').textContent = `${allStudentsData.length} students`;
       renderStudents(allStudentsData);
     }
 
@@ -1776,7 +1824,8 @@
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
       const dept = currentHod.department || 'Dept';
-      const yearLabel = currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : ('Year ' + currentHod.year);
+      const selectedYr = document.getElementById('filterYr')?.value;
+      const yearLabel = selectedYr ? ('Year ' + selectedYr) : (currentHod.year === '2-3-4' ? 'Years 2, 3 & 4' : ('Year ' + (currentHod.year || 'All')));
       const maxScore = document.getElementById('scoreFilter')?.value;
       const threshold = maxScore !== '' && maxScore != null ? Number(maxScore) : null;
       const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -2071,6 +2120,7 @@
         const p = await res.json();
         currentHod = { ...currentHod, ...p };
         localStorage.setItem('departmentHeadData', JSON.stringify(currentHod));
+        populateHodYearFilterOptions(currentHod);
         const name = p.fullName || p.username || 'HOD';
         document.getElementById('dhProfileName').textContent = name;
         document.getElementById('dhProfileAvatar').textContent = name.charAt(0).toUpperCase();
@@ -2345,6 +2395,8 @@
       const pin = d.pin || '';
       const branch = d.branch || (currentHod && currentHod.department) || '—';
       const year = d.year || '—';
+      const sem1Score = d.sem1Score || 0;
+      const sem2Score = d.sem2Score || 0;
       const sem3Score = d.sem3Score || 0;
       const sem4Score = d.sem4Score || 0;
       const baseScore = d.score || 0;
@@ -2361,6 +2413,8 @@
       if (yearEl) yearEl.textContent = `Year: ${year}`;
       if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase() || 'S';
 
+      const showSem12 = sem1Score > 0 || sem2Score > 0 || (!sem3Score && !sem4Score);
+
       // Render score breakdown immediately
       body.innerHTML = `
         <div class="proof-summary-grid">
@@ -2369,16 +2423,29 @@
             <div class="proof-card-value">${totalScore}</div>
             <div class="proof-card-desc">Academic + Events + Certs</div>
           </div>
+          ${showSem12 ? `
           <div class="proof-card">
-            <div class="proof-card-label">📘 3rd Semester</div>
+            <div class="proof-card-label">📘 1st Semester</div>
+            <div class="proof-card-value" style="color:#0F4C81;">${sem1Score}</div>
+            <div class="proof-card-desc">Semester 1 Score</div>
+          </div>
+          <div class="proof-card">
+            <div class="proof-card-label">📗 2nd Semester</div>
+            <div class="proof-card-value" style="color:#1565C0;">${sem2Score}</div>
+            <div class="proof-card-desc">Semester 2 Score</div>
+          </div>
+          ` : `
+          <div class="proof-card">
+            <div class="proof-card-label">📙 3rd Semester</div>
             <div class="proof-card-value" style="color:#0F4C81;">${sem3Score}</div>
             <div class="proof-card-desc">Semester 3 Score</div>
           </div>
           <div class="proof-card">
-            <div class="proof-card-label">📗 4th Semester</div>
+            <div class="proof-card-label">📕 4th Semester</div>
             <div class="proof-card-value" style="color:#1565C0;">${sem4Score}</div>
             <div class="proof-card-desc">Semester 4 Score</div>
           </div>
+          `}
           <div class="proof-card">
             <div class="proof-card-label">🎪 Event Score</div>
             <div class="proof-card-value" style="color:var(--green);">${eventScore}</div>
@@ -2390,19 +2457,35 @@
           <div class="proof-section-header" style="border-bottom-color:#e2e8f0;">
             <div class="proof-section-title"><span>📘</span> Academic Score Breakdown</div>
           </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding:8px 0;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:8px 0;">
             <div style="background:#e3f2fd;border-radius:12px;padding:14px 18px;">
               <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
               <div style="font-size:28px;font-weight:800;color:#0F4C81;">${baseScore}</div>
             </div>
+            ${(sem1Score > 0 || showSem12) ? `
             <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
-              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
-              <div style="font-size:28px;font-weight:800;color:#2e7d32;">${sem3Score}</div>
+              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
+              <div style="font-size:28px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
             </div>
+            ` : ''}
+            ${(sem2Score > 0 || showSem12) ? `
             <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
-              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
-              <div style="font-size:28px;font-weight:800;color:#1565C0;">${sem4Score}</div>
+              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
+              <div style="font-size:28px;font-weight:800;color:#1565C0;">${sem2Score}</div>
             </div>
+            ` : ''}
+            ${sem3Score > 0 ? `
+            <div style="background:#fef3c7;border-radius:12px;padding:14px 18px;">
+              <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
+              <div style="font-size:28px;font-weight:800;color:#b45309;">${sem3Score}</div>
+            </div>
+            ` : ''}
+            ${sem4Score > 0 ? `
+            <div style="background:#fee2e2;border-radius:12px;padding:14px 18px;">
+              <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
+              <div style="font-size:28px;font-weight:800;color:#b91c1c;">${sem4Score}</div>
+            </div>
+            ` : ''}
             <div style="background:#f3e5f5;border-radius:12px;padding:14px 18px;">
               <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
               <div style="font-size:28px;font-weight:800;color:#6a1b9a;">${eventScore}</div>
@@ -2629,6 +2712,8 @@
       document.getElementById('editScoreStudentName').textContent = student.name || 'Student';
       document.getElementById('editScoreStudentInfo').textContent = `PIN: ${student.pin} • Academic Score Update`;
       document.getElementById('editBaseScore').value = student.score || 0;
+      if (document.getElementById('editSem1Score')) document.getElementById('editSem1Score').value = student.sem1Score || 0;
+      if (document.getElementById('editSem2Score')) document.getElementById('editSem2Score').value = student.sem2Score || 0;
       document.getElementById('editSem3Score').value = student.sem3Score || 0;
       document.getElementById('editSem4Score').value = student.sem4Score || 0;
       document.getElementById('editEventScoreDisplay').textContent = `+${student.eventScore || 0} pts`;
@@ -2645,10 +2730,12 @@
     }
 
     function updateSemScoreSum() {
+      const s1 = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
+      const s2 = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
       const s3 = Number(document.getElementById('editSem3Score').value) || 0;
       const s4 = Number(document.getElementById('editSem4Score').value) || 0;
-      if (s3 > 0 || s4 > 0) {
-        document.getElementById('editBaseScore').value = s3 + s4;
+      if (s1 > 0 || s2 > 0 || s3 > 0 || s4 > 0) {
+        document.getElementById('editBaseScore').value = s1 + s2 + s3 + s4;
       }
       updateScorePreview();
     }
@@ -2665,6 +2752,8 @@
       if (!currentEditStudent) return;
       const studentId = currentEditStudent.sid || currentEditStudent.pin;
       const score = Number(document.getElementById('editBaseScore').value) || 0;
+      const sem1Score = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
+      const sem2Score = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
       const sem3Score = Number(document.getElementById('editSem3Score').value) || 0;
       const sem4Score = Number(document.getElementById('editSem4Score').value) || 0;
 
@@ -2680,7 +2769,7 @@
           const res = await fetch(url, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ score, sem3Score, sem4Score })
+            body: JSON.stringify({ score, sem1Score, sem2Score, sem3Score, sem4Score })
           });
 
           const contentType = res.headers.get('content-type') || '';
@@ -2783,6 +2872,17 @@
         <div style="margin-bottom:14px;">
           <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Base Academic Score</label>
           <input type="number" id="editBaseScore" min="0" required style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;outline:none;" oninput="updateScorePreview()">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">1st Sem Score</label>
+            <input type="number" id="editSem1Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">2nd Sem Score</label>
+            <input type="number" id="editSem2Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">

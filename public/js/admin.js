@@ -1371,20 +1371,35 @@ async function handleStudentExcelUpload(e) {
         const sId = getVal('student id', 'studentid', 'student_id', 'pin number', 'pin', 'pinnumber', 'id', 'username', 'roll no', 'roll number');
         if (!sId) return null;
 
+        const sem1Raw = getVal('1st sem', '1stsem', 'sem1', 'sem 1', '1st semester');
+        const sem2Raw = getVal('2nd sem', '2ndsem', 'sem2', 'sem 2', '2nd semester');
+        const sem3Raw = getVal('3rd sem', '3rdsem', 'sem3', 'sem 3', '3rd semester');
+        const sem4Raw = getVal('4th sem', '4thsem', 'sem4', 'sem 4', '4th semester');
+
+        const sem1Val = sem1Raw !== '' && !isNaN(Number(sem1Raw)) ? Number(sem1Raw) : 0;
+        const sem2Val = sem2Raw !== '' && !isNaN(Number(sem2Raw)) ? Number(sem2Raw) : 0;
+        const sem3Val = sem3Raw !== '' && !isNaN(Number(sem3Raw)) ? Number(sem3Raw) : 0;
+        const sem4Val = sem4Raw !== '' && !isNaN(Number(sem4Raw)) ? Number(sem4Raw) : 0;
+
         const rawScore = getVal('score', 'total score', 'points', 'total points', 'marks');
         const parsedScore = Number(rawScore);
-        const scoreVal = (rawScore !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
+        const scoreVal = (rawScore !== '' && !isNaN(parsedScore)) ? parsedScore : (sem1Val + sem2Val + sem3Val + sem4Val);
 
         return {
           studentId: sId,
           username: getVal('username') || sId,
+          password: getVal('password', 'pass'),
           pinNumber: getVal('pin number', 'pin', 'pinnumber', 'pin_number') || sId,
           fullName: getVal('full name', 'fullname', 'name', 'student name'),
           branch: getVal('branch', 'dept', 'department') || 'CSE',
-          year: getVal('year', 'sem') || '1',
+          year: getVal('year') || '1',
           section: getVal('section', 'sec') || '1',
           email: getVal('email', 'mail'),
           phone: getVal('phone', 'mobile', 'contact'),
+          sem1Score: sem1Val,
+          sem2Score: sem2Val,
+          sem3Score: sem3Val,
+          sem4Score: sem4Val,
           score: scoreVal
         };
       }).filter(Boolean);
@@ -1394,18 +1409,36 @@ async function handleStudentExcelUpload(e) {
         return;
       }
 
-      showPopup('⌛', 'Importing Data', `Uploading ${parsedStudents.length} student records...`);
+      const BATCH_SIZE = 2500;
+      let totalInserted = 0, totalUpdated = 0;
 
-      const res = await fetch('/api/admin/students/bulk-import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ students: parsedStudents })
-      });
+      for (let i = 0; i < parsedStudents.length; i += BATCH_SIZE) {
+        const chunk = parsedStudents.slice(i, i + BATCH_SIZE);
+        const currentEnd = Math.min(i + BATCH_SIZE, parsedStudents.length);
+        showPopup('⌛', 'Importing Data', `Processing ${currentEnd} of ${parsedStudents.length} students...`);
 
-      const d = await res.json();
-      if (!res.ok) throw new Error(d.message || 'Import failed');
+        const res = await fetch('/api/admin/students/bulk-import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ students: chunk })
+        });
 
-      showPopup('✅', 'Import Complete', d.message || `Successfully imported ${parsedStudents.length} students!`);
+        const contentType = res.headers.get('content-type') || '';
+        let d = {};
+        if (contentType.includes('application/json')) {
+          d = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(`Server response error (${res.status}): ${text.substring(0, 150)}`);
+        }
+
+        if (!res.ok) throw new Error(d.message || 'Import failed');
+
+        totalInserted += (d.inserted || 0);
+        totalUpdated += (d.updated || 0);
+      }
+
+      showPopup('✅', 'Import Complete', `Successfully processed ${parsedStudents.length} students! (${totalInserted} added, ${totalUpdated} updated)`);
       loadStudents();
       loadStats();
     } catch (err) {

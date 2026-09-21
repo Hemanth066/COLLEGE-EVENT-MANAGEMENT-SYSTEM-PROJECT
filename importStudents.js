@@ -31,6 +31,8 @@ const studentSchema = new mongoose.Schema({
   section:      String,
   year:         String,
   score:        { type: Number, default: 0 },
+  sem1Score:    { type: Number, default: 0 },
+  sem2Score:    { type: Number, default: 0 },
   sem3Score:    { type: Number, default: 0 },
   sem4Score:    { type: Number, default: 0 },
   profileImage: { type: String, default: 'https://ui-avatars.com/api/?name=Student&background=fbbf24&color=0a2540&size=200' }
@@ -50,7 +52,11 @@ function normalise(col) {
   if (c.includes('phone') || c.includes('mobile') || c.includes('contact')) return 'phone';
   if (c.includes('branch') || c.includes('dept'))         return 'branch';
   if (c.includes('section') || c.includes('sec'))         return 'section';
-  if (c.includes('year') || c.includes('sem'))            return 'year';
+  if (c.includes('1stsem') || c.includes('sem1'))         return 'sem1Score';
+  if (c.includes('2ndsem') || c.includes('sem2'))         return 'sem2Score';
+  if (c.includes('3rdsem') || c.includes('sem3'))         return 'sem3Score';
+  if (c.includes('4thsem') || c.includes('sem4'))         return 'sem4Score';
+  if (c.includes('year') || c === 'yr')                   return 'year';
   if (c.includes('score') || c.includes('point'))         return 'score';
   return null;
 }
@@ -124,12 +130,22 @@ async function run() {
     const rawPass = doc.password || doc.studentId || 'student123';
     doc.password = hashPasswordSync(rawPass);
 
-    // score as number — default to 0 if blank, empty, undefined, null, or NaN
+    // Semester scores as numbers
+    doc.sem1Score = !isNaN(Number(doc.sem1Score)) && doc.sem1Score !== '' ? Number(doc.sem1Score) : 0;
+    doc.sem2Score = !isNaN(Number(doc.sem2Score)) && doc.sem2Score !== '' ? Number(doc.sem2Score) : 0;
+    doc.sem3Score = !isNaN(Number(doc.sem3Score)) && doc.sem3Score !== '' ? Number(doc.sem3Score) : 0;
+    doc.sem4Score = !isNaN(Number(doc.sem4Score)) && doc.sem4Score !== '' ? Number(doc.sem4Score) : 0;
+
+    // score as number — if blank, sum up available sem scores
     const rawScore = doc.score;
     const parsedScore = Number(rawScore);
-    doc.score = (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) ? parsedScore : 0;
+    if (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) {
+      doc.score = parsedScore;
+    } else {
+      doc.score = doc.sem1Score + doc.sem2Score + doc.sem3Score + doc.sem4Score;
+    }
 
-    // Leave email and phone blank — students fill these in their profile
+    // Default email and phone if present
     doc.email = doc.email || '';
     doc.phone = doc.phone || '';
 
@@ -153,18 +169,19 @@ async function run() {
     try {
       const filter = { studentId: s.studentId };
 
-      // Only update email/phone if they were blank in DB (don't overwrite student's own data)
-      const setOnInsert = { ...s };
       const setAlways   = {
-        fullName: s.fullName,
-        branch:   s.branch,
-        section:  s.section,
-        year:     s.year,
-        score:    s.score,
-        password: s.password,
-        username: s.username,
+        fullName:  s.fullName,
+        branch:    s.branch,
+        section:   s.section,
+        year:      s.year,
+        score:     s.score,
+        sem1Score: s.sem1Score,
+        sem2Score: s.sem2Score,
+        sem3Score: s.sem3Score,
+        sem4Score: s.sem4Score,
+        password:  s.password,
+        username:  s.username,
         pinNumber: s.pinNumber
-        // email and phone are NOT in setAlways — students own them
       };
 
       const result = await Student.findOneAndUpdate(

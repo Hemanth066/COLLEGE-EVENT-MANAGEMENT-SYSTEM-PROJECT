@@ -2785,6 +2785,8 @@
       const pin         = d.pin || d.sid || '';
       const branch      = d.branch || '—';
       const year        = d.year  || '—';
+      const sem1Score   = d.sem1Score   || 0;
+      const sem2Score   = d.sem2Score   || 0;
       const sem3Score   = d.sem3Score   || 0;
       const sem4Score   = d.sem4Score   || 0;
       const baseScore   = d.score       || 0;
@@ -2800,6 +2802,8 @@
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
 
+      const showSem12 = sem1Score > 0 || sem2Score > 0 || (!sem3Score && !sem4Score);
+
       body.innerHTML = `
         <div class="dp-summary-grid">
           <div class="dp-card dp-highlight">
@@ -2807,16 +2811,29 @@
             <div class="dp-value">${totalScore}</div>
             <div class="dp-desc">Academic + Events + Certs</div>
           </div>
+          ${showSem12 ? `
           <div class="dp-card">
-            <div class="dp-label">📘 3rd Semester</div>
+            <div class="dp-label">📘 1st Semester</div>
+            <div class="dp-value" style="color:#0F4C81;">${sem1Score}</div>
+            <div class="dp-desc">Semester 1 Score</div>
+          </div>
+          <div class="dp-card">
+            <div class="dp-label">📗 2nd Semester</div>
+            <div class="dp-value" style="color:#1565C0;">${sem2Score}</div>
+            <div class="dp-desc">Semester 2 Score</div>
+          </div>
+          ` : `
+          <div class="dp-card">
+            <div class="dp-label">📙 3rd Semester</div>
             <div class="dp-value" style="color:#0F4C81;">${sem3Score}</div>
             <div class="dp-desc">Semester 3 Score</div>
           </div>
           <div class="dp-card">
-            <div class="dp-label">📗 4th Semester</div>
+            <div class="dp-label">📕 4th Semester</div>
             <div class="dp-value" style="color:#1565C0;">${sem4Score}</div>
             <div class="dp-desc">Semester 4 Score</div>
           </div>
+          `}
           <div class="dp-card">
             <div class="dp-label">🎪 Event Score</div>
             <div class="dp-value" style="color:#2e7d32;">${eventScore}</div>
@@ -2833,14 +2850,30 @@
               <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
               <div style="font-size:26px;font-weight:800;color:#0F4C81;">${baseScore}</div>
             </div>
+            ${(sem1Score > 0 || showSem12) ? `
             <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#2e7d32;">${sem3Score}</div>
+              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
             </div>
+            ` : ''}
+            ${(sem2Score > 0 || showSem12) ? `
             <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#1565C0;">${sem4Score}</div>
+              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#1565C0;">${sem2Score}</div>
             </div>
+            ` : ''}
+            ${sem3Score > 0 ? `
+            <div style="background:#fef3c7;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#b45309;">${sem3Score}</div>
+            </div>
+            ` : ''}
+            ${sem4Score > 0 ? `
+            <div style="background:#fee2e2;border-radius:10px;padding:12px 16px;">
+              <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
+              <div style="font-size:26px;font-weight:800;color:#b91c1c;">${sem4Score}</div>
+            </div>
+            ` : ''}
             <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;">
               <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
               <div style="font-size:26px;font-weight:800;color:#6a1b9a;">${eventScore}</div>

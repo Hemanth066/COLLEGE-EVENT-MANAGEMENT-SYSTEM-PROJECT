@@ -87,16 +87,20 @@ function parseExcelFile(filePath) {
       let year = cleanString(rowObj['year']);
       if (!year || year === '3') year = '3rd';
 
-      // Score logic: 3rd sem + 4th sem or score column (default 0 if blank)
-      let sem3 = Number(rowObj['3rd sem']);
+      // Semester Scores
+      let sem1 = Number(rowObj['1st sem'] || rowObj['1stsem'] || rowObj['sem1']);
+      if (isNaN(sem1)) sem1 = 0;
+      let sem2 = Number(rowObj['2nd sem'] || rowObj['2ndsem'] || rowObj['sem2']);
+      if (isNaN(sem2)) sem2 = 0;
+      let sem3 = Number(rowObj['3rd sem'] || rowObj['3rdsem'] || rowObj['sem3']);
       if (isNaN(sem3)) sem3 = 0;
-      let sem4 = Number(rowObj['4th sem']);
+      let sem4 = Number(rowObj['4th sem'] || rowObj['4thsem'] || rowObj['sem4']);
       if (isNaN(sem4)) sem4 = 0;
 
       let rawScore = rowObj['score'] || rowObj['total score'] || rowObj['points'] || rowObj['total points'];
       let score = Number(rawScore);
       if (isNaN(score) || rawScore === undefined || rawScore === null || String(rawScore).trim() === '') {
-        score = sem3 + sem4;
+        score = sem1 + sem2 + sem3 + sem4;
       }
       if (isNaN(score) || score === null || score === undefined) {
         score = 0;
@@ -121,6 +125,8 @@ function parseExcelFile(filePath) {
         year,
         section,
         score,
+        sem1Score: sem1,
+        sem2Score: sem2,
         sem3Score: sem3,
         sem4Score: sem4
       });
@@ -160,6 +166,8 @@ async function run() {
         allStudentsMap.set(st.studentId, {
           ...existing,
           ...st,
+          sem1Score: st.sem1Score || existing.sem1Score || 0,
+          sem2Score: st.sem2Score || existing.sem2Score || 0,
           sem3Score: st.sem3Score || existing.sem3Score || 0,
           sem4Score: st.sem4Score || existing.sem4Score || 0,
           score: st.score || existing.score || 0
@@ -194,6 +202,8 @@ async function run() {
       pinNumber: s.pinNumber
     };
     if (s.score) updateFields.score = s.score;
+    if (s.sem1Score) updateFields.sem1Score = s.sem1Score;
+    if (s.sem2Score) updateFields.sem2Score = s.sem2Score;
     if (s.sem3Score) updateFields.sem3Score = s.sem3Score;
     if (s.sem4Score) updateFields.sem4Score = s.sem4Score;
     if (s.email) updateFields.email = s.email;

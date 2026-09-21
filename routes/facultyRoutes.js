@@ -373,10 +373,12 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
       .sort({ uploadedAt: -1 });
 
     // Calculate score details
+    const sem1Score = Number(student.sem1Score) || 0;
+    const sem2Score = Number(student.sem2Score) || 0;
     const sem3Score = Number(student.sem3Score) || 0;
     const sem4Score = Number(student.sem4Score) || 0;
     const baseScore = Number(student.score) || 0;
-    const baseAcademicScore = (sem3Score || sem4Score) ? (sem3Score + sem4Score) : baseScore;
+    const baseAcademicScore = (sem1Score || sem2Score || sem3Score || sem4Score) ? (sem1Score + sem2Score + sem3Score + sem4Score) : baseScore;
 
     const totalEventScore = registrations.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
 
@@ -424,6 +426,8 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
         branch: student.branch,
         year: student.year,
         score: baseScore,
+        sem1Score,
+        sem2Score,
         sem3Score,
         sem4Score,
         baseAcademicScore,
@@ -431,6 +435,8 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
         grandTotalScore
       },
       summary: {
+        sem1Score,
+        sem2Score,
         sem3Score,
         sem4Score,
         baseScore,

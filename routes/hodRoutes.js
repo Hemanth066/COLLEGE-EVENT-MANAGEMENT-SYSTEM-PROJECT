@@ -68,14 +68,14 @@ router.post("/force-logout", async (req, res) => {
 });
 
 function buildYearQuery(yearGroup) {
-  if (!yearGroup || yearGroup === '2-3-4' || yearGroup === 'all' || yearGroup === '2,3,4') {
-    return { $in: ['1', '2', '3', '4', '1st', '2nd', '3rd', '4th', '1st Year', '2nd Year', '3rd Year', '4th Year', 1, 2, 3, 4] };
+  if (!yearGroup || yearGroup === '2-3-4' || yearGroup === 'all' || yearGroup === '2,3,4' || yearGroup === 'ALL' || yearGroup === '1-2-3-4' || yearGroup === '1,2,3,4') {
+    return { $in: ['1', '2', '3', '4', '1st', '2nd', '3rd', '4th', '1st Year', '2nd Year', '3rd Year', '4th Year', '1st year', '2nd year', '3rd year', '4th year', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'year 1', 'year 2', 'year 3', 'year 4', 1, 2, 3, 4] };
   }
   const clean = String(yearGroup).replace(/[^0-9]/g, '');
-  if (clean === '1') return { $in: ['1', '1st', '1st Year', 1] };
-  if (clean === '2') return { $in: ['2', '2nd', '2nd Year', 2] };
-  if (clean === '3') return { $in: ['3', '3rd', '3rd Year', 3] };
-  if (clean === '4') return { $in: ['4', '4th', '4th Year', 4] };
+  if (clean === '1') return { $in: ['1', '1st', '1st Year', '1st year', 'Year 1', 'year 1', 1] };
+  if (clean === '2') return { $in: ['2', '2nd', '2nd Year', '2nd year', 'Year 2', 'year 2', 2] };
+  if (clean === '3') return { $in: ['3', '3rd', '3rd Year', '3rd year', 'Year 3', 'year 3', 3] };
+  if (clean === '4') return { $in: ['4', '4th', '4th Year', '4th year', 'Year 4', 'year 4', 4] };
   return yearGroup;
 }
 
@@ -202,7 +202,7 @@ router.get("/students/:hodId", async (req, res) => {
 router.put("/student-score/:studentId", async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { score, sem3Score, sem4Score } = req.body;
+    const { score, sem1Score, sem2Score, sem3Score, sem4Score } = req.body;
 
     const trimmed = decodeURIComponent(studentId).trim();
     let student = null;
@@ -228,6 +228,12 @@ router.put("/student-score/:studentId", async (req, res) => {
     if (score !== undefined && score !== null && !isNaN(score)) {
       student.score = Number(score);
     }
+    if (sem1Score !== undefined && sem1Score !== null && !isNaN(sem1Score)) {
+      student.sem1Score = Number(sem1Score);
+    }
+    if (sem2Score !== undefined && sem2Score !== null && !isNaN(sem2Score)) {
+      student.sem2Score = Number(sem2Score);
+    }
     if (sem3Score !== undefined && sem3Score !== null && !isNaN(sem3Score)) {
       student.sem3Score = Number(sem3Score);
     }
@@ -235,8 +241,8 @@ router.put("/student-score/:studentId", async (req, res) => {
       student.sem4Score = Number(sem4Score);
     }
 
-    if (sem3Score !== undefined || sem4Score !== undefined) {
-      student.score = (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
+    if (sem1Score !== undefined || sem2Score !== undefined || sem3Score !== undefined || sem4Score !== undefined) {
+      student.score = (Number(student.sem1Score) || 0) + (Number(student.sem2Score) || 0) + (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
     }
 
     await student.save();
@@ -248,6 +254,8 @@ router.put("/student-score/:studentId", async (req, res) => {
         fullName: student.fullName || student.username,
         pinNumber: student.pinNumber || student.studentId,
         score: student.score,
+        sem1Score: student.sem1Score,
+        sem2Score: student.sem2Score,
         sem3Score: student.sem3Score,
         sem4Score: student.sem4Score,
         eventScore: student.eventScore,

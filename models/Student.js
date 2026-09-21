@@ -13,6 +13,8 @@ const studentSchema = new mongoose.Schema({
   year: String,
   profileImage: { type: String, default: 'https://ui-avatars.com/api/?name=Student&background=fbbf24&color=0a2540&size=200' },
   score:      { type: Number, default: 0 },  // base score from Excel / admin
+  sem1Score:  { type: Number, default: 0 },  // 1st Sem score from Excel
+  sem2Score:  { type: Number, default: 0 },  // 2nd Sem score from Excel
   sem3Score:  { type: Number, default: 0 },  // 3rd Sem score from Excel
   sem4Score:  { type: Number, default: 0 },  // 4th Sem score from Excel
   eventScore: { type: Number, default: 0 },   // sum of all event registration scores
