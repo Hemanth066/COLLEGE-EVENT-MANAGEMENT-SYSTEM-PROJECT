@@ -1640,16 +1640,30 @@
 
         <!-- SEMESTER SCORE SUMMARY CARDS -->
         <div class="stats-grid"
-          style="margin-bottom:24px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-          <div class="stat-card">
+          style="margin-bottom:24px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+          <div class="stat-card" id="cardSem1">
             <div class="stat-icon-wrap" style="background:rgba(30,136,229,0.15);">📘</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem1">0</div>
+              <div class="stat-label">1st Sem Score</div>
+            </div>
+          </div>
+          <div class="stat-card" id="cardSem2">
+            <div class="stat-icon-wrap" style="background:rgba(34,197,94,0.15);">📗</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem2">0</div>
+              <div class="stat-label">2nd Sem Score</div>
+            </div>
+          </div>
+          <div class="stat-card" id="cardSem3" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(245,158,11,0.15);">📙</div>
             <div class="stat-info">
               <div class="stat-value" id="scoreSem3">0</div>
               <div class="stat-label">3rd Sem Score</div>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon-wrap" style="background:rgba(34,197,94,0.15);">📗</div>
+          <div class="stat-card" id="cardSem4" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(239,68,68,0.15);">📕</div>
             <div class="stat-info">
               <div class="stat-value" id="scoreSem4">0</div>
               <div class="stat-label">4th Sem Score</div>
@@ -1690,20 +1704,20 @@
                 style="padding:7px 14px; border-radius:10px; border:none; font-size:13px; font-weight:600; cursor:pointer; background:linear-gradient(135deg,var(--blue),var(--blue-dark)); color:white; box-shadow:0 4px 12px rgba(30,136,229,0.3); transition:all 0.2s;">
                 🌐 All Scores
               </button>
-              <button onclick="switchSemScoreFilter('sem1', this)" class="sem-score-filter-btn"
+              <button id="btnSem1" onclick="switchSemScoreFilter('sem1', this)" class="sem-score-filter-btn"
                 style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
                 📘 1st Sem
               </button>
-              <button onclick="switchSemScoreFilter('sem2', this)" class="sem-score-filter-btn"
+              <button id="btnSem2" onclick="switchSemScoreFilter('sem2', this)" class="sem-score-filter-btn"
                 style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
                 📗 2nd Sem
               </button>
-              <button onclick="switchSemScoreFilter('sem3', this)" class="sem-score-filter-btn"
-                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+              <button id="btnSem3" onclick="switchSemScoreFilter('sem3', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
                 📙 3rd Sem
               </button>
-              <button onclick="switchSemScoreFilter('sem4', this)" class="sem-score-filter-btn"
-                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
+              <button id="btnSem4" onclick="switchSemScoreFilter('sem4', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
                 📕 4th Sem
               </button>
               <button onclick="switchSemScoreFilter('events', this)" class="sem-score-filter-btn"
@@ -2542,6 +2556,11 @@
           const sem3 = studentData?.sem3Score || 0;
           const sem4 = studentData?.sem4Score || 0;
 
+          // Check if student belongs to 1st or 2nd year
+          const yrStr = String(studentData?.year || '').trim().toLowerCase();
+          const yrDigit = yrStr.replace(/[^0-9]/g, '');
+          const is2ndYearOrLower = !yrDigit || yrDigit === '1' || yrDigit === '2' || yrStr.includes('1st') || yrStr.includes('2nd');
+
           // Calculate total event scores from attended event registrations
           const attendedRegs = myRegistrations.filter(r => r.attended);
           const totalEventScore = attendedRegs.reduce((sum, r) => sum + (r.score || 0), 0);
@@ -2550,37 +2569,44 @@
           const approvedOtherCerts = (window._ocStudentCertsList || []).filter(c => c.uploadStatus === 'approved');
           const totalOtherCertsScore = approvedOtherCerts.reduce((sum, c) => sum + (c.marksAwarded || 0), 0);
 
-          // Total base academic score (sem1 + sem2 + sem3 + sem4 or studentData.score)
-          const baseAcademicScore = (sem1 || sem2 || sem3 || sem4) ? (sem1 + sem2 + sem3 + sem4) : (studentData?.score || 0);
+          // Base academic score (sem1 + sem2 for 2nd year students; sem1+sem2+sem3+sem4 for higher years)
+          const baseAcademicScore = is2ndYearOrLower
+            ? ((sem1 || sem2) ? (sem1 + sem2) : (studentData?.score || 0))
+            : ((sem1 || sem2 || sem3 || sem4) ? (sem1 + sem2 + sem3 + sem4) : (studentData?.score || 0));
           const grandTotal = baseAcademicScore + totalEventScore + totalOtherCertsScore;
 
           // Update summary stat cards
+          const elSem1 = document.getElementById('scoreSem1');
+          const elSem2 = document.getElementById('scoreSem2');
           const elSem3 = document.getElementById('scoreSem3');
           const elSem4 = document.getElementById('scoreSem4');
+          const cardSem3 = document.getElementById('cardSem3');
+          const cardSem4 = document.getElementById('cardSem4');
+          const btnSem3 = document.getElementById('btnSem3');
+          const btnSem4 = document.getElementById('btnSem4');
+
           const elEvents = document.getElementById('scoreEvents');
           const elOtherCerts = document.getElementById('scoreOtherCerts');
           const elGrand = document.getElementById('scoreGrandTotal');
-          
-          // Display sem1+sem2 for 1st/2nd year, or sem3+sem4 for 3rd/4th year
-          if (elSem3) {
-            const labelEl = elSem3.parentElement ? elSem3.parentElement.querySelector('.stat-label') : null;
-            if (sem1 > 0 || sem2 > 0 || (!sem3 && !sem4)) {
-              elSem3.textContent = sem1;
-              if (labelEl) labelEl.textContent = '1st Sem Score';
-            } else {
-              elSem3.textContent = sem3;
-              if (labelEl) labelEl.textContent = '3rd Sem Score';
+
+          if (elSem1) elSem1.textContent = sem1;
+          if (elSem2) elSem2.textContent = sem2;
+          if (elSem3) elSem3.textContent = sem3;
+          if (elSem4) elSem4.textContent = sem4;
+
+          if (is2ndYearOrLower) {
+            if (cardSem3) cardSem3.style.display = 'none';
+            if (cardSem4) cardSem4.style.display = 'none';
+            if (btnSem3) btnSem3.style.display = 'none';
+            if (btnSem4) btnSem4.style.display = 'none';
+            if (currentSemScoreFilter === 'sem3' || currentSemScoreFilter === 'sem4') {
+              currentSemScoreFilter = 'all';
             }
-          }
-          if (elSem4) {
-            const labelEl = elSem4.parentElement ? elSem4.parentElement.querySelector('.stat-label') : null;
-            if (sem1 > 0 || sem2 > 0 || (!sem3 && !sem4)) {
-              elSem4.textContent = sem2;
-              if (labelEl) labelEl.textContent = '2nd Sem Score';
-            } else {
-              elSem4.textContent = sem4;
-              if (labelEl) labelEl.textContent = '4th Sem Score';
-            }
+          } else {
+            if (cardSem3) cardSem3.style.display = 'flex';
+            if (cardSem4) cardSem4.style.display = 'flex';
+            if (btnSem3) btnSem3.style.display = 'inline-block';
+            if (btnSem4) btnSem4.style.display = 'inline-block';
           }
 
           if (elEvents) elEvents.textContent = totalEventScore;
@@ -2624,7 +2650,7 @@
             }
           }
 
-          if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem3') {
+          if (!is2ndYearOrLower && (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem3')) {
             if (sem3 > 0 || currentSemScoreFilter === 'sem3') {
               runningSum += sem3;
               rows.push(`
@@ -2640,7 +2666,7 @@
             }
           }
 
-          if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem4') {
+          if (!is2ndYearOrLower && (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem4')) {
             if (sem4 > 0 || currentSemScoreFilter === 'sem4') {
               runningSum += sem4;
               rows.push(`
