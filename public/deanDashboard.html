@@ -2126,6 +2126,8 @@
                 data-year="${encodeURIComponent(s.year || '')}"
                 data-score="${s.score || 0}"
                 data-eventscore="${s.eventScore || 0}"
+                data-sem1="${s.sem1Score || 0}"
+                data-sem2="${s.sem2Score || 0}"
                 data-sem3="${s.sem3Score || 0}"
                 data-sem4="${s.sem4Score || 0}"
                 title="View score breakdown">
@@ -2146,6 +2148,8 @@
             year: decodeURIComponent(this.dataset.year || ''),
             score: Number(this.dataset.score) || 0,
             eventScore: Number(this.dataset.eventscore) || 0,
+            sem1Score: Number(this.dataset.sem1) || 0,
+            sem2Score: Number(this.dataset.sem2) || 0,
             sem3Score: Number(this.dataset.sem3) || 0,
             sem4Score: Number(this.dataset.sem4) || 0
           });
@@ -2802,16 +2806,14 @@
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
 
-      const showSem12 = sem1Score > 0 || sem2Score > 0 || (!sem3Score && !sem4Score);
+      const yrStr = String(year || '').toLowerCase().trim();
+      const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
+      const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
+      const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
 
-      body.innerHTML = `
-        <div class="dp-summary-grid">
-          <div class="dp-card dp-highlight">
-            <div class="dp-label">🏆 Grand Total Score</div>
-            <div class="dp-value">${totalScore}</div>
-            <div class="dp-desc">Academic + Events + Certs</div>
-          </div>
-          ${showSem12 ? `
+      let semCardsHtml = '';
+      if (isYear2) {
+        semCardsHtml = `
           <div class="dp-card">
             <div class="dp-label">📘 1st Semester</div>
             <div class="dp-value" style="color:#0F4C81;">${sem1Score}</div>
@@ -2821,8 +2823,9 @@
             <div class="dp-label">📗 2nd Semester</div>
             <div class="dp-value" style="color:#1565C0;">${sem2Score}</div>
             <div class="dp-desc">Semester 2 Score</div>
-          </div>
-          ` : `
+          </div>`;
+      } else if (isYear3 || (!isYear1 && !isYear2)) {
+        semCardsHtml = `
           <div class="dp-card">
             <div class="dp-label">📙 3rd Semester</div>
             <div class="dp-value" style="color:#0F4C81;">${sem3Score}</div>
@@ -2832,8 +2835,17 @@
             <div class="dp-label">📕 4th Semester</div>
             <div class="dp-value" style="color:#1565C0;">${sem4Score}</div>
             <div class="dp-desc">Semester 4 Score</div>
+          </div>`;
+      }
+
+      body.innerHTML = `
+        <div class="dp-summary-grid">
+          <div class="dp-card dp-highlight">
+            <div class="dp-label">🏆 Grand Total Score</div>
+            <div class="dp-value">${totalScore}</div>
+            <div class="dp-desc">Academic + Events + Certs</div>
           </div>
-          `}
+          ${semCardsHtml}
           <div class="dp-card">
             <div class="dp-label">🎪 Event Score</div>
             <div class="dp-value" style="color:#2e7d32;">${eventScore}</div>
@@ -2850,25 +2862,21 @@
               <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
               <div style="font-size:26px;font-weight:800;color:#0F4C81;">${baseScore}</div>
             </div>
-            ${(sem1Score > 0 || showSem12) ? `
+            ${isYear2 ? `
             <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
               <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
               <div style="font-size:26px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
             </div>
-            ` : ''}
-            ${(sem2Score > 0 || showSem12) ? `
             <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
               <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
               <div style="font-size:26px;font-weight:800;color:#1565C0;">${sem2Score}</div>
             </div>
             ` : ''}
-            ${sem3Score > 0 ? `
+            ${(isYear3 || (!isYear1 && !isYear2)) ? `
             <div style="background:#fef3c7;border-radius:10px;padding:12px 16px;">
               <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
               <div style="font-size:26px;font-weight:800;color:#b45309;">${sem3Score}</div>
             </div>
-            ` : ''}
-            ${sem4Score > 0 ? `
             <div style="background:#fee2e2;border-radius:10px;padding:12px 16px;">
               <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
               <div style="font-size:26px;font-weight:800;color:#b91c1c;">${sem4Score}</div>

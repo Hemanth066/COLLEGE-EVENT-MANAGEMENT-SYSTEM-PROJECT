@@ -214,8 +214,11 @@ function renderStudents(list) {
           data-sid="${sid}"
           data-name="${encodeURIComponent(s.fullName || s.username || pin)}"
           data-pin="${encodeURIComponent(pin)}"
+          data-year="${encodeURIComponent(s.year || '')}"
           data-score="${s.score || 0}"
           data-eventscore="${s.eventScore || 0}"
+          data-sem1="${s.sem1Score || 0}"
+          data-sem2="${s.sem2Score || 0}"
           data-sem3="${s.sem3Score || 0}"
           data-sem4="${s.sem4Score || 0}"
           title="Edit student score"
@@ -228,17 +231,31 @@ function renderStudents(list) {
 
   tbody.querySelectorAll('.btn-edit-score').forEach(btn => {
     btn.addEventListener('click', function() {
-      const data = {
-        sid: this.dataset.sid,
-        name: decodeURIComponent(this.dataset.name || ''),
-        pin: decodeURIComponent(this.dataset.pin || ''),
-        score: Number(this.dataset.score) || 0,
-        eventScore: Number(this.dataset.eventscore) || 0,
-        sem3Score: Number(this.dataset.sem3) || 0,
-        sem4Score: Number(this.dataset.sem4) || 0
-      };
-      if (typeof openEditScoreModal === 'function') {
-        openEditScoreModal(data);
+      try {
+        let name = this.dataset.name || '';
+        try { name = decodeURIComponent(name); } catch(e){}
+        let pin = this.dataset.pin || '';
+        try { pin = decodeURIComponent(pin); } catch(e){}
+        let year = this.dataset.year || '';
+        try { year = decodeURIComponent(year); } catch(e){}
+
+        const data = {
+          sid: this.dataset.sid,
+          name: name,
+          pin: pin,
+          year: year,
+          score: Number(this.dataset.score) || 0,
+          eventScore: Number(this.dataset.eventscore) || 0,
+          sem1Score: Number(this.dataset.sem1) || 0,
+          sem2Score: Number(this.dataset.sem2) || 0,
+          sem3Score: Number(this.dataset.sem3) || 0,
+          sem4Score: Number(this.dataset.sem4) || 0
+        };
+        if (typeof openEditScoreModal === 'function') {
+          openEditScoreModal(data);
+        }
+      } catch (err) {
+        console.error('Error opening edit score modal:', err);
       }
     });
   });

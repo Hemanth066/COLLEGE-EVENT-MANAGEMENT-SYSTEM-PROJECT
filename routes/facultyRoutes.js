@@ -453,7 +453,78 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
   }
 });
 
+// ── UPDATE STUDENT SCORE (FOR FACULTY / COORDINATORS) ──────────────────
+router.put("/student-score/:studentId", async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { score, sem1Score, sem2Score, sem3Score, sem4Score } = req.body;
+
+    const trimmed = decodeURIComponent(studentId).trim();
+    let student = null;
+
+    if (mongoose.Types.ObjectId.isValid(trimmed)) {
+      student = await Student.findById(trimmed);
+    }
+    if (!student) {
+      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      student = await Student.findOne({
+        $or: [
+          { pinNumber: pinRegex },
+          { studentId: pinRegex },
+          { username: pinRegex }
+        ]
+      });
+    }
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    if (score !== undefined && score !== null && !isNaN(score)) {
+      student.score = Number(score);
+    }
+    if (sem1Score !== undefined && sem1Score !== null && !isNaN(sem1Score)) {
+      student.sem1Score = Number(sem1Score);
+    }
+    if (sem2Score !== undefined && sem2Score !== null && !isNaN(sem2Score)) {
+      student.sem2Score = Number(sem2Score);
+    }
+    if (sem3Score !== undefined && sem3Score !== null && !isNaN(sem3Score)) {
+      student.sem3Score = Number(sem3Score);
+    }
+    if (sem4Score !== undefined && sem4Score !== null && !isNaN(sem4Score)) {
+      student.sem4Score = Number(sem4Score);
+    }
+
+    if (sem1Score !== undefined || sem2Score !== undefined || sem3Score !== undefined || sem4Score !== undefined) {
+      student.score = (Number(student.sem1Score) || 0) + (Number(student.sem2Score) || 0) + (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
+    }
+
+    await student.save();
+
+    res.json({
+      message: "Student score updated successfully ✅",
+      student: {
+        _id: student._id,
+        fullName: student.fullName || student.username,
+        pinNumber: student.pinNumber || student.studentId,
+        score: student.score,
+        sem1Score: student.sem1Score,
+        sem2Score: student.sem2Score,
+        sem3Score: student.sem3Score,
+        sem4Score: student.sem4Score,
+        eventScore: student.eventScore,
+        totalScore: (student.score || 0) + (student.eventScore || 0)
+      }
+    });
+  } catch (err) {
+    console.error("Error updating student score:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
 module.exports = router;
+
 
 
 

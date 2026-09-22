@@ -4675,9 +4675,26 @@
           data-year="${s.year || ''}"
           data-score="${s.score || 0}"
           data-eventscore="${s.eventScore || 0}"
+          data-sem1="${s.sem1Score || 0}"
+          data-sem2="${s.sem2Score || 0}"
           data-sem3="${s.sem3Score || 0}"
           data-sem4="${s.sem4Score || 0}">
           👁️ View Proof
+        </button>
+        <button class="btn-edit-score"
+          data-sid="${sid}"
+          data-name="${encodeURIComponent(name)}"
+          data-pin="${encodeURIComponent(pin)}"
+          data-year="${encodeURIComponent(s.year || '')}"
+          data-score="${s.score || 0}"
+          data-eventscore="${s.eventScore || 0}"
+          data-sem1="${s.sem1Score || 0}"
+          data-sem2="${s.sem2Score || 0}"
+          data-sem3="${s.sem3Score || 0}"
+          data-sem4="${s.sem4Score || 0}"
+          title="Edit student score"
+          style="padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:'Poppins',sans-serif;box-shadow:0 2px 8px rgba(245,158,11,0.25);">
+          ✏️ Edit Score
         </button>
       </td>
     </tr>`;
@@ -4693,13 +4710,200 @@
               year: this.dataset.year || '',
               score: Number(this.dataset.score) || 0,
               eventScore: Number(this.dataset.eventscore) || 0,
+              sem1Score: Number(this.dataset.sem1) || 0,
+              sem2Score: Number(this.dataset.sem2) || 0,
               sem3Score: Number(this.dataset.sem3) || 0,
               sem4Score: Number(this.dataset.sem4) || 0
             };
             viewStudentProof(data);
           });
         });
+
+        tbody.querySelectorAll('.btn-edit-score').forEach(btn => {
+          btn.addEventListener('click', function() {
+            try {
+              let name = this.dataset.name || '';
+              try { name = decodeURIComponent(name); } catch(e){}
+              let pin = this.dataset.pin || '';
+              try { pin = decodeURIComponent(pin); } catch(e){}
+              let year = this.dataset.year || '';
+              try { year = decodeURIComponent(year); } catch(e){}
+
+              const data = {
+                sid: this.dataset.sid,
+                name: name,
+                pin: pin,
+                year: year,
+                score: Number(this.dataset.score) || 0,
+                eventScore: Number(this.dataset.eventscore) || 0,
+                sem1Score: Number(this.dataset.sem1) || 0,
+                sem2Score: Number(this.dataset.sem2) || 0,
+                sem3Score: Number(this.dataset.sem3) || 0,
+                sem4Score: Number(this.dataset.sem4) || 0
+              };
+              openEditScoreModal(data);
+            } catch (err) {
+              console.error('Error opening edit score modal:', err);
+            }
+          });
+        });
       }
+
+      // ── EDIT STUDENT SCORE MODAL LOGIC (COORDINATOR PORTAL) ──
+      let currentEditStudent = null;
+
+      function openEditScoreModal(student) {
+        currentEditStudent = student;
+        document.getElementById('editStudentId').value = student.sid || student.pin;
+        document.getElementById('editScoreStudentName').textContent = student.name || 'Student';
+        document.getElementById('editScoreStudentInfo').textContent = `PIN: ${student.pin} • Year: ${student.year || '—'} • Academic Score Update`;
+        document.getElementById('editBaseScore').value = student.score || 0;
+        if (document.getElementById('editSem1Score')) document.getElementById('editSem1Score').value = student.sem1Score || 0;
+        if (document.getElementById('editSem2Score')) document.getElementById('editSem2Score').value = student.sem2Score || 0;
+        if (document.getElementById('editSem3Score')) document.getElementById('editSem3Score').value = student.sem3Score || 0;
+        if (document.getElementById('editSem4Score')) document.getElementById('editSem4Score').value = student.sem4Score || 0;
+        document.getElementById('editEventScoreDisplay').textContent = `+${student.eventScore || 0} pts`;
+        
+        const yrStr = String(student.year || '').toLowerCase().trim();
+        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
+        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
+        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
+
+        const sem12Group = document.getElementById('sem12Group');
+        const sem34Group = document.getElementById('sem34Group');
+
+        if (isYear1) {
+          if (sem12Group) sem12Group.style.display = 'none';
+          if (sem34Group) sem34Group.style.display = 'none';
+        } else if (isYear2) {
+          if (sem12Group) sem12Group.style.display = 'grid';
+          if (sem34Group) sem34Group.style.display = 'none';
+        } else if (isYear3) {
+          if (sem12Group) sem12Group.style.display = 'none';
+          if (sem34Group) sem34Group.style.display = 'grid';
+        } else {
+          if (sem12Group) sem12Group.style.display = (student.sem1Score > 0 || student.sem2Score > 0) ? 'grid' : 'none';
+          if (sem34Group) sem34Group.style.display = 'grid';
+        }
+
+        updateSemScoreSum();
+        
+        const modal = document.getElementById('editScoreModal');
+        if (modal) {
+          modal.style.display = 'flex';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      }
+
+      function closeEditScoreModal() {
+        const modal = document.getElementById('editScoreModal');
+        if (modal) {
+          modal.style.display = 'none';
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        currentEditStudent = null;
+      }
+
+      function updateSemScoreSum() {
+        if (!currentEditStudent) return;
+        const yrStr = String(currentEditStudent.year || '').toLowerCase().trim();
+        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
+        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
+        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
+
+        let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
+        if (isYear2) {
+          s1 = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
+          s2 = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
+          document.getElementById('editBaseScore').value = s1 + s2;
+        } else if (isYear3) {
+          s3 = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
+          s4 = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
+          document.getElementById('editBaseScore').value = s3 + s4;
+        } else if (!isYear1) {
+          s1 = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
+          s2 = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
+          s3 = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
+          s4 = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
+          if (s1 > 0 || s2 > 0 || s3 > 0 || s4 > 0) {
+            document.getElementById('editBaseScore').value = s1 + s2 + s3 + s4;
+          }
+        }
+        updateScorePreview();
+      }
+
+      function updateScorePreview() {
+        const base = Number(document.getElementById('editBaseScore').value) || 0;
+        const ev = currentEditStudent ? (currentEditStudent.eventScore || 0) : 0;
+        const total = base + ev;
+        const previewEl = document.getElementById('editTotalScorePreview');
+        if (previewEl) previewEl.textContent = `${total} pts`;
+      }
+
+      async function saveStudentScore(e) {
+        e.preventDefault();
+        if (!currentEditStudent) return;
+        const studentId = currentEditStudent.sid || currentEditStudent.pin;
+        const score = Number(document.getElementById('editBaseScore').value) || 0;
+        const sem1Score = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
+        const sem2Score = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
+        const sem3Score = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
+        const sem4Score = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
+
+        const endpoints = [
+          `/api/faculty/student-score/${encodeURIComponent(studentId)}`,
+          `/api/department-head/student-score/${encodeURIComponent(studentId)}`,
+          `/api/hod/student-score/${encodeURIComponent(studentId)}`
+        ];
+
+        let success = false;
+        let updatedTotal = 0;
+        for (const url of endpoints) {
+          try {
+            const res = await fetch(url, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ score, sem1Score, sem2Score, sem3Score, sem4Score })
+            });
+
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+              const data = await res.json();
+              if (res.ok) {
+                updatedTotal = (data.student && data.student.totalScore != null)
+                  ? data.student.totalScore
+                  : (score + (currentEditStudent.eventScore || 0));
+                success = true;
+                break;
+              }
+            }
+          } catch (err) {
+            console.error('Error saving student score via', url, err);
+          }
+        }
+
+        if (success) {
+          alert(`✅ Score updated successfully for ${currentEditStudent.name}! Updated score: ${updatedTotal} pts`);
+          closeEditScoreModal();
+          if (typeof loadFacultyBranchStudents === 'function') {
+            loadFacultyBranchStudents();
+          } else {
+            window.location.reload();
+          }
+        } else {
+          alert('❌ Failed to update student score. Please try again.');
+        }
+      }
+
+      window.openEditScoreModal = openEditScoreModal;
+      window.closeEditScoreModal = closeEditScoreModal;
+      window.updateSemScoreSum = updateSemScoreSum;
+      window.updateScorePreview = updateScorePreview;
+      window.saveStudentScore = saveStudentScore;
+
+
 
       function filterFacultyStudentsList() {
         const q = (document.getElementById('facStudentSearch')?.value || '').toLowerCase().trim();
@@ -4798,16 +5002,14 @@
         if (yearEl) yearEl.textContent = `Year: ${year}`;
         if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase() || 'S';
 
-        const showSem12 = sem1Score > 0 || sem2Score > 0 || (!sem3Score && !sem4Score);
+        const yrStr = String(year || '').toLowerCase().trim();
+        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
+        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
+        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
 
-        body.innerHTML = `
-          <div class="proof-summary-grid">
-            <div class="proof-card highlight">
-              <div class="proof-card-label">🏆 Grand Total Score</div>
-              <div class="proof-card-value">${totalScore}</div>
-              <div class="proof-card-desc">Academic + Events + Certs</div>
-            </div>
-            ${showSem12 ? `
+        let semCardsHtml = '';
+        if (isYear2) {
+          semCardsHtml = `
             <div class="proof-card">
               <div class="proof-card-label">📘 1st Semester</div>
               <div class="proof-card-value" style="color:#0F4C81;">${sem1Score}</div>
@@ -4817,8 +5019,9 @@
               <div class="proof-card-label">📗 2nd Semester</div>
               <div class="proof-card-value" style="color:#1565C0;">${sem2Score}</div>
               <div class="proof-card-desc">Semester 2 Score</div>
-            </div>
-            ` : `
+            </div>`;
+        } else if (isYear3 || (!isYear1 && !isYear2)) {
+          semCardsHtml = `
             <div class="proof-card">
               <div class="proof-card-label">📙 3rd Semester</div>
               <div class="proof-card-value" style="color:#0F4C81;">${sem3Score}</div>
@@ -4828,8 +5031,17 @@
               <div class="proof-card-label">📕 4th Semester</div>
               <div class="proof-card-value" style="color:#1565C0;">${sem4Score}</div>
               <div class="proof-card-desc">Semester 4 Score</div>
+            </div>`;
+        }
+
+        body.innerHTML = `
+          <div class="proof-summary-grid">
+            <div class="proof-card highlight">
+              <div class="proof-card-label">🏆 Grand Total Score</div>
+              <div class="proof-card-value">${totalScore}</div>
+              <div class="proof-card-desc">Academic + Events + Certs</div>
             </div>
-            `}
+            ${semCardsHtml}
             <div class="proof-card">
               <div class="proof-card-label">🎪 Event Score</div>
               <div class="proof-card-value" style="color:var(--green, #16a34a);">${eventScore}</div>
@@ -4846,25 +5058,21 @@
                 <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
                 <div style="font-size:28px;font-weight:800;color:#0F4C81;">${baseScore}</div>
               </div>
-              ${(sem1Score > 0 || showSem12) ? `
+              ${isYear2 ? `
               <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
                 <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
                 <div style="font-size:28px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
               </div>
-              ` : ''}
-              ${(sem2Score > 0 || showSem12) ? `
               <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
                 <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
                 <div style="font-size:28px;font-weight:800;color:#1565C0;">${sem2Score}</div>
               </div>
               ` : ''}
-              ${sem3Score > 0 ? `
+              ${(isYear3 || (!isYear1 && !isYear2)) ? `
               <div style="background:#fef3c7;border-radius:12px;padding:14px 18px;">
                 <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
                 <div style="font-size:28px;font-weight:800;color:#b45309;">${sem3Score}</div>
               </div>
-              ` : ''}
-              ${sem4Score > 0 ? `
               <div style="background:#fee2e2;border-radius:12px;padding:14px 18px;">
                 <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
                 <div style="font-size:28px;font-weight:800;color:#b91c1c;">${sem4Score}</div>
@@ -9885,6 +10093,68 @@
       </div>
     </div>
   </div>
+
+  <!-- EDIT STUDENT SCORE MODAL FOR COORDINATOR PORTAL -->
+  <div class="proof-modal-overlay" id="editScoreModal" style="display:none;" onclick="if(event.target===this)closeEditScoreModal()">
+    <div class="proof-modal-box" style="max-width:500px;padding:28px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
+        <h3 style="margin:0;color:var(--blue-dark);font-size:18px;">✏️ Edit Student Score</h3>
+        <button onclick="closeEditScoreModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+
+      <div style="margin-bottom:16px;background:#eff6ff;padding:12px 16px;border-radius:12px;border:1px solid #bfdbfe;">
+        <strong id="editScoreStudentName" style="color:#1e3a8a;font-size:15px;display:block;">Student Name</strong>
+        <span id="editScoreStudentInfo" style="font-size:12px;color:#3b82f6;">PIN: — • Academic Score Update</span>
+      </div>
+
+      <form id="editScoreForm" onsubmit="saveStudentScore(event)">
+        <input type="hidden" id="editStudentId">
+        
+        <div style="margin-bottom:14px;">
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Base Academic Score</label>
+          <input type="number" id="editBaseScore" min="0" required style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;outline:none;" oninput="updateScorePreview()">
+        </div>
+
+        <div id="sem12Group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">1st Sem Score</label>
+            <input type="number" id="editSem1Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">2nd Sem Score</label>
+            <input type="number" id="editSem2Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+        </div>
+
+        <div id="sem34Group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">3rd Sem Score</label>
+            <input type="number" id="editSem3Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">4th Sem Score</label>
+            <input type="number" id="editSem4Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
+          </div>
+        </div>
+
+        <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;color:#475569;">
+            <span>Event Participation Score:</span>
+            <strong id="editEventScoreDisplay" style="color:#2563eb;">+0 pts</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;color:#0f172a;border-top:1px solid #e2e8f0;padding-top:8px;">
+            <span>Combined Total Score:</span>
+            <strong id="editTotalScorePreview" style="color:#16a34a;font-size:16px;">0 pts</strong>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" onclick="closeEditScoreModal()" style="padding:10px 18px;border:1.5px solid #cbd5e1;border-radius:10px;background:none;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">Cancel</button>
+          <button type="submit" style="padding:10px 22px;border:none;border-radius:10px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;box-shadow:0 4px 14px rgba(37,99,235,0.3);">💾 Save Updated Score</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 
-</html>
+</html>
