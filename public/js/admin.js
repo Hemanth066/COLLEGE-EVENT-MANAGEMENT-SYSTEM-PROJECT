@@ -1336,6 +1336,112 @@ function triggerStudentExcelUpload() {
   }
 }
 
+function triggerMarksExcelUpload() {
+  const fileInput = document.getElementById('excelMarksFileInput');
+  if (fileInput) {
+    fileInput.value = '';
+    fileInput.click();
+  }
+}
+
+async function handleMarksExcelUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (typeof XLSX === 'undefined') {
+    alert('Excel parser library loading... Please try again in 2 seconds.');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+      if (!rows || !rows.length) {
+        showPopup('⚠️', 'Empty File', 'No data rows found in the uploaded Excel file.', 'error');
+        return;
+      }
+
+      const cleanStr = val => (val === undefined || val === null) ? '' : String(val).trim();
+
+      const parsedMarks = rows.map(r => {
+        const getVal = (...keys) => {
+          for (const k of keys) {
+            const matchKey = Object.keys(r).find(rk => rk.trim().toLowerCase() === k.toLowerCase());
+            if (matchKey && r[matchKey] !== '') return cleanStr(r[matchKey]);
+          }
+          return '';
+        };
+
+        const sId = getVal('student id', 'studentid', 'student_id', 'pin number', 'pin', 'pinnumber', 'id', 'username', 'roll no', 'roll number', 's.no', 'htno', 'hallticket', 'ht no', 'regd no', 'regdno');
+        if (!sId) return null;
+
+        const sem1Raw = getVal('1st sem', '1stsem', 'sem1', 'sem 1', '1st semester', 'sem_1', 'sem-1', 'sem 1 score', 'sem 1 marks');
+        const sem2Raw = getVal('2nd sem', '2ndsem', 'sem2', 'sem 2', '2nd semester', 'sem_2', 'sem-2', 'sem 2 score', 'sem 2 marks');
+        const sem3Raw = getVal('3rd sem', '3rdsem', 'sem3', 'sem 3', '3rd semester', 'sem_3', 'sem-3', 'sem 3 score', 'sem 3 marks');
+        const sem4Raw = getVal('4th sem', '4thsem', 'sem4', 'sem 4', '4th semester', 'sem_4', 'sem-4', 'sem 4 score', 'sem 4 marks');
+        const scoreRaw = getVal('score', 'total score', 'points', 'total points', 'marks', 'total marks', 'base score', 'grade points', 'total');
+
+        const item = { studentId: sId };
+        if (sem1Raw !== '' && !isNaN(Number(sem1Raw))) item.sem1Score = Number(sem1Raw);
+        if (sem2Raw !== '' && !isNaN(Number(sem2Raw))) item.sem2Score = Number(sem2Raw);
+        if (sem3Raw !== '' && !isNaN(Number(sem3Raw))) item.sem3Score = Number(sem3Raw);
+        if (sem4Raw !== '' && !isNaN(Number(sem4Raw))) item.sem4Score = Number(sem4Raw);
+        if (scoreRaw !== '' && !isNaN(Number(scoreRaw))) item.score = Number(scoreRaw);
+
+        if (Object.keys(item).length <= 1) return null;
+
+        return item;
+      }).filter(Boolean);
+
+      if (!parsedMarks.length) {
+        showPopup('⚠️', 'No Valid Marks Data', 'Could not detect any valid student rows with a Student ID column and Marks/Semester columns.', 'error');
+        return;
+      }
+
+      const BATCH_SIZE = 2500;
+      let totalUpdated = 0, totalProcessed = 0;
+
+      for (let i = 0; i < parsedMarks.length; i += BATCH_SIZE) {
+        const chunk = parsedMarks.slice(i, i + BATCH_SIZE);
+        const currentEnd = Math.min(i + BATCH_SIZE, parsedMarks.length);
+        showPopup('⌛', 'Importing Marks', `Updating marks for ${currentEnd} of ${parsedMarks.length} students...`);
+
+        const res = await fetch('/api/admin/students/import-marks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ students: chunk })
+        });
+
+        const contentType = res.headers.get('content-type') || '';
+        let d = {};
+        if (contentType.includes('application/json')) {
+          d = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(`Server response error (${res.status}): ${text.substring(0, 150)}`);
+        }
+
+        if (!res.ok) throw new Error(d.message || 'Marks import failed');
+
+        totalUpdated += (d.updated || 0);
+        totalProcessed += (d.processed || 0);
+      }
+
+      showPopup('✅', 'Marks Import Complete', `Successfully updated marks for ${totalUpdated} student(s) in database (${totalProcessed} Excel rows matched)!`);
+      loadStudents();
+    } catch (err) {
+      console.error('Error importing Marks Excel:', err);
+      showPopup('❌', 'Import Failed', err.message || 'Failed to import marks Excel file.', 'error');
+    }
+  };
+
+  reader.readAsArrayBuffer(file);
+}
+
 async function handleStudentExcelUpload(e) {
   const file = e.target.files[0];
   if (!file) return;

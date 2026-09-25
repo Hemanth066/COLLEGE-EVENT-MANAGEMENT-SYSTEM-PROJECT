@@ -234,6 +234,81 @@ router.post("/students/bulk-import", async (req, res) => {
   }
 });
 
+// ── BULK IMPORT MARKS ONLY ──────────────────────────────
+router.post("/students/import-marks", async (req, res) => {
+  try {
+    const { students } = req.body;
+    if (!Array.isArray(students) || !students.length) {
+      return res.status(400).json({ message: "No student mark records provided" });
+    }
+
+    const operations = [];
+    let processed = 0;
+
+    for (const item of students) {
+      const idKey = (item.studentId || item.pinNumber || item.username || '').trim().toUpperCase();
+      if (!idKey) continue;
+
+      const setObj = {};
+      if (item.sem1Score !== undefined && item.sem1Score !== null && item.sem1Score !== '') {
+        const val = Number(item.sem1Score);
+        if (!isNaN(val)) setObj.sem1Score = val;
+      }
+      if (item.sem2Score !== undefined && item.sem2Score !== null && item.sem2Score !== '') {
+        const val = Number(item.sem2Score);
+        if (!isNaN(val)) setObj.sem2Score = val;
+      }
+      if (item.sem3Score !== undefined && item.sem3Score !== null && item.sem3Score !== '') {
+        const val = Number(item.sem3Score);
+        if (!isNaN(val)) setObj.sem3Score = val;
+      }
+      if (item.sem4Score !== undefined && item.sem4Score !== null && item.sem4Score !== '') {
+        const val = Number(item.sem4Score);
+        if (!isNaN(val)) setObj.sem4Score = val;
+      }
+
+      if (item.score !== undefined && item.score !== null && item.score !== '') {
+        const val = Number(item.score);
+        if (!isNaN(val)) setObj.score = val;
+      } else if (setObj.sem1Score !== undefined || setObj.sem2Score !== undefined || setObj.sem3Score !== undefined || setObj.sem4Score !== undefined) {
+        setObj.score = (setObj.sem1Score || 0) + (setObj.sem2Score || 0) + (setObj.sem3Score || 0) + (setObj.sem4Score || 0);
+      }
+
+      if (Object.keys(setObj).length === 0) continue;
+
+      operations.push({
+        updateOne: {
+          filter: {
+            $or: [
+              { studentId: idKey },
+              { pinNumber: idKey },
+              { username: idKey }
+            ]
+          },
+          update: { $set: setObj }
+        }
+      });
+      processed++;
+    }
+
+    if (operations.length === 0) {
+      return res.status(400).json({ message: "No valid marks data found to update" });
+    }
+
+    const result = await Student.bulkWrite(operations, { ordered: false });
+    const updatedCount = result.matchedCount || result.modifiedCount || 0;
+
+    res.json({
+      message: `Marks import complete! Updated marks for ${updatedCount} student(s) out of ${processed} rows processed ✅`,
+      updated: updatedCount,
+      processed
+    });
+  } catch (e) {
+    console.error('Marks import error:', e);
+    res.status(500).json({ message: "Error importing student marks: " + e.message });
+  }
+});
+
 router.post("/students", async (req, res) => {
   try {
     const s = new Student(req.body);

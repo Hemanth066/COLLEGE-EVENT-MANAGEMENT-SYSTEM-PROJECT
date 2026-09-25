@@ -1009,9 +1009,11 @@
               <option>3</option>
               <option>4</option>
             </select>
-            <button class="btn btn-primary" onclick="triggerStudentExcelUpload()">📥 Import Excel</button>
+            <button class="btn btn-primary" onclick="triggerStudentExcelUpload()" title="Import new students or full student roster">📥 Import Students</button>
+            <button class="btn btn-warning" onclick="triggerMarksExcelUpload()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none;" title="Import only marks/scores mapped by Student ID">📊 Import Marks</button>
             <button class="btn btn-success" onclick="openAddStudent()">+ Add Student</button>
             <input type="file" id="excelStudentFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleStudentExcelUpload(event)">
+            <input type="file" id="excelMarksFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleMarksExcelUpload(event)">
           </div>
         </div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:12px;" id="studentCount"></div>
