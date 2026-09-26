@@ -311,40 +311,83 @@ router.post("/students/import-marks", async (req, res) => {
   }
 });
 
-// ── BULK ACADEMIC YEAR PROMOTION ──────────────────────────
-router.post("/students/promote-years", async (_req, res) => {
+// Helper to build query filter for branch & year
+function buildPromotionQuery(branch, currentYear) {
+  const query = {};
+  if (branch && branch.toUpperCase() !== 'ALL') {
+    query.branch = new RegExp(`^${branch.trim()}$`, 'i');
+  }
+  if (currentYear && currentYear.toUpperCase() !== 'ALL') {
+    const yrStr = String(currentYear).trim().replace(/[^0-9]/g, '');
+    if (yrStr) {
+      query.year = { $in: [yrStr, `${yrStr}st Year`, `${yrStr}nd Year`, `${yrStr}rd Year`, `${yrStr}th Year`, `${yrStr}st`, `${yrStr}nd`, `${yrStr}rd`, `${yrStr}th`] };
+    } else {
+      query.year = currentYear;
+    }
+  }
+  return query;
+}
+
+// ── GET COUNT FOR PROMOTION PREVIEW ─────────────────────
+router.post("/students/promote-count", async (req, res) => {
   try {
-    const r4 = await Student.updateMany(
-      { year: { $in: ['4', '4th Year', '4th', '4th year'] } },
-      { $set: { year: 'Graduated' } }
-    );
+    const { branch = 'ALL', currentYear = 'ALL' } = req.body;
+    const query = buildPromotionQuery(branch, currentYear);
+    const count = await Student.countDocuments(query);
+    res.json({ count });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+});
 
-    const r3 = await Student.updateMany(
-      { year: { $in: ['3', '3rd Year', '3rd', '3rd year'] } },
-      { $set: { year: '4' } }
-    );
+// ── BULK ACADEMIC YEAR PROMOTION ──────────────────────────
+router.post("/students/promote-years", async (req, res) => {
+  try {
+    const { branch = 'ALL', currentYear = 'ALL', targetYear = 'NEXT' } = req.body;
+    const baseBranchQuery = (branch && branch.toUpperCase() !== 'ALL') ? { branch: new RegExp(`^${branch.trim()}$`, 'i') } : {};
 
-    const r2 = await Student.updateMany(
-      { year: { $in: ['2', '2nd Year', '2nd', '2nd year'] } },
-      { $set: { year: '3' } }
-    );
+    if (targetYear === 'NEXT') {
+      // Automatic +1 Promotion: 4 -> Graduated, 3 -> 4, 2 -> 3, 1 -> 2
+      let q4 = { ...baseBranchQuery, year: { $in: ['4', '4th Year', '4th', '4th year'] } };
+      let q3 = { ...baseBranchQuery, year: { $in: ['3', '3rd Year', '3rd', '3rd year'] } };
+      let q2 = { ...baseBranchQuery, year: { $in: ['2', '2nd Year', '2nd', '2nd year'] } };
+      let q1 = { ...baseBranchQuery, year: { $in: ['1', '1st Year', '1st', '1st year'] } };
 
-    const r1 = await Student.updateMany(
-      { year: { $in: ['1', '1st Year', '1st', '1st year'] } },
-      { $set: { year: '2' } }
-    );
-
-    const promotedCount = (r1.modifiedCount || 0) + (r2.modifiedCount || 0) + (r3.modifiedCount || 0) + (r4.modifiedCount || 0);
-
-    res.json({
-      message: `Academic Year Promotion Complete! ${promotedCount} total student(s) promoted. ✅`,
-      promoted: {
-        year1to2: r1.modifiedCount || 0,
-        year2to3: r2.modifiedCount || 0,
-        year3to4: r3.modifiedCount || 0,
-        year4toGraduated: r4.modifiedCount || 0
+      if (currentYear && currentYear.toUpperCase() !== 'ALL') {
+        const yNum = String(currentYear).replace(/[^0-9]/g, '');
+        if (yNum === '1') { q2 = { _id: null }; q3 = { _id: null }; q4 = { _id: null }; }
+        else if (yNum === '2') { q1 = { _id: null }; q3 = { _id: null }; q4 = { _id: null }; }
+        else if (yNum === '3') { q1 = { _id: null }; q2 = { _id: null }; q4 = { _id: null }; }
+        else if (yNum === '4') { q1 = { _id: null }; q2 = { _id: null }; q3 = { _id: null }; }
       }
-    });
+
+      const r4 = await Student.updateMany(q4, { $set: { year: 'Graduated' } });
+      const r3 = await Student.updateMany(q3, { $set: { year: '4' } });
+      const r2 = await Student.updateMany(q2, { $set: { year: '3' } });
+      const r1 = await Student.updateMany(q1, { $set: { year: '2' } });
+
+      const total = (r1.modifiedCount || 0) + (r2.modifiedCount || 0) + (r3.modifiedCount || 0) + (r4.modifiedCount || 0);
+
+      return res.json({
+        message: `Academic Year Promotion Complete! ${total} student(s) updated. ✅`,
+        promoted: {
+          year1to2: r1.modifiedCount || 0,
+          year2to3: r2.modifiedCount || 0,
+          year3to4: r3.modifiedCount || 0,
+          year4toGraduated: r4.modifiedCount || 0
+        }
+      });
+    } else {
+      // Set to specific target year (e.g. '1', '2', '3', '4', 'Graduated')
+      const targetQuery = buildPromotionQuery(branch, currentYear);
+      const result = await Student.updateMany(targetQuery, { $set: { year: targetYear } });
+      const count = result.modifiedCount || result.matchedCount || 0;
+
+      return res.json({
+        message: `Successfully set academic year to "${targetYear}" for ${count} student(s). ✅`,
+        promoted: { specificTarget: count }
+      });
+    }
   } catch (e) {
     console.error('Academic year promotion error:', e);
     res.status(500).json({ message: "Error promoting academic years: " + e.message });

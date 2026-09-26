@@ -1573,39 +1573,90 @@ document.addEventListener("click", function(e) {
   }
 });
 
-async function promoteAcademicYears() {
-  const confirmMsg = "Are you sure you want to promote ALL students to the next academic year?\n\n" +
-                     "• 1st Year  ➔ 2nd Year\n" +
-                     "• 2nd Year  ➔ 3rd Year\n" +
-                     "• 3rd Year  ➔ 4th Year\n" +
-                     "• 4th Year  ➔ Graduated\n\n" +
-                     "This operation updates student records in MongoDB.";
+function promoteAcademicYears() {
+  openPromoteModal();
+}
+
+function openPromoteModal() {
+  const modal = document.getElementById('promoteModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  updatePromotePreview();
+}
+
+function closePromoteModal() {
+  const modal = document.getElementById('promoteModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function updatePromotePreview() {
+  const branch = document.getElementById('pmBranchSelect')?.value || 'ALL';
+  const currentYear = document.getElementById('pmCurrentYearSelect')?.value || 'ALL';
+  const badge = document.getElementById('pmMatchCountBadge');
+  const text = document.getElementById('pmPreviewText');
+
+  if (badge) badge.textContent = '⏳ Counting...';
+
+  try {
+    const res = await fetch('/api/admin/students/promote-count', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branch, currentYear })
+    });
+    const data = await res.json();
+    const count = data.count || 0;
+
+    if (badge) badge.textContent = `${count} Student(s)`;
+
+    let branchText = branch === 'ALL' ? 'All Branches' : `${branch} Branch`;
+    let yearText = currentYear === 'ALL' ? 'All Academic Years' : `Year ${currentYear} Students`;
+
+    if (text) {
+      text.textContent = `Targeting ${count} student(s) in ${branchText} (${yearText}).`;
+    }
+  } catch (err) {
+    if (badge) badge.textContent = 'N/A';
+  }
+}
+
+async function executePromoteYears() {
+  const branch = document.getElementById('pmBranchSelect').value;
+  const currentYear = document.getElementById('pmCurrentYearSelect').value;
+  const targetYear = document.getElementById('pmTargetYearSelect').value;
+
+  let branchLabel = branch === 'ALL' ? 'ALL Branches' : `${branch} Branch`;
+  let yearLabel = currentYear === 'ALL' ? 'ALL Years' : `Year ${currentYear}`;
+  let targetLabel = targetYear === 'NEXT' ? 'Next Academic Year (+1)' : (targetYear === 'Graduated' ? 'Graduated Status' : `Year ${targetYear}`);
+
+  const confirmMsg = `Are you sure you want to promote/update students?\n\n` +
+                     `• Target Branch: ${branchLabel}\n` +
+                     `• Current Year Filter: ${yearLabel}\n` +
+                     `• Target Action: ${targetLabel}\n\n` +
+                     `This operation will update student records in MongoDB.`;
 
   if (!confirm(confirmMsg)) return;
 
-  try {
-    showPopup('⏳', 'Promoting Students...', 'Updating academic years for all students in database...', 'info');
+  const btn = document.getElementById('pmSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Executing...'; }
 
+  try {
     const res = await fetch('/api/admin/students/promote-years', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branch, currentYear, targetYear })
     });
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Promotion failed');
 
-    const p = data.promoted || {};
-    const summary = `Academic Year Promotion Complete! ✅\n\n` +
-                    `• 1st ➔ 2nd Year: ${p.year1to2 || 0} students\n` +
-                    `• 2nd ➔ 3rd Year: ${p.year2to3 || 0} students\n` +
-                    `• 3rd ➔ 4th Year: ${p.year3to4 || 0} students\n` +
-                    `• 4th ➔ Graduated: ${p.year4toGraduated || 0} students`;
-
-    showPopup('🎓', 'Promotion Complete', summary, 'success');
+    closePromoteModal();
+    showPopup('🎓', 'Academic Year Updated', data.message || 'Promotion completed successfully!', 'success');
     loadStudents();
     loadStats();
   } catch (err) {
     console.error('Promotion error:', err);
-    showPopup('❌', 'Promotion Failed', err.message || 'Failed to promote academic years', 'error');
+    showPopup('❌', 'Update Failed', err.message || 'Failed to update academic years', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🚀 Execute Promotion'; }
   }
 }
