@@ -1634,7 +1634,7 @@ async function executePromoteYears() {
 
   let branchLabel = branch === 'ALL' ? 'ALL Branches' : `${branch} Branch`;
   let yearLabel = currentYear === 'ALL' ? 'ALL Years' : `Year ${currentYear}`;
-  let targetLabel = targetYear === 'NEXT' ? 'Next Academic Year (+1)' : (targetYear === 'Graduated' ? 'Graduated Status' : `Year ${targetYear}`);
+  let targetLabel = targetYear === 'NEXT' ? 'Next Academic Year (+1)' : (targetYear === 'PREVIOUS' ? 'Previous Academic Year (-1)' : (targetYear === 'Graduated' ? 'Graduated Status' : `Year ${targetYear}`));
 
   const confirmMsg = `Are you sure you want to promote/update students?\n\n` +
                      `• Target Branch: ${branchLabel}\n` +

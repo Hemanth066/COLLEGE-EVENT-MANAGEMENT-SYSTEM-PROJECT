@@ -377,6 +377,37 @@ router.post("/students/promote-years", async (req, res) => {
           year4toGraduated: r4.modifiedCount || 0
         }
       });
+    } else if (targetYear === 'PREVIOUS') {
+      // Automatic -1 Demotion / Reverse: 2 -> 1, 3 -> 2, 4 -> 3, Graduated -> 4
+      let q2 = { ...baseBranchQuery, year: { $in: ['2', '2nd Year', '2nd', '2nd year'] } };
+      let q3 = { ...baseBranchQuery, year: { $in: ['3', '3rd Year', '3rd', '3rd year'] } };
+      let q4 = { ...baseBranchQuery, year: { $in: ['4', '4th Year', '4th', '4th year'] } };
+      let qGrad = { ...baseBranchQuery, year: { $in: ['Graduated', 'graduated', 'Alum'] } };
+
+      if (currentYear && currentYear.toUpperCase() !== 'ALL') {
+        const yNum = String(currentYear).replace(/[^0-9]/g, '');
+        if (yNum === '2') { q3 = { _id: null }; q4 = { _id: null }; qGrad = { _id: null }; }
+        else if (yNum === '3') { q2 = { _id: null }; q4 = { _id: null }; qGrad = { _id: null }; }
+        else if (yNum === '4') { q2 = { _id: null }; q3 = { _id: null }; qGrad = { _id: null }; }
+        else if (currentYear.toLowerCase().includes('grad')) { q2 = { _id: null }; q3 = { _id: null }; q4 = { _id: null }; }
+      }
+
+      const r2 = await Student.updateMany(q2, { $set: { year: '1' } });
+      const r3 = await Student.updateMany(q3, { $set: { year: '2' } });
+      const r4 = await Student.updateMany(q4, { $set: { year: '3' } });
+      const rGrad = await Student.updateMany(qGrad, { $set: { year: '4' } });
+
+      const total = (r2.modifiedCount || 0) + (r3.modifiedCount || 0) + (r4.modifiedCount || 0) + (rGrad.modifiedCount || 0);
+
+      return res.json({
+        message: `Academic Year Reversal Complete! ${total} student(s) reversed. ⏪`,
+        promoted: {
+          year2to1: r2.modifiedCount || 0,
+          year3to2: r3.modifiedCount || 0,
+          year4to3: r4.modifiedCount || 0,
+          graduatedTo4: rGrad.modifiedCount || 0
+        }
+      });
     } else {
       // Set to specific target year (e.g. '1', '2', '3', '4', 'Graduated')
       const targetQuery = buildPromotionQuery(branch, currentYear);
