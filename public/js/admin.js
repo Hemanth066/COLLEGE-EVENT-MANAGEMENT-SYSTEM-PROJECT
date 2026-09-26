@@ -1603,7 +1603,15 @@ async function updatePromotePreview() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ branch, currentYear })
     });
-    const data = await res.json();
+
+    const contentType = res.headers.get('content-type') || '';
+    let data = {};
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      throw new Error(`Server endpoint non-JSON response`);
+    }
+
     const count = data.count || 0;
 
     if (badge) badge.textContent = `${count} Student(s)`;
@@ -1646,7 +1654,15 @@ async function executePromoteYears() {
       body: JSON.stringify({ branch, currentYear, targetYear })
     });
 
-    const data = await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    let data = {};
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      throw new Error(`Server returned HTML error response (${res.status}). Please restart server.js`);
+    }
+
     if (!res.ok) throw new Error(data.message || 'Promotion failed');
 
     closePromoteModal();
