@@ -250,7 +250,7 @@ router.get("/branch-students/:facultyId", async (req, res) => {
 
     let students = await Student.find(query)
       .select("-password")
-      .sort({ fullName: 1 });
+      .sort({ studentId: 1, pinNumber: 1, username: 1, fullName: 1 });
 
     const availableBranches = await Student.distinct('branch');
 

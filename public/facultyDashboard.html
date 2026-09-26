@@ -4603,6 +4603,12 @@
             });
           }
 
+          fetchedStudents.sort((a, b) => {
+            const idA = String(a.studentId || a.pinNumber || a.username || '').trim();
+            const idB = String(b.studentId || b.pinNumber || b.username || '').trim();
+            return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+          });
+
           allFacultyBranchStudents = fetchedStudents;
           displayedFacultyBranchStudents = [...allFacultyBranchStudents];
 
@@ -4929,6 +4935,12 @@
           const scoreMatch = threshold === null || totalScore <= threshold;
 
           return nameMatch && yearMatch && branchMatch && scoreMatch;
+        });
+
+        filtered.sort((a, b) => {
+          const idA = String(a.studentId || a.pinNumber || a.username || '').trim();
+          const idB = String(b.studentId || b.pinNumber || b.username || '').trim();
+          return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
         });
 
         displayedFacultyBranchStudents = filtered;

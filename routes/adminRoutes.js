@@ -146,7 +146,9 @@ router.delete("/faculty/:id", async (req, res) => {
 
 // ── STUDENT CRUD ───────────────────────────────────────
 router.get("/students", async (_req, res) => {
-  const list = await Student.find().select("-password");
+  const list = await Student.find()
+    .select("-password")
+    .sort({ studentId: 1, pinNumber: 1, username: 1, fullName: 1 });
   res.json(list);
 });
 

@@ -2088,11 +2088,20 @@
       } catch (e) { alert('Network error'); }
     }
 
+    function sortStudentsByStudentId(list) {
+      if (!Array.isArray(list)) return [];
+      return [...list].sort((a, b) => {
+        const idA = String(a.studentId || a.pinNumber || a.username || '').trim();
+        const idB = String(b.studentId || b.pinNumber || b.username || '').trim();
+        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+    }
+
     async function loadStudentsData() {
       try {
         const res = await fetch('/api/admin/students');
         const raw = await res.json();
-        allStudentsList = raw.filter(s => isStudentAllowedForDean(s, currentDean));
+        allStudentsList = sortStudentsByStudentId(raw.filter(s => isStudentAllowedForDean(s, currentDean)));
         document.getElementById('statStudentCount').textContent = allStudentsList.length;
         filterStudents();
       } catch (e) { console.error('Students load error:', e); }
@@ -2163,7 +2172,7 @@
       const y = document.getElementById('studentYearFilter')?.value.trim() || '';
       const scoreVal = document.getElementById('studentScoreFilter')?.value;
 
-      displayedStudents = allStudentsList.filter(s => {
+      displayedStudents = sortStudentsByStudentId(allStudentsList.filter(s => {
         const totalScore = (s.score || 0) + (s.eventScore || 0);
 
         const matchQ = !q ||
@@ -2186,7 +2195,7 @@
         const matchScore = (scoreVal === '' || scoreVal == null) ? true : (totalScore <= Number(scoreVal));
 
         return matchQ && matchB && matchY && matchScore;
-      });
+      }));
 
       renderStudentsTable(displayedStudents);
     }
