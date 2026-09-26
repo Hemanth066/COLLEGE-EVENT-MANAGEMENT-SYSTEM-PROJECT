@@ -1018,7 +1018,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th>S.NO</th>
                 <th>Event Title</th>
                 <th>Date</th>
                 <th>Venue</th>
@@ -1068,7 +1068,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th>S.NO</th>
                     <th>Student Name</th>
                     <th>Student ID</th>
                     <th>Branch</th>
@@ -1089,7 +1089,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th>S.NO</th>
                     <th>Student</th>
                     <th>Rating</th>
                     <th>Comment</th>
@@ -2203,7 +2203,7 @@
     function downloadStudentsCSV() {
       const source = displayedStudents.length ? displayedStudents : allStudentsList;
       if (!source.length) return;
-      const header = ['#', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
+      const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
       const rows = source.map((s, i) => [
         i + 1,
         s.fullName || s.username || '',
@@ -2768,7 +2768,7 @@
 
         doc.autoTable({
           startY: finalY + 4,
-          head: [['#', 'Event Title', 'Date', 'Host', 'Reg', 'Att', 'Rate', 'Rating']],
+          head: [['S.NO', 'Event Title', 'Date', 'Host', 'Reg', 'Att', 'Rate', 'Rating']],
           body: eventRows,
           theme: 'striped',
           headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
@@ -2930,7 +2930,7 @@
         if (events.length === 0) {
           html += `<div style="text-align:center;padding:22px;color:#6B7280;font-size:13px;"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
         } else {
-          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>#</th><th>Event</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>S.NO</th><th>Event</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
           events.forEach((ev, i) => {
             const evDate = ev.date ? new Date(ev.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
             const certBtn = ev.certificateUrl
@@ -2960,7 +2960,7 @@
         if (certs.length === 0) {
           html += `<div style="text-align:center;padding:22px;color:#6B7280;font-size:13px;"><div style="font-size:22px;margin-bottom:6px;">📭</div>No external certificates uploaded.</div>`;
         } else {
-          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>#</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
+          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>S.NO</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
           certs.forEach((c, i) => {
             const cDate = c.uploadedAt ? new Date(c.uploadedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
             let badge = `<span style="background:rgba(255,193,7,0.15);color:#d97706;border:1px solid rgba(255,193,7,0.3);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">Pending</span>`;

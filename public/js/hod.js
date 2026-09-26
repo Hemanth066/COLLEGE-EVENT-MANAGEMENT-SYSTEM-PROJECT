@@ -317,7 +317,7 @@ function downloadStudentsCSV() {
   const maxScore = document.getElementById('scoreFilter')?.value;
   const threshold = maxScore !== '' ? Number(maxScore) : null;
 
-  const header = ['#', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
+  const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
   const rows = source.map((s, i) => {
     const totalScore = (s.score || 0) + (s.eventScore || 0);
     return [

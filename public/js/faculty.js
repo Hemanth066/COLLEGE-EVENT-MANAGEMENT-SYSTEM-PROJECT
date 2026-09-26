@@ -809,7 +809,7 @@ function downloadEventReport() {
     <p>Date: ${event.date || 'N/A'} &nbsp;|&nbsp; Venue: ${event.venue || 'N/A'} &nbsp;|&nbsp; Total: ${filtered.length} registrations</p>
     <table>
       <thead><tr>
-        <th>#</th><th>Student Name</th><th>PIN</th><th>Branch</th>
+        <th>S.NO</th><th>Student Name</th><th>PIN</th><th>Branch</th>
         <th>Year</th><th>Attendance</th><th>Score</th>
       </tr></thead>
       <tbody>${rows}</tbody>

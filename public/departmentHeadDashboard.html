@@ -1147,7 +1147,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th>S.NO</th>
                 <th>Name</th>
                 <th>Username</th>
                 <th>Email</th>
@@ -1192,7 +1192,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th>S.NO</th>
                 <th>Name</th>
                 <th>Student ID</th>
                 <th>Year</th>
@@ -1234,7 +1234,7 @@
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th>S.NO</th>
                 <th>Title</th>
                 <th>Date</th>
                 <th>Venue</th>
@@ -1312,7 +1312,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th>S.NO</th>
                     <th>Student Name</th>
                     <th>Student ID / PIN</th>
                     <th>Branch</th>
@@ -1335,7 +1335,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th>S.NO</th>
                     <th>Student</th>
                     <th>Rating</th>
                     <th>Comment</th>
@@ -1879,7 +1879,7 @@
 
       doc.autoTable({
         startY: 32,
-        head: [['#', 'Student Name', 'Student ID', 'Year', 'Score']],
+        head: [['S.NO', 'Student Name', 'Student ID', 'Year', 'Score']],
         body: tableRows,
         styles: {
           font: 'helvetica',
@@ -2357,7 +2357,7 @@
 
         doc.autoTable({
           startY: finalY + 4,
-          head: [['#', 'Event Title', 'Category', 'Date', 'Reg', 'Att', 'Rate', 'Rating']],
+          head: [['S.NO', 'Event Title', 'Category', 'Date', 'Reg', 'Att', 'Rate', 'Rating']],
           body: eventRows,
           theme: 'striped',
           headStyles: { fillColor: [30, 136, 229], textColor: 255, fontStyle: 'bold' },
@@ -2549,7 +2549,7 @@
         if (events.length === 0) {
           evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
         } else {
-          evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+          evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
           events.forEach((ev, i) => {
             const d = ev.date ? new Date(ev.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
             const cert = ev.certificateUrl
@@ -2571,7 +2571,7 @@
         if (certs.length === 0) {
           evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No external certificates uploaded.</div>`;
         } else {
-          evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
+          evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
           certs.forEach((c, i) => {
             const d = c.uploadedAt ? new Date(c.uploadedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
             let badge = '<span class="badge badge-gold" style="font-size:11px;">Pending</span>';

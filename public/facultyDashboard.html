@@ -3611,7 +3611,7 @@
           <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="background:#f8fafc;">
-                <th style="width:50px;text-align:center;">#</th>
+                <th style="width:50px;text-align:center;">S.NO</th>
                 <th style="width:220px;">Roll No</th>
                 <th>Name</th>
                 <th style="width:200px;">Status</th>
@@ -3838,7 +3838,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>#</th>
+                  <th>S.NO</th>
                   <th>Certificate Name</th>
                   <th>Branch</th>
                   <th>PIN Range</th>
@@ -5130,7 +5130,7 @@
           if (events.length === 0) {
             evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
           } else {
-            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
             events.forEach((ev, i) => {
               const d = ev.date ? new Date(ev.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
               const cert = ev.certificateUrl
@@ -5152,7 +5152,7 @@
           if (certs.length === 0) {
             evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No external certificates uploaded.</div>`;
           } else {
-            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>#</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
+            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Certificate</th><th>Submitted</th><th>Status</th><th>Marks</th><th>Document</th></tr></thead><tbody>`;
             certs.forEach((c, i) => {
               const d = c.uploadedAt ? new Date(c.uploadedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
               let badge = '<span class="badge badge-gold" style="font-size:11px;">Pending</span>';
@@ -5295,7 +5295,7 @@
           return;
         }
 
-        const header = ['#', 'Student Name', 'PIN Number', 'Branch', 'Year', 'Total Score'];
+        const header = ['S.NO', 'Student Name', 'PIN Number', 'Branch', 'Year', 'Total Score'];
         const rows = source.map((s, i) => {
           const totalScore = (s.score || 0) + (s.eventScore || 0);
           return [
@@ -6661,7 +6661,7 @@
     <p>Date: ${event.date || 'N/A'} | Venue: ${event.venue || 'N/A'} | Total: ${filtered.length} registrations</p>
 
 
-    <table><thead><tr><th>#</th><th>Student Name</th><th>PIN</th><th>Branch</th><th>Year</th><th>Attendance</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>S.NO</th><th>Student Name</th><th>PIN</th><th>Branch</th><th>Year</th><th>Attendance</th><th>Score</th></tr></thead><tbody>${rows}</tbody></table>
 
 
     <script>window.onload=()=>window.print();<\/script></body></html>`;
@@ -10034,7 +10034,7 @@
           <table style="width:100%;border-collapse:collapse;">
             <thead>
               <tr style="background:#f8fafc;border-bottom:1.5px solid #e2e8f0;text-align:left;">
-                <th style="padding:10px 12px;font-size:12px;color:#64748b;">#</th>
+                <th style="padding:10px 12px;font-size:12px;color:#64748b;">S.NO</th>
                 <th style="padding:10px 12px;font-size:12px;color:#64748b;">Student Name</th>
                 <th style="padding:10px 12px;font-size:12px;color:#64748b;">PIN Number</th>
                 <th style="padding:10px 12px;font-size:12px;color:#64748b;">Branch</th>
