@@ -774,6 +774,52 @@
     </div>
   </div>
 
+  <!-- Admin Change Password Modal -->
+  <div class="modal-overlay" id="adminPasswordModal">
+    <div class="modal">
+      <h3 style="display:flex;align-items:center;gap:8px;">🔑 Change Admin Password</h3>
+      <div class="form-group">
+        <label>Current Password</label>
+        <input type="password" id="adminCurrentPassInput" placeholder="Enter current password">
+      </div>
+      <div class="form-group">
+        <label>New Password</label>
+        <input type="password" id="adminNewPassInput" placeholder="At least 6 characters">
+      </div>
+      <div class="form-group">
+        <label>Confirm New Password</label>
+        <input type="password" id="adminConfirmPassInput" placeholder="Re-enter new password">
+      </div>
+      <div class="modal-actions" style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-danger" onclick="closeAdminPasswordModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAdminChangePassword()">Update Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Profile / Username Modal -->
+  <div class="modal-overlay" id="adminProfileModal">
+    <div class="modal">
+      <h3 style="display:flex;align-items:center;gap:8px;">👤 Edit Admin Profile &amp; Username</h3>
+      <div class="form-group">
+        <label>Admin Username</label>
+        <input type="text" id="adminUsernameInput" placeholder="Enter new username">
+      </div>
+      <div class="form-group">
+        <label>Full Display Name</label>
+        <input type="text" id="adminFullNameInput" placeholder="System Administrator">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="adminEmailInput" placeholder="admin@cem.edu.in">
+      </div>
+      <div class="modal-actions" style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;">
+        <button class="btn btn-danger" onclick="closeAdminProfileModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="submitAdminProfileUpdate()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Sidebar -->
   <div class="sidebar">
     <div class="sidebar-admin-card">
@@ -820,6 +866,16 @@
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
+        <button onclick="openAdminProfileModal()" title="Edit Profile & Username"
+          style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.18);color:white;font-weight:700;font-size:13.5px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.1);"
+          onmouseover="this.style.background='rgba(255,255,255,0.3)';"
+          onmouseout="this.style.background='rgba(255,255,255,0.18)';">👤
+          Edit Profile</button>
+        <button onclick="openChangePasswordModal()" title="Change Password"
+          style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.18);color:white;font-weight:700;font-size:13.5px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.1);"
+          onmouseover="this.style.background='rgba(255,255,255,0.3)';"
+          onmouseout="this.style.background='rgba(255,255,255,0.18)';">🔑
+          Change Password</button>
         <button onclick="logout()" title="Logout"
           style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.35);background:rgba(239,68,68,0.25);color:white;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 12px rgba(0,0,0,0.1);"
           onmouseover="this.style.background='#ef4444';this.style.borderColor='#ef4444';"

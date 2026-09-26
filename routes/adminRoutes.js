@@ -102,6 +102,78 @@ router.post("/verify-session", async (req, res) => {
   }
 });
 
+// ── ADMIN CHANGE PASSWORD ──────────────────────────────
+router.put("/change-password/:adminId", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new password are required ❌" });
+    }
+    const admin = await Admin.findById(req.params.adminId);
+    if (!admin) return res.status(404).json({ message: "Admin account not found ❌" });
+
+    const authResult = await admin.comparePassword(currentPassword);
+    if (!authResult.isValid) return res.status(400).json({ message: "Current password is incorrect ❌" });
+
+    if (newPassword.length < 6) return res.status(400).json({ message: "New password must be at least 6 characters long ❌" });
+
+    admin.password = newPassword;
+    await admin.save();
+    res.json({ message: "Admin password changed successfully! ✅" });
+  } catch (e) {
+    console.error("Admin change password error:", e);
+    res.status(500).json({ message: "Server error: " + e.message });
+  }
+});
+
+// ── ADMIN PROFILE GET ──────────────────────────────────
+router.get("/profile/:adminId", async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.adminId).select("-password");
+    if (!admin) return res.status(404).json({ message: "Admin not found ❌" });
+    res.json(admin);
+  } catch (e) {
+    res.status(500).json({ message: "Server error: " + e.message });
+  }
+});
+
+// ── ADMIN PROFILE UPDATE (Username, Full Name, Email) ──
+router.put("/profile/:adminId", async (req, res) => {
+  try {
+    const { username, fullName, email } = req.body;
+    if (!username || !username.trim()) {
+      return res.status(400).json({ message: "Username cannot be empty ❌" });
+    }
+
+    const trimmedUsername = username.trim();
+
+    const existing = await Admin.findOne({
+      username: trimmedUsername,
+      _id: { $ne: req.params.adminId }
+    });
+    if (existing) {
+      return res.status(400).json({ message: "Username is already in use by another admin ❌" });
+    }
+
+    const admin = await Admin.findById(req.params.adminId);
+    if (!admin) return res.status(404).json({ message: "Admin account not found ❌" });
+
+    admin.username = trimmedUsername;
+    if (fullName !== undefined) admin.fullName = fullName.trim();
+    if (email !== undefined) admin.email = email.trim();
+
+    await admin.save();
+
+    const safeAdmin = admin.toObject();
+    delete safeAdmin.password;
+
+    res.json({ message: "Admin username and profile updated successfully! ✅", admin: safeAdmin });
+  } catch (e) {
+    console.error("Admin profile update error:", e);
+    res.status(500).json({ message: "Server error: " + e.message });
+  }
+});
+
 // ── DASHBOARD STATS ────────────────────────────────────
 router.get("/stats", async (_req, res) => {
   try {

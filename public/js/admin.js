@@ -1676,3 +1676,147 @@ async function executePromoteYears() {
     if (btn) { btn.disabled = false; btn.textContent = '🚀 Execute Promotion'; }
   }
 }
+
+// ── ADMIN CHANGE PASSWORD ─────────────────────────────
+function openChangePasswordModal() {
+  const modal = document.getElementById('adminPasswordModal');
+  if (modal) {
+    document.getElementById('adminCurrentPassInput').value = '';
+    document.getElementById('adminNewPassInput').value = '';
+    document.getElementById('adminConfirmPassInput').value = '';
+    modal.style.display = 'flex';
+  }
+}
+
+function closeAdminPasswordModal() {
+  const modal = document.getElementById('adminPasswordModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitAdminChangePassword() {
+  const curPass = document.getElementById('adminCurrentPassInput').value.trim();
+  const newPass = document.getElementById('adminNewPassInput').value.trim();
+  const confPass = document.getElementById('adminConfirmPassInput').value.trim();
+
+  if (!curPass) {
+    showPopup('⚠️', 'Missing Field', 'Please enter your current password.', 'error');
+    return;
+  }
+  if (!newPass) {
+    showPopup('⚠️', 'Missing Field', 'Please enter a new password.', 'error');
+    return;
+  }
+  if (newPass.length < 6) {
+    showPopup('⚠️', 'Invalid Password', 'New password must be at least 6 characters long.', 'error');
+    return;
+  }
+  if (newPass !== confPass) {
+    showPopup('⚠️', 'Mismatch', 'New password and confirm password do not match.', 'error');
+    return;
+  }
+
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  if (!adminData._id) {
+    showPopup('❌', 'Error', 'Admin session data missing. Please log in again.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/change-password/${adminData._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword: curPass, newPassword: newPass })
+    });
+    const contentType = res.headers.get('content-type') || '';
+    let data = {};
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      throw new Error(`Server route not active in memory (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+    }
+    if (!res.ok) throw new Error(data.message || 'Failed to change password');
+
+    closeAdminPasswordModal();
+    showPopup('🔑', 'Password Changed', data.message || 'Admin password changed successfully!', 'success');
+  } catch (err) {
+    console.error('Change password error:', err);
+    showPopup('❌', 'Password Change Failed', err.message || 'Error changing password', 'error');
+  }
+}
+
+// ── ADMIN PROFILE & USERNAME UPDATE ──────────────────
+async function openAdminProfileModal() {
+  const modal = document.getElementById('adminProfileModal');
+  if (!modal) return;
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  document.getElementById('adminUsernameInput').value = adminData.username || '';
+  document.getElementById('adminFullNameInput').value = adminData.fullName || '';
+  document.getElementById('adminEmailInput').value = adminData.email || '';
+
+  if (adminData._id) {
+    try {
+      const res = await fetch(`/api/admin/profile/${adminData._id}`);
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const freshData = await res.json();
+        document.getElementById('adminUsernameInput').value = freshData.username || '';
+        document.getElementById('adminFullNameInput').value = freshData.fullName || '';
+        document.getElementById('adminEmailInput').value = freshData.email || '';
+      }
+    } catch(e) {}
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeAdminProfileModal() {
+  const modal = document.getElementById('adminProfileModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitAdminProfileUpdate() {
+  const username = document.getElementById('adminUsernameInput').value.trim();
+  const fullName = document.getElementById('adminFullNameInput').value.trim();
+  const email = document.getElementById('adminEmailInput').value.trim();
+
+  if (!username) {
+    showPopup('⚠️', 'Missing Field', 'Username cannot be empty.', 'error');
+    return;
+  }
+
+  const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
+  if (!adminData._id) {
+    showPopup('❌', 'Error', 'Admin session data missing. Please log in again.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/profile/${adminData._id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, fullName, email })
+    });
+    const contentType = res.headers.get('content-type') || '';
+    let data = {};
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      throw new Error(`Server route not active in memory (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+    }
+    if (!res.ok) throw new Error(data.message || 'Failed to update profile');
+
+    localStorage.setItem('adminData', JSON.stringify(data.admin));
+    currentAdmin = data.admin;
+
+    const adminNameEl = document.getElementById('adminName');
+    if (adminNameEl) {
+      adminNameEl.textContent = data.admin.fullName || data.admin.username || 'Admin';
+    }
+
+    closeAdminProfileModal();
+    showPopup('👤', 'Profile Updated', data.message || 'Admin username and profile updated successfully!', 'success');
+  } catch (err) {
+    console.error('Update profile error:', err);
+    showPopup('❌', 'Update Failed', err.message || 'Error updating profile', 'error');
+  }
+}
