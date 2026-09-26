@@ -1011,6 +1011,7 @@
             </select>
             <button class="btn btn-primary" onclick="triggerStudentExcelUpload()" title="Import new students or full student roster">📥 Import Students</button>
             <button class="btn btn-warning" onclick="triggerMarksExcelUpload()" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none;" title="Import only marks/scores mapped by Student ID">📊 Import Marks</button>
+            <button class="btn" onclick="promoteAcademicYears()" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; font-weight: 600;" title="Promote all students to next academic year (1➔2, 2➔3, 3➔4, 4➔Graduated)">🎓 Promote Academic Year</button>
             <button class="btn btn-success" onclick="openAddStudent()">+ Add Student</button>
             <input type="file" id="excelStudentFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleStudentExcelUpload(event)">
             <input type="file" id="excelMarksFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleMarksExcelUpload(event)">

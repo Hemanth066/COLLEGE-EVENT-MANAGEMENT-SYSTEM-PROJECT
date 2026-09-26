@@ -1572,3 +1572,40 @@ document.addEventListener("click", function(e) {
     }
   }
 });
+
+async function promoteAcademicYears() {
+  const confirmMsg = "Are you sure you want to promote ALL students to the next academic year?\n\n" +
+                     "• 1st Year  ➔ 2nd Year\n" +
+                     "• 2nd Year  ➔ 3rd Year\n" +
+                     "• 3rd Year  ➔ 4th Year\n" +
+                     "• 4th Year  ➔ Graduated\n\n" +
+                     "This operation updates student records in MongoDB.";
+
+  if (!confirm(confirmMsg)) return;
+
+  try {
+    showPopup('⏳', 'Promoting Students...', 'Updating academic years for all students in database...', 'info');
+
+    const res = await fetch('/api/admin/students/promote-years', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Promotion failed');
+
+    const p = data.promoted || {};
+    const summary = `Academic Year Promotion Complete! ✅\n\n` +
+                    `• 1st ➔ 2nd Year: ${p.year1to2 || 0} students\n` +
+                    `• 2nd ➔ 3rd Year: ${p.year2to3 || 0} students\n` +
+                    `• 3rd ➔ 4th Year: ${p.year3to4 || 0} students\n` +
+                    `• 4th ➔ Graduated: ${p.year4toGraduated || 0} students`;
+
+    showPopup('🎓', 'Promotion Complete', summary, 'success');
+    loadStudents();
+    loadStats();
+  } catch (err) {
+    console.error('Promotion error:', err);
+    showPopup('❌', 'Promotion Failed', err.message || 'Failed to promote academic years', 'error');
+  }
+}

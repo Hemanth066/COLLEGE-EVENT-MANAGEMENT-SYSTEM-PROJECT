@@ -311,6 +311,46 @@ router.post("/students/import-marks", async (req, res) => {
   }
 });
 
+// ── BULK ACADEMIC YEAR PROMOTION ──────────────────────────
+router.post("/students/promote-years", async (_req, res) => {
+  try {
+    const r4 = await Student.updateMany(
+      { year: { $in: ['4', '4th Year', '4th', '4th year'] } },
+      { $set: { year: 'Graduated' } }
+    );
+
+    const r3 = await Student.updateMany(
+      { year: { $in: ['3', '3rd Year', '3rd', '3rd year'] } },
+      { $set: { year: '4' } }
+    );
+
+    const r2 = await Student.updateMany(
+      { year: { $in: ['2', '2nd Year', '2nd', '2nd year'] } },
+      { $set: { year: '3' } }
+    );
+
+    const r1 = await Student.updateMany(
+      { year: { $in: ['1', '1st Year', '1st', '1st year'] } },
+      { $set: { year: '2' } }
+    );
+
+    const promotedCount = (r1.modifiedCount || 0) + (r2.modifiedCount || 0) + (r3.modifiedCount || 0) + (r4.modifiedCount || 0);
+
+    res.json({
+      message: `Academic Year Promotion Complete! ${promotedCount} total student(s) promoted. ✅`,
+      promoted: {
+        year1to2: r1.modifiedCount || 0,
+        year2to3: r2.modifiedCount || 0,
+        year3to4: r3.modifiedCount || 0,
+        year4toGraduated: r4.modifiedCount || 0
+      }
+    });
+  } catch (e) {
+    console.error('Academic year promotion error:', e);
+    res.status(500).json({ message: "Error promoting academic years: " + e.message });
+  }
+});
+
 router.post("/students", async (req, res) => {
   try {
     const s = new Student(req.body);
