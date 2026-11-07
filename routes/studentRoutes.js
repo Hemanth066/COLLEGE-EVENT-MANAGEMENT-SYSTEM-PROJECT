@@ -126,24 +126,35 @@ router.get("/search/:pin", async (req, res) => {
   }
 });
 
+// Helper to safely find student by ObjectId, studentId, pinNumber, or username
+async function resolveStudent(identifier) {
+  if (!identifier) return null;
+  const trimmed = decodeURIComponent(String(identifier)).trim();
+  if (!trimmed) return null;
+
+  if (mongoose.Types.ObjectId.isValid(trimmed)) {
+    const s = await Student.findById(trimmed);
+    if (s) return s;
+  }
+
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const pinRegex = new RegExp('^' + escaped + '$', 'i');
+  return await Student.findOne({
+    $or: [
+      { studentId: pinRegex },
+      { pinNumber: pinRegex },
+      { username: pinRegex }
+    ]
+  });
+}
+
 // Get Student Profile
 router.get("/profile/:studentId", async (req, res) => {
   try {
-    console.log('Looking for student with ID:', req.params.studentId);
-    
-    // Try to find by studentId first, then by _id
-    let student = await Student.findOne({ studentId: req.params.studentId });
-    
+    const student = await resolveStudent(req.params.studentId);
     if (!student) {
-      student = await Student.findById(req.params.studentId);
-    }
-    
-    if (!student) {
-      console.log('Student not found');
       return res.status(404).json({ message: "Student not found" });
     }
-    
-    console.log('Student found:', student.username);
     res.json(student);
   } catch (err) {
     console.error("Error fetching student profile:", err);
@@ -154,28 +165,26 @@ router.get("/profile/:studentId", async (req, res) => {
 // Update Student Profile
 router.put("/profile/:studentId", async (req, res) => {
   try {
-    console.log('Updating student with ID:', req.params.studentId);
-    
-    // Try to find and update by studentId first, then by _id
-    let student = await Student.findOneAndUpdate(
-      { studentId: req.params.studentId },
-      req.body,
-      { new: true }
-    );
-    
-    if (!student) {
-      student = await Student.findByIdAndUpdate(
-        req.params.studentId,
-        req.body,
-        { new: true }
-      );
-    }
-    
+    const student = await resolveStudent(req.params.studentId);
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
-    
-    console.log('Student updated:', student.username);
+
+    Object.assign(student, req.body);
+
+    let hasAnySemScore = false;
+    for (let s = 1; s <= 8; s++) {
+      const k = 'sem' + s + 'Score';
+      if (req.body[k] !== undefined && req.body[k] !== null && !isNaN(req.body[k])) {
+        student[k] = Number(req.body[k]);
+        hasAnySemScore = true;
+      }
+    }
+    if (hasAnySemScore) {
+      student.score = [1, 2, 3, 4, 5, 6, 7, 8].reduce((acc, s) => acc + (Number(student['sem' + s + 'Score']) || 0), 0);
+    }
+
+    await student.save();
     res.json({ message: "Profile Updated Successfully", student });
   } catch (err) {
     console.error("Error updating student profile:", err);
@@ -211,4 +220,4 @@ router.put("/change-password/:studentId", async (req, res) => {
   }
 });
 
-module.exports = router;
+module.exports = router;

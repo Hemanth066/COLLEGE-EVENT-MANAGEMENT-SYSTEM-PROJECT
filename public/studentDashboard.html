@@ -1669,6 +1669,34 @@
               <div class="stat-label">4th Sem Score</div>
             </div>
           </div>
+          <div class="stat-card" id="cardSem5" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(99,102,241,0.15);">📓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem5">0</div>
+              <div class="stat-label">5th Sem Score</div>
+            </div>
+          </div>
+          <div class="stat-card" id="cardSem6" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(20,184,166,0.15);">📓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem6">0</div>
+              <div class="stat-label">6th Sem Score</div>
+            </div>
+          </div>
+          <div class="stat-card" id="cardSem7" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(236,72,153,0.15);">📓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem7">0</div>
+              <div class="stat-label">7th Sem Score</div>
+            </div>
+          </div>
+          <div class="stat-card" id="cardSem8" style="display:none;">
+            <div class="stat-icon-wrap" style="background:rgba(139,92,246,0.15);">📓</div>
+            <div class="stat-info">
+              <div class="stat-value" id="scoreSem8">0</div>
+              <div class="stat-label">8th Sem Score</div>
+            </div>
+          </div>
           <div class="stat-card">
             <div class="stat-icon-wrap" style="background:rgba(245,158,11,0.15);">🎯</div>
             <div class="stat-info">
@@ -1719,6 +1747,22 @@
               <button id="btnSem4" onclick="switchSemScoreFilter('sem4', this)" class="sem-score-filter-btn"
                 style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
                 📕 4th Sem
+              </button>
+              <button id="btnSem5" onclick="switchSemScoreFilter('sem5', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
+                📓 5th Sem
+              </button>
+              <button id="btnSem6" onclick="switchSemScoreFilter('sem6', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
+                📓 6th Sem
+              </button>
+              <button id="btnSem7" onclick="switchSemScoreFilter('sem7', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
+                📓 7th Sem
+              </button>
+              <button id="btnSem8" onclick="switchSemScoreFilter('sem8', this)" class="sem-score-filter-btn"
+                style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s; display:none;">
+                📓 8th Sem
               </button>
               <button onclick="switchSemScoreFilter('events', this)" class="sem-score-filter-btn"
                 style="padding:7px 14px; border-radius:10px; border:1px solid var(--border); font-size:13px; font-weight:600; cursor:pointer; background:rgba(255,255,255,0.8); color:var(--muted); transition:all 0.2s;">
@@ -2251,7 +2295,7 @@
         async function refreshStudentData() {
           try {
             const id = studentData.studentId || studentData._id;
-            const res = await fetch(`/api/student/profile/${id}`);
+            const res = await fetch(`/api/student/profile/${id}?t=${Date.now()}`);
             if (res.ok) {
               const fresh = await res.json();
               studentData = fresh;
@@ -2260,8 +2304,22 @@
           } catch (e) { console.error('Could not refresh student data:', e); }
         }
 
+        async function loadActiveSemestersForStudent() {
+          if (!studentData || !studentData.branch || !studentData.year) return;
+          const yNum = (String(studentData.year).match(/\d+/) || ['1'])[0];
+          try {
+            const semRes = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(studentData.branch)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+            if (semRes.ok) {
+              const semData = await semRes.json();
+              if (Array.isArray(semData.activeSemesters) && semData.activeSemesters.length) {
+                window._studentActiveSemesters = semData.activeSemesters;
+              }
+            }
+          } catch(e) {}
+        }
+
         async function loadAllData() {
-          await Promise.all([loadEvents(), loadMyRegistrations(), loadStudentPastEvents()]);
+          await Promise.all([loadEvents(), loadMyRegistrations(), loadStudentPastEvents(), loadActiveSemestersForStudent()]);
           updateDashboard();
         }
 
@@ -2542,7 +2600,7 @@
           }
         }
 
-        function displayScores(filterType) {
+        async function displayScores(filterType) {
           if (filterType) currentSemScoreFilter = filterType;
           if (!window._ocStudentCertsList && !window._ocFetching) {
             loadOtherCertsForScores();
@@ -2551,86 +2609,73 @@
           const countEl = document.getElementById('scoreCount');
           if (!tbody) return;
 
-          const sem1 = studentData?.sem1Score || 0;
-          const sem2 = studentData?.sem2Score || 0;
-          const sem3 = studentData?.sem3Score || 0;
-          const sem4 = studentData?.sem4Score || 0;
+          // Load active semesters configured by coordinator for this branch & year
+          let activeSems = window._studentActiveSemesters || [];
+          if (!activeSems.length && studentData?.branch && studentData?.year) {
+            const yNum = (String(studentData.year).match(/\d+/) || ['1'])[0];
+            try {
+              const semRes = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(studentData.branch)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+              const semData = await semRes.json();
+              activeSems = Array.isArray(semData.activeSemesters) && semData.activeSemesters.length
+                ? semData.activeSemesters
+                : [];
+              window._studentActiveSemesters = activeSems;
+            } catch(e) {}
+          }
+          if (!activeSems.length) {
+            const yNum = (String(studentData?.year || '1').match(/\d+/) || ['1'])[0];
+            const yr = Number(yNum) || 1;
+            activeSems = [(yr * 2) - 1, yr * 2];
+          }
 
-          // Check if student belongs to 1st or 2nd year
-          const yrStr = String(studentData?.year || '').trim().toLowerCase();
-          const yrDigit = yrStr.replace(/[^0-9]/g, '');
-          const is2ndYearOrLower = !yrDigit || yrDigit === '1' || yrDigit === '2' || yrStr.includes('1st') || yrStr.includes('2nd');
-
-          // Calculate total event scores from attended event registrations
-          const attendedRegs = myRegistrations.filter(r => r.attended);
+          // Calculate total event scores from attended/scored event registrations
+          const attendedRegs = myRegistrations.filter(r => r.attended || (Number(r.score) > 0));
           const totalEventScore = attendedRegs.reduce((sum, r) => sum + (r.score || 0), 0);
 
           // Calculate total approved other certificates score
           const approvedOtherCerts = (window._ocStudentCertsList || []).filter(c => c.uploadStatus === 'approved');
           const totalOtherCertsScore = approvedOtherCerts.reduce((sum, c) => sum + (c.marksAwarded || 0), 0);
 
-          // Base academic score (sem1+sem2 for 1st/2nd year; sem3+sem4 for 3rd/4th year)
-          const baseAcademicScore = is2ndYearOrLower
-            ? ((sem1 || sem2) ? (sem1 + sem2) : (studentData?.score || 0))
-            : ((sem3 || sem4) ? (sem3 + sem4) : (studentData?.score || 0));
+          // Base academic score = sum of scores of active semesters (or general score)
+          let baseAcademicScore = 0;
+          activeSems.forEach(s => {
+            baseAcademicScore += (Number(studentData?.['sem' + s + 'Score']) || 0);
+          });
+          if (baseAcademicScore === 0 && studentData?.score) {
+            baseAcademicScore = studentData.score;
+          }
+
           const grandTotal = baseAcademicScore + totalEventScore + totalOtherCertsScore;
 
-          // Update summary stat cards
-          const elSem1 = document.getElementById('scoreSem1');
-          const elSem2 = document.getElementById('scoreSem2');
-          const elSem3 = document.getElementById('scoreSem3');
-          const elSem4 = document.getElementById('scoreSem4');
+          // Update summary stat cards for semesters 1 to 8
+          for (let s = 1; s <= 8; s++) {
+            const elSem = document.getElementById(`scoreSem${s}`);
+            const cardSem = document.getElementById(`cardSem${s}`);
+            const btnSem = document.getElementById(`btnSem${s}`);
 
-          const cardSem1 = document.getElementById('cardSem1');
-          const cardSem2 = document.getElementById('cardSem2');
-          const cardSem3 = document.getElementById('cardSem3');
-          const cardSem4 = document.getElementById('cardSem4');
+            const semBase = Number(studentData?.[`sem${s}Score`]) || 0;
+            // Also add event scores explicitly credited to this semester
+            const semEventScore = attendedRegs.filter(r => (Number(r.semester) || 1) === s).reduce((acc, r) => acc + (r.score || 0), 0);
+            const semTotal = semBase + semEventScore;
 
-          const btnSem1 = document.getElementById('btnSem1');
-          const btnSem2 = document.getElementById('btnSem2');
-          const btnSem3 = document.getElementById('btnSem3');
-          const btnSem4 = document.getElementById('btnSem4');
+            if (elSem) elSem.textContent = semTotal;
+
+            const isActive = activeSems.includes(s);
+            if (cardSem) cardSem.style.display = isActive ? 'flex' : 'none';
+            if (btnSem) btnSem.style.display = isActive ? 'inline-block' : 'none';
+          }
+
+          // Reset filter if currently active filter was hidden
+          if (currentSemScoreFilter.startsWith('sem')) {
+            const filterSemNum = Number(currentSemScoreFilter.replace('sem', ''));
+            if (!activeSems.includes(filterSemNum)) {
+              currentSemScoreFilter = 'all';
+            }
+          }
 
           const elEvents = document.getElementById('scoreEvents');
           const elOtherCerts = document.getElementById('scoreOtherCerts');
           const elGrand = document.getElementById('scoreGrandTotal');
-
-          if (elSem1) elSem1.textContent = sem1;
-          if (elSem2) elSem2.textContent = sem2;
-          if (elSem3) elSem3.textContent = sem3;
-          if (elSem4) elSem4.textContent = sem4;
-
-          if (is2ndYearOrLower) {
-            // 1st / 2nd Year student: Show 1st & 2nd sem; Hide 3rd & 4th sem
-            if (cardSem1) cardSem1.style.display = 'flex';
-            if (cardSem2) cardSem2.style.display = 'flex';
-            if (cardSem3) cardSem3.style.display = 'none';
-            if (cardSem4) cardSem4.style.display = 'none';
-
-            if (btnSem1) btnSem1.style.display = 'inline-block';
-            if (btnSem2) btnSem2.style.display = 'inline-block';
-            if (btnSem3) btnSem3.style.display = 'none';
-            if (btnSem4) btnSem4.style.display = 'none';
-
-            if (currentSemScoreFilter === 'sem3' || currentSemScoreFilter === 'sem4') {
-              currentSemScoreFilter = 'all';
-            }
-          } else {
-            // 3rd / 4th Year student: Show 3rd & 4th sem; Hide 1st & 2nd sem
-            if (cardSem1) cardSem1.style.display = 'none';
-            if (cardSem2) cardSem2.style.display = 'none';
-            if (cardSem3) cardSem3.style.display = 'flex';
-            if (cardSem4) cardSem4.style.display = 'flex';
-
-            if (btnSem1) btnSem1.style.display = 'none';
-            if (btnSem2) btnSem2.style.display = 'none';
-            if (btnSem3) btnSem3.style.display = 'inline-block';
-            if (btnSem4) btnSem4.style.display = 'inline-block';
-
-            if (currentSemScoreFilter === 'sem1' || currentSemScoreFilter === 'sem2') {
-              currentSemScoreFilter = 'all';
-            }
-          }
 
           if (elEvents) elEvents.textContent = totalEventScore;
           if (elOtherCerts) elOtherCerts.textContent = totalOtherCertsScore;
@@ -2641,74 +2686,32 @@
           let rowIndex = 1;
           let runningSum = 0;
 
-          if (is2ndYearOrLower) {
-            if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem1') {
-              if (sem1 > 0 || currentSemScoreFilter === 'sem1') {
-                runningSum += sem1;
+          // 1. Academic records for active semesters
+          activeSems.forEach(s => {
+            const semVal = Number(studentData?.[`sem${s}Score`]) || 0;
+            if (currentSemScoreFilter === 'all' || currentSemScoreFilter === `sem${s}`) {
+              if (semVal > 0 || currentSemScoreFilter === `sem${s}`) {
+                runningSum += semVal;
                 rows.push(`
                   <tr style="background:rgba(30,136,229,0.04);">
                     <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
-                    <td><strong style="color:var(--blue-dark);">📘 1st Semester Base Academic Score</strong></td>
+                    <td><strong style="color:var(--blue-dark);">📘 Semester ${s} (Sem ${s}) Academic Base Score</strong></td>
                     <td>Academic Record</td>
                     <td>Curriculum</td>
-                    <td><strong style="color:#1e88e5;font-size:16px;">${sem1}</strong></td>
+                    <td><strong style="color:#1e88e5;font-size:16px;">${semVal}</strong></td>
                     <td><strong style="color:var(--blue);">${runningSum}</strong></td>
                   </tr>
                 `);
               }
             }
+          });
 
-            if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem2') {
-              if (sem2 > 0 || currentSemScoreFilter === 'sem2') {
-                runningSum += sem2;
-                rows.push(`
-                  <tr style="background:rgba(34,197,94,0.04);">
-                    <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
-                    <td><strong style="color:#16a34a;">📗 2nd Semester Base Academic Score</strong></td>
-                    <td>Academic Record</td>
-                    <td>Curriculum</td>
-                    <td><strong style="color:#16a34a;font-size:16px;">${sem2}</strong></td>
-                    <td><strong style="color:var(--blue);">${runningSum}</strong></td>
-                  </tr>
-                `);
-              }
-            }
-          } else {
-            if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem3') {
-              if (sem3 > 0 || currentSemScoreFilter === 'sem3') {
-                runningSum += sem3;
-                rows.push(`
-                  <tr style="background:rgba(245,158,11,0.04);">
-                    <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
-                    <td><strong style="color:#d97706;">📙 3rd Semester Base Academic Score</strong></td>
-                    <td>Academic Record</td>
-                    <td>Curriculum</td>
-                    <td><strong style="color:#d97706;font-size:16px;">${sem3}</strong></td>
-                    <td><strong style="color:var(--blue);">${runningSum}</strong></td>
-                  </tr>
-                `);
-              }
-            }
+          // 2. Event scores (filtered by selected semester if a sem filter is active)
+          attendedRegs.forEach(reg => {
+            const regSem = Number(reg.semester) || 1;
+            const matchesFilter = (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'events' || currentSemScoreFilter === `sem${regSem}`);
 
-            if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'sem4') {
-              if (sem4 > 0 || currentSemScoreFilter === 'sem4') {
-                runningSum += sem4;
-                rows.push(`
-                  <tr style="background:rgba(239,68,68,0.04);">
-                    <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
-                    <td><strong style="color:#dc2626;">📕 4th Semester Base Academic Score</strong></td>
-                    <td>Academic Record</td>
-                    <td>Curriculum</td>
-                    <td><strong style="color:#dc2626;font-size:16px;">${sem4}</strong></td>
-                    <td><strong style="color:var(--blue);">${runningSum}</strong></td>
-                  </tr>
-                `);
-              }
-            }
-          }
-
-          if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'events') {
-            attendedRegs.forEach(reg => {
+            if (matchesFilter) {
               const event = getEventFromReg(reg);
               const title = event ? event.title : `Past Event (${getEventId(reg).slice(-6)})`;
               const date = event ? (event.date || '—') : '—';
@@ -2718,15 +2721,20 @@
               rows.push(`
                 <tr>
                   <td style="font-weight:600;color:var(--muted);">${rowIndex++}</td>
-                  <td><strong style="color:var(--text);">🎯 ${title}</strong></td>
+                  <td>
+                    <strong style="color:var(--text);">🎯 ${title}</strong>
+                    <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;background:rgba(16,185,129,0.12);color:#059669;border:1px solid rgba(16,185,129,0.3);">
+                      Credited to Sem ${regSem}
+                    </span>
+                  </td>
                   <td>${date}</td>
                   <td>${venue}</td>
                   <td><strong style="color:var(--gold-dark);font-size:16px;">+${score}</strong></td>
                   <td><strong style="color:var(--blue);">${runningSum}</strong></td>
                 </tr>
               `);
-            });
-          }
+            }
+          });
 
           if (currentSemScoreFilter === 'all' || currentSemScoreFilter === 'otherCerts') {
             approvedOtherCerts.forEach(c => {
@@ -2962,7 +2970,8 @@
           document.getElementById('topbarTitle').textContent = tabTitles[name] || name;
           if (name === 'events' || name === 'home') loadAllData();
           else if (name === 'registrations') Promise.all([loadMyRegistrations(), loadStudentPastEvents()]).then(() => displayRegistrations());
-          else if (name === 'scores') loadMyRegistrations().then(() => displayScores());
+          else if (name === 'scores') Promise.all([refreshStudentData(), loadMyRegistrations()]).then(() => displayScores());
+          else if (name === 'home') Promise.all([refreshStudentData(), loadAllData()]);
           else if (name === 'analytics') loadMyRegistrations().then(() => displayAnalytics());
           else if (name === 'certificates') loadMyRegistrations().then(() => displayCertificates());
           else if (name === 'notifications') displayNotifications();

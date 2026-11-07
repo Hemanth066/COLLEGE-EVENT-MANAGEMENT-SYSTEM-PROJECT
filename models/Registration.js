@@ -26,6 +26,10 @@ const registrationSchema = new mongoose.Schema({
     type: Number,
     default: 1
   },
+  semester: {
+    type: Number,
+    default: 1
+  },
   attended: {
     type: Boolean,
     default: false

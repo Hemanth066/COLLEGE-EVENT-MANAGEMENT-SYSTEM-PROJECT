@@ -63,6 +63,7 @@ function showTab(tab, element) {
   if (tab === 'faculty')       loadFaculty();
   if (tab === 'students')      loadStudents();
   if (tab === 'branches')      loadBranches();
+  if (tab === 'semesters')     loadSemesterConfig();
   if (tab === 'events')        loadEvents();
   if (tab === 'registrations') loadRegistrations();
   if (tab === 'hods')          loadHods();
@@ -1383,6 +1384,10 @@ async function handleMarksExcelUpload(e) {
         const sem2Raw = getVal('2nd sem', '2ndsem', 'sem2', 'sem 2', '2nd semester', 'sem_2', 'sem-2', 'sem 2 score', 'sem 2 marks');
         const sem3Raw = getVal('3rd sem', '3rdsem', 'sem3', 'sem 3', '3rd semester', 'sem_3', 'sem-3', 'sem 3 score', 'sem 3 marks');
         const sem4Raw = getVal('4th sem', '4thsem', 'sem4', 'sem 4', '4th semester', 'sem_4', 'sem-4', 'sem 4 score', 'sem 4 marks');
+        const sem5Raw = getVal('5th sem', '5thsem', 'sem5', 'sem 5', '5th semester', 'sem_5', 'sem-5', 'sem 5 score', 'sem 5 marks');
+        const sem6Raw = getVal('6th sem', '6thsem', 'sem6', 'sem 6', '6th semester', 'sem_6', 'sem-6', 'sem 6 score', 'sem 6 marks');
+        const sem7Raw = getVal('7th sem', '7thsem', 'sem7', 'sem 7', '7th semester', 'sem_7', 'sem-7', 'sem 7 score', 'sem 7 marks');
+        const sem8Raw = getVal('8th sem', '8thsem', 'sem8', 'sem 8', '8th semester', 'sem_8', 'sem-8', 'sem 8 score', 'sem 8 marks');
         const scoreRaw = getVal('score', 'total score', 'points', 'total points', 'marks', 'total marks', 'base score', 'grade points', 'total');
 
         const item = { studentId: sId };
@@ -1390,6 +1395,10 @@ async function handleMarksExcelUpload(e) {
         if (sem2Raw !== '' && !isNaN(Number(sem2Raw))) item.sem2Score = Number(sem2Raw);
         if (sem3Raw !== '' && !isNaN(Number(sem3Raw))) item.sem3Score = Number(sem3Raw);
         if (sem4Raw !== '' && !isNaN(Number(sem4Raw))) item.sem4Score = Number(sem4Raw);
+        if (sem5Raw !== '' && !isNaN(Number(sem5Raw))) item.sem5Score = Number(sem5Raw);
+        if (sem6Raw !== '' && !isNaN(Number(sem6Raw))) item.sem6Score = Number(sem6Raw);
+        if (sem7Raw !== '' && !isNaN(Number(sem7Raw))) item.sem7Score = Number(sem7Raw);
+        if (sem8Raw !== '' && !isNaN(Number(sem8Raw))) item.sem8Score = Number(sem8Raw);
         if (scoreRaw !== '' && !isNaN(Number(scoreRaw))) item.score = Number(scoreRaw);
 
         if (Object.keys(item).length <= 1) return null;
@@ -1506,6 +1515,10 @@ async function handleStudentExcelUpload(e) {
           sem2Score: sem2Val,
           sem3Score: sem3Val,
           sem4Score: sem4Val,
+          sem5Score: Number(getVal('5th sem', '5thsem', 'sem5', 'sem 5')) || 0,
+          sem6Score: Number(getVal('6th sem', '6thsem', 'sem6', 'sem 6')) || 0,
+          sem7Score: Number(getVal('7th sem', '7thsem', 'sem7', 'sem 7')) || 0,
+          sem8Score: Number(getVal('8th sem', '8thsem', 'sem8', 'sem 8')) || 0,
           score: scoreVal
         };
       }).filter(Boolean);
@@ -1694,16 +1707,12 @@ function closeAdminPasswordModal() {
 }
 
 async function submitAdminChangePassword() {
-  const curPass = document.getElementById('adminCurrentPassInput').value.trim();
-  const newPass = document.getElementById('adminNewPassInput').value.trim();
-  const confPass = document.getElementById('adminConfirmPassInput').value.trim();
+  const curPass = document.getElementById('adminCurrentPassInput').value;
+  const newPass = document.getElementById('adminNewPassInput').value;
+  const confPass = document.getElementById('adminConfirmPassInput').value;
 
-  if (!curPass) {
-    showPopup('⚠️', 'Missing Field', 'Please enter your current password.', 'error');
-    return;
-  }
-  if (!newPass) {
-    showPopup('⚠️', 'Missing Field', 'Please enter a new password.', 'error');
+  if (!curPass || !newPass || !confPass) {
+    showPopup('⚠️', 'Missing Fields', 'Please fill in all password fields.', 'error');
     return;
   }
   if (newPass.length < 6) {
@@ -1716,24 +1725,34 @@ async function submitAdminChangePassword() {
   }
 
   const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
-  if (!adminData._id) {
-    showPopup('❌', 'Error', 'Admin session data missing. Please log in again.', 'error');
-    return;
-  }
+  const adminId = adminData._id || adminData.id || '';
+  const currentUsername = adminData.username || '';
 
   try {
-    const res = await fetch(`/api/admin/change-password/${adminData._id}`, {
+    const endpoint = adminId ? `/api/admin/change-password/${adminId}` : '/api/admin/change-password';
+    const res = await fetch(endpoint, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ currentPassword: curPass, newPassword: newPass })
+      body: JSON.stringify({
+        adminId,
+        currentUsername,
+        currentPassword: curPass,
+        newPassword: newPass
+      })
     });
-    const contentType = res.headers.get('content-type') || '';
-    let data = {};
-    if (contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      throw new Error(`Server route not active in memory (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('Non-JSON response from server:', text);
+      if (text.includes('<!DOCTYPE') || res.status === 404) {
+        throw new Error(`Server route not active (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+      }
+      throw new Error(`Server error (HTTP ${res.status}): ${text.slice(0, 150)}`);
     }
+
     if (!res.ok) throw new Error(data.message || 'Failed to change password');
 
     closeAdminPasswordModal();
@@ -1753,17 +1772,20 @@ async function openAdminProfileModal() {
   document.getElementById('adminFullNameInput').value = adminData.fullName || '';
   document.getElementById('adminEmailInput').value = adminData.email || '';
 
-  if (adminData._id) {
-    try {
-      const res = await fetch(`/api/admin/profile/${adminData._id}`);
-      const contentType = res.headers.get('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const freshData = await res.json();
-        document.getElementById('adminUsernameInput').value = freshData.username || '';
-        document.getElementById('adminFullNameInput').value = freshData.fullName || '';
-        document.getElementById('adminEmailInput').value = freshData.email || '';
-      }
-    } catch(e) {}
+  const targetId = adminData._id || adminData.id || '';
+  const queryParam = targetId ? `adminId=${encodeURIComponent(targetId)}` : `currentUsername=${encodeURIComponent(adminData.username || '')}`;
+
+  try {
+    const res = await fetch(`/api/admin/profile?${queryParam}`);
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
+      const freshData = await res.json();
+      if (freshData.username) document.getElementById('adminUsernameInput').value = freshData.username;
+      if (freshData.fullName) document.getElementById('adminFullNameInput').value = freshData.fullName;
+      if (freshData.email !== undefined) document.getElementById('adminEmailInput').value = freshData.email || '';
+    }
+  } catch(e) {
+    console.warn('Could not fetch fresh admin profile:', e);
   }
 
   modal.style.display = 'flex';
@@ -1785,32 +1807,44 @@ async function submitAdminProfileUpdate() {
   }
 
   const adminData = JSON.parse(localStorage.getItem('adminData') || '{}');
-  if (!adminData._id) {
-    showPopup('❌', 'Error', 'Admin session data missing. Please log in again.', 'error');
-    return;
-  }
+  const adminId = adminData._id || adminData.id || '';
+  const currentUsername = adminData.username || '';
 
   try {
-    const res = await fetch(`/api/admin/profile/${adminData._id}`, {
+    const endpoint = adminId ? `/api/admin/profile/${adminId}` : '/api/admin/profile';
+    const res = await fetch(endpoint, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, fullName, email })
+      body: JSON.stringify({
+        adminId,
+        currentUsername,
+        username,
+        fullName,
+        email
+      })
     });
-    const contentType = res.headers.get('content-type') || '';
-    let data = {};
-    if (contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      throw new Error(`Server route not active in memory (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error('Non-JSON response from server:', text);
+      if (text.includes('<!DOCTYPE') || res.status === 404) {
+        throw new Error(`Server route not active (HTTP ${res.status}). Please restart 'node server.js' in your terminal!`);
+      }
+      throw new Error(`Server error (HTTP ${res.status}): ${text.slice(0, 150)}`);
     }
+
     if (!res.ok) throw new Error(data.message || 'Failed to update profile');
 
-    localStorage.setItem('adminData', JSON.stringify(data.admin));
-    currentAdmin = data.admin;
+    const updatedAdmin = Object.assign({}, adminData, data.admin);
+    localStorage.setItem('adminData', JSON.stringify(updatedAdmin));
+    currentAdmin = updatedAdmin;
 
     const adminNameEl = document.getElementById('adminName');
     if (adminNameEl) {
-      adminNameEl.textContent = data.admin.fullName || data.admin.username || 'Admin';
+      adminNameEl.textContent = updatedAdmin.fullName || updatedAdmin.username || 'Admin';
     }
 
     closeAdminProfileModal();
@@ -1818,5 +1852,202 @@ async function submitAdminProfileUpdate() {
   } catch (err) {
     console.error('Update profile error:', err);
     showPopup('❌', 'Update Failed', err.message || 'Error updating profile', 'error');
+  }
+}
+
+// ── MANAGE SEMESTERS TAB LOGIC ────────────────────────
+async function loadSemesterConfig() {
+  try {
+    const r = await fetch('/api/admin/branches');
+    if (r.ok) {
+      allBranches = await r.json();
+      renderSemesterTable(allBranches);
+    }
+  } catch (e) {
+    console.error('Error loading branch semester configs:', e);
+  }
+}
+
+function filterSemesterBranches() {
+  const q = (document.getElementById('filterSemBranchName')?.value || '').toLowerCase().trim();
+  const filtered = allBranches.filter(b =>
+    (b.name || '').toLowerCase().includes(q) ||
+    (b.code || '').toLowerCase().includes(q) ||
+    (b.description || '').toLowerCase().includes(q)
+  );
+  renderSemesterTable(filtered);
+}
+
+function renderSemesterTable(list) {
+  const tbody = document.getElementById('semestersBody');
+  const countEl = document.getElementById('semesterBranchCount');
+  if (countEl) countEl.textContent = `Showing ${list.length} of ${allBranches.length} branch curriculum configurations`;
+  if (!tbody) return;
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No branches match the search</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = list.map((b, i) => {
+    const active = Array.isArray(b.activeSemesters) && b.activeSemesters.length
+      ? b.activeSemesters.sort((x, y) => x - y)
+      : [1, 2, 3, 4, 5, 6, 7, 8];
+    const totalCount = b.totalSemesters || active.length;
+
+    let programLabel = '4 Years (Engineering)';
+    if (totalCount === 4) programLabel = '2 Years (MBA / M.Tech)';
+    else if (totalCount === 6) programLabel = '3 Years (MCA / Diploma)';
+    else if (totalCount < 4) programLabel = `${totalCount} Semesters`;
+    else if (totalCount === 8) programLabel = '4 Years (B.Tech / Engg)';
+
+    const badgesHtml = [1, 2, 3, 4, 5, 6, 7, 8].map(s => {
+      const isActive = active.includes(s);
+      if (isActive) {
+        return `<span style="display:inline-block;padding:2px 8px;margin:2px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(30,136,229,0.14);color:#0F4C81;border:1px solid rgba(30,136,229,0.3);">Sem ${s}</span>`;
+      } else {
+        return `<span style="display:inline-block;padding:2px 8px;margin:2px;border-radius:6px;font-size:11px;font-weight:500;background:#f1f5f9;color:#94a3b8;border:1px dashed #cbd5e1;">Sem ${s}</span>`;
+      }
+    }).join('');
+
+    return `
+      <tr>
+        <td>${i + 1}</td>
+        <td>
+          <strong style="color:var(--blue-dark);font-size:15px;">🌿 ${b.name}</strong>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px;">${b.description || 'Department'}</div>
+        </td>
+        <td>
+          <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">
+            ${programLabel}
+          </span>
+        </td>
+        <td style="max-width:320px;">${badgesHtml}</td>
+        <td>
+          <strong style="font-size:14px;color:var(--text);">${totalCount}</strong>
+          <span style="font-size:12px;color:var(--muted);">/ 8 Sems</span>
+        </td>
+        <td>
+          <button class="btn btn-primary btn-sm" onclick="openConfigureSemesters('${b._id}')" style="display:inline-flex;align-items:center;gap:6px;">
+            ⚙️ Configure
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openConfigureSemesters(branchId) {
+  const b = allBranches.find(x => x._id === branchId);
+  if (!b) return;
+
+  document.getElementById('mSemBranchId').value = b._id;
+  document.getElementById('mSemBranchTitle').textContent = `${b.name} (${b.description || 'Department'})`;
+
+  const active = Array.isArray(b.activeSemesters) && b.activeSemesters.length
+    ? b.activeSemesters
+    : [1, 2, 3, 4, 5, 6, 7, 8];
+
+  for (let s = 1; s <= 8; s++) {
+    const chk = document.getElementById(`semCheck${s}`);
+    if (chk) chk.checked = active.includes(s);
+  }
+
+  updateSemesterCheckCount();
+  document.getElementById('adminSemesterModal').style.display = 'flex';
+}
+
+function applySemesterPreset(count) {
+  for (let s = 1; s <= 8; s++) {
+    const chk = document.getElementById(`semCheck${s}`);
+    if (chk) chk.checked = s <= count;
+  }
+  updateSemesterCheckCount();
+}
+
+function updateSemesterCheckCount() {
+  let count = 0;
+  for (let s = 1; s <= 8; s++) {
+    const chk = document.getElementById(`semCheck${s}`);
+    if (chk && chk.checked) count++;
+  }
+  const countEl = document.getElementById('mSemSelectedCount');
+  if (countEl) countEl.textContent = `${count} Semesters`;
+
+  const progEl = document.getElementById('mSemProgramType');
+  if (progEl) {
+    if (count === 8) progEl.textContent = '4-Year Engineering Degree';
+    else if (count === 6) progEl.textContent = '3-Year Program (MCA / Diploma)';
+    else if (count === 4) progEl.textContent = '2-Year Program (MBA / M.Tech)';
+    else progEl.textContent = `${count} Active Semesters`;
+  }
+}
+
+function closeAdminSemesterModal() {
+  const modal = document.getElementById('adminSemesterModal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function submitBranchSemesterConfig() {
+  const branchId = document.getElementById('mSemBranchId').value;
+  if (!branchId) return;
+
+  const activeSemesters = [];
+  for (let s = 1; s <= 8; s++) {
+    const chk = document.getElementById(`semCheck${s}`);
+    if (chk && chk.checked) activeSemesters.push(s);
+  }
+
+  if (!activeSemesters.length) {
+    alert('Please select at least one active semester.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/branches/${branchId}/semesters`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        totalSemesters: activeSemesters.length,
+        activeSemesters
+      })
+    });
+    const d = await res.json();
+    if (res.ok) {
+      closeAdminSemesterModal();
+      showPopup('✅', 'Semesters Updated', d.message || 'Branch semester configuration saved successfully!');
+      loadSemesterConfig();
+      loadBranches();
+    } else {
+      alert(d.message || 'Error updating semesters');
+    }
+  } catch (err) {
+    console.error('Error saving branch semesters:', err);
+    alert('Network error while saving branch semesters');
+  }
+}
+
+async function bulkSetAllBranchesTo8Semesters() {
+  if (!confirm('Are you sure you want to configure ALL branches to standard 8 Semesters (4-Year Program)?')) return;
+
+  try {
+    const res = await fetch('/api/admin/branches/bulk-set-semesters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        totalSemesters: 8,
+        activeSemesters: [1, 2, 3, 4, 5, 6, 7, 8]
+      })
+    });
+    const d = await res.json();
+    if (res.ok) {
+      showPopup('⚡', 'Bulk Update Complete', d.message || 'All branches set to 8 semesters successfully!');
+      loadSemesterConfig();
+      loadBranches();
+    } else {
+      alert(d.message || 'Error updating all branches');
+    }
+  } catch (err) {
+    console.error('Error bulk updating semesters:', err);
+    alert('Network error while updating all branches');
   }
 }

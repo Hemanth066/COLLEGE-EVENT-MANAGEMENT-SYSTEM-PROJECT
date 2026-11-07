@@ -54,10 +54,13 @@ router.post('/manual', async (req, res) => {
     if (registration) {
       // Update existing
       if (attended !== undefined) registration.attended = attended;
+      else if (score !== undefined && Number(score) > 0) registration.attended = true;
       if (score    !== undefined) registration.score    = Number(score);
+      if (req.body.semester !== undefined) registration.semester = Number(req.body.semester);
       await registration.save();
     } else {
       // Create new
+      const numScore = score !== undefined ? Number(score) : 0;
       registration = await Registration.create({
         studentName:  student.fullName || student.username,
         pinNumber:    student.pinNumber || student.studentId,
@@ -65,8 +68,9 @@ router.post('/manual', async (req, res) => {
         year:         student.year     || '',
         eventId,
         eventVersion: event.version || 1,
-        attended:     attended !== undefined ? attended : true,
-        score:        score    !== undefined ? Number(score) : 0
+        semester:     Number(req.body.semester) || 1,
+        attended:     attended !== undefined ? attended : (numScore > 0),
+        score:        numScore
       });
     }
 
@@ -84,12 +88,16 @@ router.post('/manual', async (req, res) => {
 
     // ── Sync event score back to Student document (eventScore only, base score untouched) ──
     try {
-      const allRegs = await Registration.find({ pinNumber: registration.pinNumber });
-      const eventScore = allRegs.reduce((sum, r) => sum + (r.score || 0), 0);
-      await Student.findOneAndUpdate(
-        { $or: [{ pinNumber: registration.pinNumber }, { studentId: registration.pinNumber }] },
-        { eventScore }
-      );
+      const pinStr = String(registration.pinNumber || '').trim();
+      if (pinStr) {
+        const pinRegex = new RegExp(`^${pinStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+        const allRegs = await Registration.find({ pinNumber: pinRegex });
+        const eventScore = allRegs.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+        await Student.findOneAndUpdate(
+          { $or: [{ pinNumber: pinRegex }, { studentId: pinRegex }, { username: pinRegex }] },
+          { eventScore }
+        );
+      }
     } catch (syncErr) {
       console.log('Score sync to student failed:', syncErr.message);
     }
@@ -104,7 +112,7 @@ router.post('/manual', async (req, res) => {
 // Register for Event
 router.post('/', async (req, res) => {
   try {
-    const { studentName, pinNumber, branch, year, eventId } = req.body;
+    const { studentName, pinNumber, branch, year, eventId, semester } = req.body;
     
     console.log('Registration request:', { studentName, pinNumber, branch, year, eventId });
     
@@ -150,6 +158,7 @@ router.post('/', async (req, res) => {
       year,
       eventId,
       eventVersion: event.version || 1,
+      semester: Number(semester) || 1,
       attended: false,
       score: 0
     });
@@ -210,9 +219,11 @@ router.get('/all', async (req, res) => {
 // Get Registrations by Student PIN
 router.get('/student/:pinNumber', async (req, res) => {
   try {
-    console.log('Fetching registrations for PIN:', req.params.pinNumber);
+    const rawPin = String(req.params.pinNumber || '').trim();
+    const pinRegex = new RegExp(`^${rawPin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    console.log('Fetching registrations for PIN:', rawPin);
     const registrations = await Registration.find({ 
-      pinNumber: req.params.pinNumber 
+      $or: [{ pinNumber: pinRegex }, { pinNumber: rawPin }]
     });
     console.log('Found registrations:', registrations.length);
     res.json(registrations);
@@ -226,10 +237,11 @@ router.get('/student/:pinNumber', async (req, res) => {
 // (includes past events so scores/attendance history is never lost)
 router.get('/student/:pinNumber/with-events', async (req, res) => {
   try {
-    const pin = req.params.pinNumber;
-    // Match by pinNumber OR studentId field in case they differ
+    const pin = String(req.params.pinNumber || '').trim();
+    const pinRegex = new RegExp(`^${pin.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+    // Match by pinNumber OR studentId field in case they differ (case-insensitive)
     const registrations = await Registration.find({
-      $or: [{ pinNumber: pin }, { studentId: pin }]
+      $or: [{ pinNumber: pinRegex }, { studentId: pinRegex }, { pinNumber: pin }]
     }).populate('eventId');
 
     const result = registrations.map(reg => reg.toObject());
@@ -326,21 +338,30 @@ router.put('/attendance-bulk', async (req, res) => {
 // Update Score
 router.put('/score/:id', async (req, res) => {
   try {
-    const { score } = req.body;
+    const numScore = Number(req.body.score) || 0;
+    const updateFields = { score: numScore };
+    if (numScore > 0) {
+      updateFields.attended = true;
+    }
     const registration = await Registration.findByIdAndUpdate(
       req.params.id,
-      { score },
+      updateFields,
       { new: true }
     );
+    if (!registration) return res.status(404).json({ message: 'Registration not found' });
 
     // ── Sync event score back to Student document (eventScore only, base score untouched) ──
     try {
-      const allRegs = await Registration.find({ pinNumber: registration.pinNumber });
-      const eventScore = allRegs.reduce((sum, r) => sum + (r.score || 0), 0);
-      await Student.findOneAndUpdate(
-        { $or: [{ pinNumber: registration.pinNumber }, { studentId: registration.pinNumber }] },
-        { eventScore }
-      );
+      const pinStr = String(registration.pinNumber || '').trim();
+      if (pinStr) {
+        const pinRegex = new RegExp(`^${pinStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+        const allRegs = await Registration.find({ pinNumber: pinRegex });
+        const eventScore = allRegs.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+        await Student.findOneAndUpdate(
+          { $or: [{ pinNumber: pinRegex }, { studentId: pinRegex }, { username: pinRegex }] },
+          { eventScore }
+        );
+      }
     } catch (syncErr) {
       console.log('Score sync to student failed:', syncErr.message);
     }

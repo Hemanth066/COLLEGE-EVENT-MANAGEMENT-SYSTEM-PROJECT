@@ -214,6 +214,7 @@ function renderStudents(list) {
           data-sid="${sid}"
           data-name="${encodeURIComponent(s.fullName || s.username || pin)}"
           data-pin="${encodeURIComponent(pin)}"
+          data-branch="${encodeURIComponent(s.branch || '')}"
           data-year="${encodeURIComponent(s.year || '')}"
           data-score="${s.score || 0}"
           data-eventscore="${s.eventScore || 0}"
@@ -221,6 +222,10 @@ function renderStudents(list) {
           data-sem2="${s.sem2Score || 0}"
           data-sem3="${s.sem3Score || 0}"
           data-sem4="${s.sem4Score || 0}"
+          data-sem5="${s.sem5Score || 0}"
+          data-sem6="${s.sem6Score || 0}"
+          data-sem7="${s.sem7Score || 0}"
+          data-sem8="${s.sem8Score || 0}"
           title="Edit student score"
           style="padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;">
           ✏️ Edit Score
@@ -239,17 +244,25 @@ function renderStudents(list) {
         let year = this.dataset.year || '';
         try { year = decodeURIComponent(year); } catch(e){}
 
+        let branch = this.dataset.branch || '';
+        try { branch = decodeURIComponent(branch); } catch(e){}
+
         const data = {
           sid: this.dataset.sid,
           name: name,
           pin: pin,
+          branch: branch,
           year: year,
           score: Number(this.dataset.score) || 0,
           eventScore: Number(this.dataset.eventscore) || 0,
           sem1Score: Number(this.dataset.sem1) || 0,
           sem2Score: Number(this.dataset.sem2) || 0,
           sem3Score: Number(this.dataset.sem3) || 0,
-          sem4Score: Number(this.dataset.sem4) || 0
+          sem4Score: Number(this.dataset.sem4) || 0,
+          sem5Score: Number(this.dataset.sem5) || 0,
+          sem6Score: Number(this.dataset.sem6) || 0,
+          sem7Score: Number(this.dataset.sem7) || 0,
+          sem8Score: Number(this.dataset.sem8) || 0
         };
         if (typeof openEditScoreModal === 'function') {
           openEditScoreModal(data);
@@ -264,7 +277,7 @@ function renderStudents(list) {
 }
 
 // Track currently displayed (filtered) students for download
-let displayedStudents = [];
+// displayedStudents declared at top
 
 function filterStudentsList() {
   const q = (document.getElementById('studentSearch')?.value || '').toLowerCase().trim();
@@ -317,7 +330,7 @@ function downloadStudentsCSV() {
   const maxScore = document.getElementById('scoreFilter')?.value;
   const threshold = maxScore !== '' ? Number(maxScore) : null;
 
-  const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
+  const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', 'Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Event Score', 'Total Score'];
   const rows = source.map((s, i) => {
     const totalScore = (s.score || 0) + (s.eventScore || 0);
     return [
@@ -326,6 +339,11 @@ function downloadStudentsCSV() {
       s.studentId || s.pinNumber || '',
       s.branch || '',
       s.year || '',
+      s.sem1Score || 0,
+      s.sem2Score || 0,
+      s.sem3Score || 0,
+      s.sem4Score || 0,
+      s.eventScore || 0,
       totalScore
     ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
   });

@@ -202,7 +202,7 @@ router.get("/students/:hodId", async (req, res) => {
 router.put("/student-score/:studentId", async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { score, sem1Score, sem2Score, sem3Score, sem4Score } = req.body;
+    const { score } = req.body;
 
     const trimmed = decodeURIComponent(studentId).trim();
     let student = null;
@@ -211,7 +211,7 @@ router.put("/student-score/:studentId", async (req, res) => {
       student = await Student.findById(trimmed);
     }
     if (!student) {
-      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
       student = await Student.findOne({
         $or: [
           { pinNumber: pinRegex },
@@ -225,24 +225,19 @@ router.put("/student-score/:studentId", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    if (score !== undefined && score !== null && !isNaN(score)) {
-      student.score = Number(score);
-    }
-    if (sem1Score !== undefined && sem1Score !== null && !isNaN(sem1Score)) {
-      student.sem1Score = Number(sem1Score);
-    }
-    if (sem2Score !== undefined && sem2Score !== null && !isNaN(sem2Score)) {
-      student.sem2Score = Number(sem2Score);
-    }
-    if (sem3Score !== undefined && sem3Score !== null && !isNaN(sem3Score)) {
-      student.sem3Score = Number(sem3Score);
-    }
-    if (sem4Score !== undefined && sem4Score !== null && !isNaN(sem4Score)) {
-      student.sem4Score = Number(sem4Score);
+    let hasAnySemScore = false;
+    for (let s = 1; s <= 8; s++) {
+      const k = `sem${s}Score`;
+      if (req.body[k] !== undefined && req.body[k] !== null && !isNaN(req.body[k])) {
+        student[k] = Number(req.body[k]);
+        hasAnySemScore = true;
+      }
     }
 
-    if (sem1Score !== undefined || sem2Score !== undefined || sem3Score !== undefined || sem4Score !== undefined) {
-      student.score = (Number(student.sem1Score) || 0) + (Number(student.sem2Score) || 0) + (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
+    if (hasAnySemScore) {
+      student.score = [1, 2, 3, 4, 5, 6, 7, 8].reduce((acc, s) => acc + (Number(student[`sem${s}Score`]) || 0), 0);
+    } else if (score !== undefined && score !== null && !isNaN(score)) {
+      student.score = Number(score);
     }
 
     await student.save();
@@ -258,17 +253,20 @@ router.put("/student-score/:studentId", async (req, res) => {
         sem2Score: student.sem2Score,
         sem3Score: student.sem3Score,
         sem4Score: student.sem4Score,
+        sem5Score: student.sem5Score,
+        sem6Score: student.sem6Score,
+        sem7Score: student.sem7Score,
+        sem8Score: student.sem8Score,
         eventScore: student.eventScore,
         totalScore: (student.score || 0) + (student.eventScore || 0)
       }
     });
   } catch (err) {
     console.error("Error updating student score:", err);
-    res.status(500).json({ message: "Server error: " + err.message });
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// ── DEPARTMENT EVENTS ─────────────────────────────────
 router.get("/events/:hodId", async (req, res) => {
   try {
     const hod = await Hod.findById(req.params.hodId);

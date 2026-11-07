@@ -34,6 +34,9 @@ app.use(express.static("public", {
     }
     if (path.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
     }
   }
 }));
@@ -73,6 +76,14 @@ const pastEventRoutes = require("./routes/pastEventRoutes");
 console.log("Routes imported successfully");
 
 // Use Routes
+// Ensure all API endpoints are NEVER cached by browsers
+app.use("/api", (_req, res, next) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+});
+
 app.use("/api/faculty", facultyRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/events", eventRoutes);

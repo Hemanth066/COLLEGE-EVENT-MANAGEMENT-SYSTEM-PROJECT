@@ -102,14 +102,40 @@ router.post("/verify-session", async (req, res) => {
   }
 });
 
+// Helper to resolve admin account flexibly (by ObjectId, by username, or fallback to sole admin)
+async function resolveAdmin(idOrUsername, fallbackUsername) {
+  let admin = null;
+  const candidate = (idOrUsername || '').toString().trim();
+  if (candidate && mongoose.Types.ObjectId.isValid(candidate)) {
+    admin = await Admin.findById(candidate);
+  }
+  if (!admin && candidate && candidate !== 'undefined' && candidate !== 'null') {
+    admin = await Admin.findOne({ username: candidate });
+  }
+  if (!admin && fallbackUsername) {
+    const fb = fallbackUsername.toString().trim();
+    if (fb && fb !== 'undefined' && fb !== 'null') {
+      admin = await Admin.findOne({ username: fb });
+    }
+  }
+  if (!admin) {
+    const count = await Admin.countDocuments();
+    if (count === 1) {
+      admin = await Admin.findOne();
+    }
+  }
+  return admin;
+}
+
 // ── ADMIN CHANGE PASSWORD ──────────────────────────────
-router.put("/change-password/:adminId", async (req, res) => {
+router.put(["/change-password", "/change-password/:adminId"], async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) {
       return res.status(400).json({ message: "Current and new password are required ❌" });
     }
-    const admin = await Admin.findById(req.params.adminId);
+    const targetId = req.params.adminId || req.body.adminId || req.body._id;
+    const admin = await resolveAdmin(targetId, req.body.currentUsername || req.body.username);
     if (!admin) return res.status(404).json({ message: "Admin account not found ❌" });
 
     const authResult = await admin.comparePassword(currentPassword);
@@ -127,18 +153,21 @@ router.put("/change-password/:adminId", async (req, res) => {
 });
 
 // ── ADMIN PROFILE GET ──────────────────────────────────
-router.get("/profile/:adminId", async (req, res) => {
+router.get(["/profile", "/profile/:adminId"], async (req, res) => {
   try {
-    const admin = await Admin.findById(req.params.adminId).select("-password");
+    const targetId = req.params.adminId || req.query.adminId || req.query._id || req.query.username;
+    const admin = await resolveAdmin(targetId, req.query.currentUsername);
     if (!admin) return res.status(404).json({ message: "Admin not found ❌" });
-    res.json(admin);
+    const safeAdmin = admin.toObject();
+    delete safeAdmin.password;
+    res.json(safeAdmin);
   } catch (e) {
     res.status(500).json({ message: "Server error: " + e.message });
   }
 });
 
 // ── ADMIN PROFILE UPDATE (Username, Full Name, Email) ──
-router.put("/profile/:adminId", async (req, res) => {
+router.put(["/profile", "/profile/:adminId"], async (req, res) => {
   try {
     const { username, fullName, email } = req.body;
     if (!username || !username.trim()) {
@@ -146,17 +175,17 @@ router.put("/profile/:adminId", async (req, res) => {
     }
 
     const trimmedUsername = username.trim();
+    const targetId = req.params.adminId || req.body.adminId || req.body._id;
+    const admin = await resolveAdmin(targetId, req.body.currentUsername);
+    if (!admin) return res.status(404).json({ message: "Admin account not found ❌" });
 
     const existing = await Admin.findOne({
       username: trimmedUsername,
-      _id: { $ne: req.params.adminId }
+      _id: { $ne: admin._id }
     });
     if (existing) {
       return res.status(400).json({ message: "Username is already in use by another admin ❌" });
     }
-
-    const admin = await Admin.findById(req.params.adminId);
-    if (!admin) return res.status(404).json({ message: "Admin account not found ❌" });
 
     admin.username = trimmedUsername;
     if (fullName !== undefined) admin.fullName = fullName.trim();
@@ -240,6 +269,10 @@ router.post("/students/bulk-import", async (req, res) => {
       const sem2Val = !isNaN(Number(item.sem2Score)) ? Number(item.sem2Score) : 0;
       const sem3Val = !isNaN(Number(item.sem3Score)) ? Number(item.sem3Score) : 0;
       const sem4Val = !isNaN(Number(item.sem4Score)) ? Number(item.sem4Score) : 0;
+      const sem5Val = !isNaN(Number(item.sem5Score)) ? Number(item.sem5Score) : 0;
+      const sem6Val = !isNaN(Number(item.sem6Score)) ? Number(item.sem6Score) : 0;
+      const sem7Val = !isNaN(Number(item.sem7Score)) ? Number(item.sem7Score) : 0;
+      const sem8Val = !isNaN(Number(item.sem8Score)) ? Number(item.sem8Score) : 0;
 
       const rawScore = item.score;
       const parsedScore = Number(rawScore);
@@ -247,7 +280,7 @@ router.post("/students/bulk-import", async (req, res) => {
       if (rawScore !== undefined && rawScore !== null && String(rawScore).trim() !== '' && !isNaN(parsedScore)) {
         scoreVal = parsedScore;
       } else {
-        scoreVal = sem1Val + sem2Val + sem3Val + sem4Val;
+        scoreVal = sem1Val + sem2Val + sem3Val + sem4Val + sem5Val + sem6Val + sem7Val + sem8Val;
       }
 
       const pass = item.password || studentId || 'student123';
@@ -266,6 +299,10 @@ router.post("/students/bulk-import", async (req, res) => {
         sem2Score: sem2Val,
         sem3Score: sem3Val,
         sem4Score: sem4Val,
+        sem5Score: sem5Val,
+        sem6Score: sem6Val,
+        sem7Score: sem7Val,
+        sem8Score: sem8Val,
         password: hashedPass
       };
 
@@ -324,28 +361,22 @@ router.post("/students/import-marks", async (req, res) => {
       if (!idKey) continue;
 
       const setObj = {};
-      if (item.sem1Score !== undefined && item.sem1Score !== null && item.sem1Score !== '') {
-        const val = Number(item.sem1Score);
-        if (!isNaN(val)) setObj.sem1Score = val;
-      }
-      if (item.sem2Score !== undefined && item.sem2Score !== null && item.sem2Score !== '') {
-        const val = Number(item.sem2Score);
-        if (!isNaN(val)) setObj.sem2Score = val;
-      }
-      if (item.sem3Score !== undefined && item.sem3Score !== null && item.sem3Score !== '') {
-        const val = Number(item.sem3Score);
-        if (!isNaN(val)) setObj.sem3Score = val;
-      }
-      if (item.sem4Score !== undefined && item.sem4Score !== null && item.sem4Score !== '') {
-        const val = Number(item.sem4Score);
-        if (!isNaN(val)) setObj.sem4Score = val;
+      for (let s = 1; s <= 8; s++) {
+        const k = `sem${s}Score`;
+        if (item[k] !== undefined && item[k] !== null && item[k] !== '') {
+          const val = Number(item[k]);
+          if (!isNaN(val)) setObj[k] = val;
+        }
       }
 
       if (item.score !== undefined && item.score !== null && item.score !== '') {
         const val = Number(item.score);
         if (!isNaN(val)) setObj.score = val;
-      } else if (setObj.sem1Score !== undefined || setObj.sem2Score !== undefined || setObj.sem3Score !== undefined || setObj.sem4Score !== undefined) {
-        setObj.score = (setObj.sem1Score || 0) + (setObj.sem2Score || 0) + (setObj.sem3Score || 0) + (setObj.sem4Score || 0);
+      } else {
+        const hasAnySem = [1,2,3,4,5,6,7,8].some(s => setObj[`sem${s}Score`] !== undefined);
+        if (hasAnySem) {
+          setObj.score = [1,2,3,4,5,6,7,8].reduce((acc, s) => acc + (setObj[`sem${s}Score`] || 0), 0);
+        }
       }
 
       if (Object.keys(setObj).length === 0) continue;
@@ -507,8 +538,24 @@ router.post("/students", async (req, res) => {
 
 router.put("/students/:id", async (req, res) => {
   try {
-    const s = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const s = await Student.findById(req.params.id);
     if (!s) return res.status(404).json({ message: "Student not found" });
+
+    Object.assign(s, req.body);
+
+    let hasAnySemScore = false;
+    for (let sem = 1; sem <= 8; sem++) {
+      const k = 'sem' + sem + 'Score';
+      if (req.body[k] !== undefined && req.body[k] !== null && !isNaN(req.body[k])) {
+        s[k] = Number(req.body[k]);
+        hasAnySemScore = true;
+      }
+    }
+    if (hasAnySemScore) {
+      s.score = [1, 2, 3, 4, 5, 6, 7, 8].reduce((acc, sem) => acc + (Number(s['sem' + sem + 'Score']) || 0), 0);
+    }
+
+    await s.save();
     res.json({ message: "Student updated ✅", student: s });
   } catch (e) { res.status(400).json({ message: e.message }); }
 });
@@ -902,17 +949,24 @@ router.get("/dean/export-excel/:deanId", async (req, res) => {
 async function seedDefaultBranches() {
   const count = await Branch.countDocuments();
   if (count === 0) {
+    const allEight = [1, 2, 3, 4, 5, 6, 7, 8];
     const defaults = [
-      { name: "CSE", code: "11", description: "Computer Science and Engineering" },
-      { name: "AIML", code: "66", description: "Artificial Intelligence and Machine Learning" },
-      { name: "DS", code: "67", description: "Data Science" },
-      { name: "IT", code: "12", description: "Information Technology" },
-      { name: "ECE", code: "04", description: "Electronics and Communication Engineering" },
-      { name: "EEE", code: "02", description: "Electrical and Electronics Engineering" },
-      { name: "MECH", code: "03", description: "Mechanical Engineering" },
-      { name: "CIVIL", code: "01", description: "Civil Engineering" }
+      { name: "CSE", code: "11", description: "Computer Science and Engineering", totalSemesters: 8, activeSemesters: allEight },
+      { name: "AIML", code: "66", description: "Artificial Intelligence and Machine Learning", totalSemesters: 8, activeSemesters: allEight },
+      { name: "DS", code: "67", description: "Data Science", totalSemesters: 8, activeSemesters: allEight },
+      { name: "IT", code: "12", description: "Information Technology", totalSemesters: 8, activeSemesters: allEight },
+      { name: "ECE", code: "04", description: "Electronics and Communication Engineering", totalSemesters: 8, activeSemesters: allEight },
+      { name: "EEE", code: "02", description: "Electrical and Electronics Engineering", totalSemesters: 8, activeSemesters: allEight },
+      { name: "MECH", code: "03", description: "Mechanical Engineering", totalSemesters: 8, activeSemesters: allEight },
+      { name: "CIVIL", code: "01", description: "Civil Engineering", totalSemesters: 8, activeSemesters: allEight }
     ];
     await Branch.insertMany(defaults);
+  } else {
+    // Auto-backfill branches missing semester fields
+    await Branch.updateMany(
+      { $or: [{ totalSemesters: { $exists: false } }, { activeSemesters: { $exists: false } }, { activeSemesters: { $size: 0 } }] },
+      { $set: { totalSemesters: 8, activeSemesters: [1, 2, 3, 4, 5, 6, 7, 8] } }
+    );
   }
 }
 
@@ -973,6 +1027,60 @@ router.delete("/branches/:id", async (req, res) => {
     res.json({ message: "Branch deleted successfully ✅" });
   } catch (e) {
     res.status(400).json({ message: "Error deleting branch: " + e.message });
+  }
+});
+
+// ── UPDATE BRANCH SEMESTERS ───────────────────────────
+router.put("/branches/:id/semesters", async (req, res) => {
+  try {
+    const { totalSemesters, activeSemesters } = req.body;
+    let semList = Array.isArray(activeSemesters)
+      ? activeSemesters.map(Number).filter(n => n >= 1 && n <= 8).sort((a,b) => a - b)
+      : [];
+
+    let count = Number(totalSemesters);
+    if (!count || count < 1 || count > 8) {
+      count = semList.length ? Math.max(...semList) : 8;
+    }
+
+    if (!semList.length) {
+      semList = Array.from({ length: count }, (_, i) => i + 1);
+    }
+
+    const branch = await Branch.findByIdAndUpdate(
+      req.params.id,
+      { totalSemesters: count, activeSemesters: semList },
+      { new: true }
+    );
+    if (!branch) return res.status(404).json({ message: "Branch not found" });
+
+    res.json({ message: `Semesters updated for ${branch.name} ✅`, branch });
+  } catch (e) {
+    res.status(400).json({ message: "Error updating branch semesters: " + e.message });
+  }
+});
+
+// ── BULK SET ALL BRANCHES SEMESTERS ───────────────────
+router.post("/branches/bulk-set-semesters", async (req, res) => {
+  try {
+    const { totalSemesters, activeSemesters } = req.body;
+    let semList = Array.isArray(activeSemesters)
+      ? activeSemesters.map(Number).filter(n => n >= 1 && n <= 8).sort((a,b) => a - b)
+      : [1, 2, 3, 4, 5, 6, 7, 8];
+
+    let count = Number(totalSemesters) || semList.length || 8;
+
+    const result = await Branch.updateMany(
+      {},
+      { $set: { totalSemesters: count, activeSemesters: semList } }
+    );
+
+    res.json({
+      message: `Updated ${result.modifiedCount} branches to ${count} semesters ✅`,
+      modifiedCount: result.modifiedCount
+    });
+  } catch (e) {
+    res.status(500).json({ message: "Error setting all branch semesters: " + e.message });
   }
 });
 

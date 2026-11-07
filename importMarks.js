@@ -25,6 +25,10 @@ function normalise(col) {
   if (c.includes('2ndsem') || c.includes('sem2')) return 'sem2Score';
   if (c.includes('3rdsem') || c.includes('sem3')) return 'sem3Score';
   if (c.includes('4thsem') || c.includes('sem4')) return 'sem4Score';
+  if (c.includes('5thsem') || c.includes('sem5')) return 'sem5Score';
+  if (c.includes('6thsem') || c.includes('sem6')) return 'sem6Score';
+  if (c.includes('7thsem') || c.includes('sem7')) return 'sem7Score';
+  if (c.includes('8thsem') || c.includes('sem8')) return 'sem8Score';
   if (c.includes('score') || c.includes('mark') || c.includes('total')) return 'score';
   return null;
 }
@@ -73,7 +77,7 @@ async function run() {
 
       if (field === 'studentId') {
         sId = strVal.toUpperCase();
-      } else if (['sem1Score', 'sem2Score', 'sem3Score', 'sem4Score', 'score'].includes(field)) {
+      } else if (['sem1Score', 'sem2Score', 'sem3Score', 'sem4Score', 'sem5Score', 'sem6Score', 'sem7Score', 'sem8Score', 'score'].includes(field)) {
         const num = Number(strVal);
         if (!isNaN(num)) setObj[field] = num;
       }
@@ -81,8 +85,11 @@ async function run() {
 
     if (!sId) continue;
 
-    if (setObj.score === undefined && (setObj.sem1Score !== undefined || setObj.sem2Score !== undefined || setObj.sem3Score !== undefined || setObj.sem4Score !== undefined)) {
-      setObj.score = (setObj.sem1Score || 0) + (setObj.sem2Score || 0) + (setObj.sem3Score || 0) + (setObj.sem4Score || 0);
+    if (setObj.score === undefined) {
+      const hasSem = [1,2,3,4,5,6,7,8].some(s => setObj[`sem${s}Score`] !== undefined);
+      if (hasSem) {
+        setObj.score = [1,2,3,4,5,6,7,8].reduce((acc, s) => acc + (setObj[`sem${s}Score`] || 0), 0);
+      }
     }
 
     if (Object.keys(setObj).length === 0) continue;

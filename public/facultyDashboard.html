@@ -1887,6 +1887,10 @@
         <span class="icon">📅</span><span>Branch Events</span>
       </div>
 
+      <div class="menu-item" id="navCoordinatorSemesters" onclick="showTab('coordSemesters')" style="display: none;">
+        <span class="icon">📚</span><span>Manage Semesters</span>
+      </div>
+
 
       <div class="menu-item" onclick="showTab('profile')">
         <span class="icon">👤</span><span>My Profile</span>
@@ -3962,6 +3966,10 @@
             <button onclick="downloadFacultyStudentsCSV()"
               style="padding:9px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#2E7D32,#1b5e20);color:white;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(46,125,50,0.3);">📥
               Download CSV</button>
+            <button type="button" onclick="openCoordinatorUploadMarksModal()"
+              style="padding:9px 18px;border-radius:10px;border:none;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(37,99,235,0.35);display:inline-flex;align-items:center;gap:6px;">
+              📤 Upload Marks
+            </button>
           </div>
         </div>
         <div style="overflow-x:auto;">
@@ -4042,6 +4050,105 @@
       </div>
     </div>
 
+    <!-- ---------------- MANAGE SEMESTERS TAB (COORDINATOR) ---------------- -->
+    <div id="coordSemesters" class="tab-content">
+      <div class="top-bar"
+        style="display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#0F4C81,#1E88E5);border-radius:20px;padding:22px 32px;margin-bottom:28px;box-shadow:0 4px 20px rgba(15,76,129,0.2);">
+        <div>
+          <div style="font-size:24px;font-weight:800;color:white;">📚 Manage Branch Semesters</div>
+          <div style="font-size:13px;color:#86efac;margin-top:4px;">
+            Activate academic semesters for your assigned branches &amp; academic years.
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:white;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:600;" id="coordSemBadge">
+          Coordinator Access
+        </div>
+      </div>
+
+      <div class="table-box"
+        style="background:white;border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 8px rgba(15,76,129,0.06);max-width:850px;">
+        <h3 style="font-size:18px;font-weight:700;color:var(--blue-dark);margin-bottom:8px;">
+          Configure Active Semesters
+        </h3>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6;">
+          Select a branch and academic year below. Enabling a semester (e.g. <strong>Sem 5</strong>) makes that semester block visible in students' <strong>My Scores</strong> dashboard, and allows students to credit event points to that semester upon event registration.
+        </p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;">
+          <div>
+            <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">
+              1. Select Branch
+            </label>
+            <select id="coordSemBranchSelect" onchange="onCoordBranchYearChange()"
+              style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:#f8fafc;font-size:14px;outline:none;">
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">
+              2. Select Academic Year
+            </label>
+            <select id="coordSemYearSelect" onchange="onCoordBranchYearChange()"
+              style="width:100%;padding:11px 14px;border-radius:10px;border:1.5px solid var(--border);background:#f8fafc;font-size:14px;outline:none;">
+              <option value="1">1st Year (Typical: Sems 1, 2)</option>
+              <option value="2">2nd Year (Typical: Sems 3, 4)</option>
+              <option value="3" selected>3rd Year (Typical: Sems 5, 6)</option>
+              <option value="4">4th Year (Typical: Sems 7, 8)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;">
+              3. Enable Active Semesters for this Branch &amp; Year
+            </label>
+            <div style="display:flex;gap:8px;">
+              <button type="button" class="btn btn-sm" onclick="setCoordSemesterPreset('odd')" style="font-size:11px;padding:4px 10px;background:#f1f5f9;color:var(--text);border:1px solid var(--border);cursor:pointer;">Select Odd</button>
+              <button type="button" class="btn btn-sm" onclick="setCoordSemesterPreset('even')" style="font-size:11px;padding:4px 10px;background:#f1f5f9;color:var(--text);border:1px solid var(--border);cursor:pointer;">Select Even</button>
+              <button type="button" class="btn btn-sm" onclick="setCoordSemesterPreset('allYear')" style="font-size:11px;padding:4px 10px;background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;cursor:pointer;">Year Default</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;">
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck1" value="1"> Sem 1
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck2" value="2"> Sem 2
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck3" value="3"> Sem 3
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck4" value="4"> Sem 4
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck5" value="5"> Sem 5
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck6" value="6"> Sem 6
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck7" value="7"> Sem 7
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;">
+              <input type="checkbox" id="coordSemCheck8" value="8"> Sem 8
+            </label>
+          </div>
+        </div>
+
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#1e40af;">
+          💡 <strong>Real-time Effect:</strong> Students belonging to the selected Branch and Academic Year will immediately see all checked semesters in their <strong>My Scores</strong> dashboard, and can select these semesters during event registration to assign scores.
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:12px;">
+          <button type="button" class="btn btn-primary" onclick="saveCoordinatorSemesters()" style="padding:12px 28px;font-size:14px;font-weight:700;">
+            💾 Save Semester Configuration
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script>
 
 
@@ -4080,9 +4187,11 @@
         const isCoord = Boolean(currentFaculty && (currentFaculty.isCoordinator === true || currentFaculty.isCoordinator === 'true'));
         const navStudents = document.getElementById('navStudents');
         const navBranchEvents = document.getElementById('navBranchEvents');
+        const navCoordSem = document.getElementById('navCoordinatorSemesters');
 
         if (navStudents) navStudents.style.display = isCoord ? 'flex' : 'none';
         if (navBranchEvents) navBranchEvents.style.display = isCoord ? 'flex' : 'none';
+        if (navCoordSem) navCoordSem.style.display = isCoord ? 'flex' : 'none';
       }
 
       document.addEventListener('DOMContentLoaded', async () => {
@@ -4485,7 +4594,7 @@
 
 
       function showTab(tabName) {
-        if ((tabName === 'students' || tabName === 'branchEvents') && (!currentFaculty || !(currentFaculty.isCoordinator === true || currentFaculty.isCoordinator === 'true'))) {
+        if ((tabName === 'students' || tabName === 'branchEvents' || tabName === 'coordSemesters') && (!currentFaculty || !(currentFaculty.isCoordinator === true || currentFaculty.isCoordinator === 'true'))) {
           showPopup('⚠️', 'Access Denied', 'Only branch coordinators can access this section.', 'error');
           showTab('home');
           return;
@@ -4518,6 +4627,7 @@
         if (tabName === 'otherCerts') ocFacultyInit();
 
         if (tabName === 'students') loadFacultyBranchStudents();
+        if (tabName === 'coordSemesters') initCoordinatorSemesters();
         if (tabName === 'branchEvents') loadFacultyBranchEvents();
       }
 
@@ -4589,7 +4699,7 @@
         if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="no-data" style="text-align:center;padding:40px;color:var(--muted);">Loading branch students...</td></tr>';
 
         try {
-          const res = await fetch(`/api/faculty/branch-students/${fId}`);
+          const res = await fetch(`/api/faculty/branch-students/${fId}?t=${Date.now()}`);
           if (!res.ok) throw new Error('Failed to load students');
           const data = await res.json();
 
@@ -4684,13 +4794,34 @@
           data-sem1="${s.sem1Score || 0}"
           data-sem2="${s.sem2Score || 0}"
           data-sem3="${s.sem3Score || 0}"
-          data-sem4="${s.sem4Score || 0}">
+          data-sem4="${s.sem4Score || 0}"
+          data-sem5="${s.sem5Score || 0}"
+          data-sem6="${s.sem6Score || 0}"
+          data-sem7="${s.sem7Score || 0}"
+          data-sem8="${s.sem8Score || 0}"
+          data-sem1event="${s.sem1EventScore || 0}"
+          data-sem2event="${s.sem2EventScore || 0}"
+          data-sem3event="${s.sem3EventScore || 0}"
+          data-sem4event="${s.sem4EventScore || 0}"
+          data-sem5event="${s.sem5EventScore || 0}"
+          data-sem6event="${s.sem6EventScore || 0}"
+          data-sem7event="${s.sem7EventScore || 0}"
+          data-sem8event="${s.sem8EventScore || 0}"
+          data-sem1total="${s.sem1TotalScore || ((s.sem1Score||0) + (s.sem1EventScore||0))}"
+          data-sem2total="${s.sem2TotalScore || ((s.sem2Score||0) + (s.sem2EventScore||0))}"
+          data-sem3total="${s.sem3TotalScore || ((s.sem3Score||0) + (s.sem3EventScore||0))}"
+          data-sem4total="${s.sem4TotalScore || ((s.sem4Score||0) + (s.sem4EventScore||0))}"
+          data-sem5total="${s.sem5TotalScore || ((s.sem5Score||0) + (s.sem5EventScore||0))}"
+          data-sem6total="${s.sem6TotalScore || ((s.sem6Score||0) + (s.sem6EventScore||0))}"
+          data-sem7total="${s.sem7TotalScore || ((s.sem7Score||0) + (s.sem7EventScore||0))}"
+          data-sem8total="${s.sem8TotalScore || ((s.sem8Score||0) + (s.sem8EventScore||0))}">
           👁️ View Proof
         </button>
-        <button class="btn-edit-score"
+        <button class="btn-edit-score" onclick="openEditScoreFromBtn(this)"
           data-sid="${sid}"
           data-name="${encodeURIComponent(name)}"
           data-pin="${encodeURIComponent(pin)}"
+          data-branch="${encodeURIComponent(s.branch || '')}"
           data-year="${encodeURIComponent(s.year || '')}"
           data-score="${s.score || 0}"
           data-eventscore="${s.eventScore || 0}"
@@ -4698,6 +4829,26 @@
           data-sem2="${s.sem2Score || 0}"
           data-sem3="${s.sem3Score || 0}"
           data-sem4="${s.sem4Score || 0}"
+          data-sem5="${s.sem5Score || 0}"
+          data-sem6="${s.sem6Score || 0}"
+          data-sem7="${s.sem7Score || 0}"
+          data-sem8="${s.sem8Score || 0}"
+          data-sem1event="${s.sem1EventScore || 0}"
+          data-sem2event="${s.sem2EventScore || 0}"
+          data-sem3event="${s.sem3EventScore || 0}"
+          data-sem4event="${s.sem4EventScore || 0}"
+          data-sem5event="${s.sem5EventScore || 0}"
+          data-sem6event="${s.sem6EventScore || 0}"
+          data-sem7event="${s.sem7EventScore || 0}"
+          data-sem8event="${s.sem8EventScore || 0}"
+          data-sem1total="${s.sem1TotalScore || ((s.sem1Score||0) + (s.sem1EventScore||0))}"
+          data-sem2total="${s.sem2TotalScore || ((s.sem2Score||0) + (s.sem2EventScore||0))}"
+          data-sem3total="${s.sem3TotalScore || ((s.sem3Score||0) + (s.sem3EventScore||0))}"
+          data-sem4total="${s.sem4TotalScore || ((s.sem4Score||0) + (s.sem4EventScore||0))}"
+          data-sem5total="${s.sem5TotalScore || ((s.sem5Score||0) + (s.sem5EventScore||0))}"
+          data-sem6total="${s.sem6TotalScore || ((s.sem6Score||0) + (s.sem6EventScore||0))}"
+          data-sem7total="${s.sem7TotalScore || ((s.sem7Score||0) + (s.sem7EventScore||0))}"
+          data-sem8total="${s.sem8TotalScore || ((s.sem8Score||0) + (s.sem8EventScore||0))}"
           title="Edit student score"
           style="padding:6px 12px;border:none;border-radius:8px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f172a;font-size:12px;font-weight:700;cursor:pointer;margin-left:6px;font-family:'Poppins',sans-serif;box-shadow:0 2px 8px rgba(245,158,11,0.25);">
           ✏️ Edit Score
@@ -4719,7 +4870,27 @@
               sem1Score: Number(this.dataset.sem1) || 0,
               sem2Score: Number(this.dataset.sem2) || 0,
               sem3Score: Number(this.dataset.sem3) || 0,
-              sem4Score: Number(this.dataset.sem4) || 0
+              sem4Score: Number(this.dataset.sem4) || 0,
+              sem5Score: Number(this.dataset.sem5) || 0,
+              sem6Score: Number(this.dataset.sem6) || 0,
+              sem7Score: Number(this.dataset.sem7) || 0,
+              sem8Score: Number(this.dataset.sem8) || 0,
+              sem1EventScore: Number(this.dataset.sem1event) || 0,
+              sem2EventScore: Number(this.dataset.sem2event) || 0,
+              sem3EventScore: Number(this.dataset.sem3event) || 0,
+              sem4EventScore: Number(this.dataset.sem4event) || 0,
+              sem5EventScore: Number(this.dataset.sem5event) || 0,
+              sem6EventScore: Number(this.dataset.sem6event) || 0,
+              sem7EventScore: Number(this.dataset.sem7event) || 0,
+              sem8EventScore: Number(this.dataset.sem8event) || 0,
+              sem1TotalScore: Number(this.dataset.sem1total) || 0,
+              sem2TotalScore: Number(this.dataset.sem2total) || 0,
+              sem3TotalScore: Number(this.dataset.sem3total) || 0,
+              sem4TotalScore: Number(this.dataset.sem4total) || 0,
+              sem5TotalScore: Number(this.dataset.sem5total) || 0,
+              sem6TotalScore: Number(this.dataset.sem6total) || 0,
+              sem7TotalScore: Number(this.dataset.sem7total) || 0,
+              sem8TotalScore: Number(this.dataset.sem8total) || 0
             };
             viewStudentProof(data);
           });
@@ -4732,6 +4903,8 @@
               try { name = decodeURIComponent(name); } catch(e){}
               let pin = this.dataset.pin || '';
               try { pin = decodeURIComponent(pin); } catch(e){}
+              let branch = this.dataset.branch || '';
+              try { branch = decodeURIComponent(branch); } catch(e){}
               let year = this.dataset.year || '';
               try { year = decodeURIComponent(year); } catch(e){}
 
@@ -4739,13 +4912,18 @@
                 sid: this.dataset.sid,
                 name: name,
                 pin: pin,
+                branch: branch,
                 year: year,
                 score: Number(this.dataset.score) || 0,
                 eventScore: Number(this.dataset.eventscore) || 0,
                 sem1Score: Number(this.dataset.sem1) || 0,
                 sem2Score: Number(this.dataset.sem2) || 0,
                 sem3Score: Number(this.dataset.sem3) || 0,
-                sem4Score: Number(this.dataset.sem4) || 0
+                sem4Score: Number(this.dataset.sem4) || 0,
+                sem5Score: Number(this.dataset.sem5) || 0,
+                sem6Score: Number(this.dataset.sem6) || 0,
+                sem7Score: Number(this.dataset.sem7) || 0,
+                sem8Score: Number(this.dataset.sem8) || 0
               };
               openEditScoreModal(data);
             } catch (err) {
@@ -4758,93 +4936,168 @@
       // ── EDIT STUDENT SCORE MODAL LOGIC (COORDINATOR PORTAL) ──
       let currentEditStudent = null;
 
-      function openEditScoreModal(student) {
+      async function openEditScoreModal(student) {
         currentEditStudent = student;
-        document.getElementById('editStudentId').value = student.sid || student.pin;
-        document.getElementById('editScoreStudentName').textContent = student.name || 'Student';
-        document.getElementById('editScoreStudentInfo').textContent = `PIN: ${student.pin} • Year: ${student.year || '—'} • Academic Score Update`;
-        document.getElementById('editBaseScore').value = student.score || 0;
-        if (document.getElementById('editSem1Score')) document.getElementById('editSem1Score').value = student.sem1Score || 0;
-        if (document.getElementById('editSem2Score')) document.getElementById('editSem2Score').value = student.sem2Score || 0;
-        if (document.getElementById('editSem3Score')) document.getElementById('editSem3Score').value = student.sem3Score || 0;
-        if (document.getElementById('editSem4Score')) document.getElementById('editSem4Score').value = student.sem4Score || 0;
-        document.getElementById('editEventScoreDisplay').textContent = `+${student.eventScore || 0} pts`;
-        
-        const yrStr = String(student.year || '').toLowerCase().trim();
-        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
-        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
-        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
+        document.getElementById("editStudentId").value = student.sid || student.pin;
+        document.getElementById("editScoreStudentName").textContent = student.name || "Student";
+        document.getElementById("editScoreStudentInfo").textContent = `PIN: ${student.pin} • Branch: ${student.branch || "—"} • Year: ${student.year || "—"} • Academic Score Update`;
+        document.getElementById("editBaseScore").value = student.score || 0;
+        document.getElementById("editEventScoreDisplay").textContent = `+${student.eventScore || 0} pts`;
 
-        const sem12Group = document.getElementById('sem12Group');
-        const sem34Group = document.getElementById('sem34Group');
+        const branch = student.branch || (currentFaculty ? (currentFaculty.coordinatorBranch || currentFaculty.department) : "") || "CSE";
+        const rawYear = student.year || "1";
+        const yNum = (String(rawYear).match(/\d+/) || ["1"])[0];
+        const year = rawYear || yNum;
+        let activeSems = [];
 
-        if (isYear1) {
-          if (sem12Group) sem12Group.style.display = 'none';
-          if (sem34Group) sem34Group.style.display = 'none';
-        } else if (isYear2) {
-          if (sem12Group) sem12Group.style.display = 'grid';
-          if (sem34Group) sem34Group.style.display = 'none';
-        } else if (isYear3) {
-          if (sem12Group) sem12Group.style.display = 'none';
-          if (sem34Group) sem34Group.style.display = 'grid';
-        } else {
-          if (sem12Group) sem12Group.style.display = (student.sem1Score > 0 || student.sem2Score > 0) ? 'grid' : 'none';
-          if (sem34Group) sem34Group.style.display = 'grid';
+        const cacheKey = `${branch.toUpperCase()}_${yNum}`;
+        if (window._coordActiveSemsCache && window._coordActiveSemsCache[cacheKey]) {
+          activeSems = window._coordActiveSemsCache[cacheKey];
+        } else if (branch && yNum) {
+          try {
+            const res = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(branch)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+            if (res.ok) {
+              const d = await res.json();
+              if (Array.isArray(d.activeSemesters) && d.activeSemesters.length) {
+                activeSems = d.activeSemesters;
+                if (!window._coordActiveSemsCache) window._coordActiveSemsCache = {};
+                window._coordActiveSemsCache[cacheKey] = activeSems;
+              }
+            }
+          } catch (e) {
+            console.warn("Error fetching active semesters for edit score modal:", e);
+          }
+        }
+
+        if (!activeSems.length) {
+          const yrNum = Number(yNum) || 1;
+          activeSems = [(yrNum * 2) - 1, yrNum * 2];
+        }
+
+        window._currentActiveSemsForModal = activeSems;
+
+        const container = document.getElementById("dynamicSemInputsContainer");
+        if (container) {
+          container.innerHTML = `
+            <div style="margin-bottom:8px;font-size:12px;font-weight:700;color:var(--blue-dark);display:flex;align-items:center;justify-content:space-between;">
+              <span>Active Semester Scores (${branch} Year ${year}):</span>
+              <span style="font-size:11px;color:#16a34a;background:#dcfce7;border:1px solid #bbf7d0;padding:2px 8px;border-radius:10px;font-weight:700;">
+                ${activeSems.map(s => "Sem " + s).join(", ")}
+              </span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:12px;margin-bottom:12px;">
+              ${activeSems.map(s => {
+                const semVal = Number(student["sem" + s + "Score"]) || 0;
+                const semEv = Number(student["sem" + s + "EventScore"]) || 0;
+                const semTot = semVal + semEv;
+                return `
+                  <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:10px;padding:10px;box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                      <label style="font-size:11px;font-weight:700;color:#334155;">
+                        Sem ${s} Academic
+                      </label>
+                      ${semEv > 0 ? `<span style="font-size:10px;background:#dcfce7;color:#16a34a;border:1px solid #bbf7d0;padding:1px 6px;border-radius:6px;font-weight:700;">+${semEv} event pts</span>` : ''}
+                    </div>
+                    <input type="number" id="editSem${s}Score" min="0" value="${semVal}"
+                      data-sem="${s}"
+                      data-eventscore="${semEv}"
+                      style="width:100%;padding:8px 10px;border:1.5px solid #94a3b8;border-radius:8px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;outline:none;"
+                      oninput="updateSemScoreSum()">
+                    <div style="margin-top:6px;font-size:11px;color:#64748b;display:flex;justify-content:space-between;padding-top:4px;border-top:1px dashed #e2e8f0;">
+                      <span>Events: <b style="color:#16a34a;">+${semEv}</b></span>
+                      <span>Total: <b id="sem${s}CombinedPreview" style="color:#0F4C81;">${semTot} pts</b></span>
+                    </div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+            <div id="editScoreEventBadges" style="margin-bottom:12px;"></div>
+          `;
         }
 
         updateSemScoreSum();
-        
-        const modal = document.getElementById('editScoreModal');
+
+        // Enforce live event marks fetch for the student in modal
+        (async () => {
+          try {
+            const pId = student.pin || student.sid;
+            if (pId) {
+              const pRes = await fetch(`/api/faculty/student-score-proof/${encodeURIComponent(pId)}`);
+              if (pRes.ok) {
+                const pData = await pRes.json();
+                const evMap = (pData.summary && pData.summary.semEventScores) || {};
+                activeSems.forEach(s => {
+                  const evScore = evMap[s] || 0;
+                  const inputEl = document.getElementById(`editSem${s}Score`);
+                  if (inputEl) {
+                    inputEl.dataset.eventscore = evScore;
+                    const baseVal = Number(inputEl.value) || 0;
+                    const prevEl = document.getElementById(`sem${s}CombinedPreview`);
+                    if (prevEl) prevEl.textContent = `${baseVal + evScore} pts`;
+                  }
+                });
+                const scoredEvents = (pData.events || []).filter(e => Number(e.score) > 0);
+                const badgeSec = document.getElementById('editScoreEventBadges');
+                if (badgeSec && scoredEvents.length > 0) {
+                  badgeSec.innerHTML = `
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:11px;">
+                      <span style="font-weight:700;color:#166534;margin-right:6px;">🎪 Events Credited:</span>
+                      ${scoredEvents.map(e => `<span style="background:#ffffff;border:1px solid #86efac;padding:2px 8px;border-radius:6px;color:#15803d;font-weight:600;margin-right:6px;display:inline-block;margin-top:2px;">Sem ${e.semester || 1}: ${e.title} (<b>+${e.score} pts</b>)</span>`).join('')}
+                    </div>
+                  `;
+                }
+                updateSemScoreSum();
+              }
+            }
+          } catch(e) {}
+        })();
+
+        const modal = document.getElementById("editScoreModal");
         if (modal) {
-          modal.style.display = 'flex';
-          modal.classList.add('active');
-          document.body.style.overflow = 'hidden';
+          modal.style.display = "flex";
+          modal.classList.add("active");
+          document.body.style.overflow = "hidden";
         }
       }
 
       function closeEditScoreModal() {
-        const modal = document.getElementById('editScoreModal');
+        const modal = document.getElementById("editScoreModal");
         if (modal) {
-          modal.style.display = 'none';
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
+          modal.style.display = "none";
+          modal.classList.remove("active");
+          document.body.style.overflow = "";
         }
         currentEditStudent = null;
       }
 
       function updateSemScoreSum() {
         if (!currentEditStudent) return;
-        const yrStr = String(currentEditStudent.year || '').toLowerCase().trim();
-        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
-        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
-        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
-
-        let s1 = 0, s2 = 0, s3 = 0, s4 = 0;
-        if (isYear2) {
-          s1 = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
-          s2 = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
-          document.getElementById('editBaseScore').value = s1 + s2;
-        } else if (isYear3) {
-          s3 = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
-          s4 = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
-          document.getElementById('editBaseScore').value = s3 + s4;
-        } else if (!isYear1) {
-          s1 = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
-          s2 = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
-          s3 = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
-          s4 = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
-          if (s1 > 0 || s2 > 0 || s3 > 0 || s4 > 0) {
-            document.getElementById('editBaseScore').value = s1 + s2 + s3 + s4;
+        const activeSems = window._currentActiveSemsForModal || [1, 2, 3, 4, 5, 6, 7, 8];
+        let sum = 0;
+        let hasAnyInput = false;
+        activeSems.forEach(s => {
+          const el = document.getElementById(`editSem${s}Score`);
+          if (el) {
+            hasAnyInput = true;
+            const val = (Number(el.value) || 0);
+            sum += val;
+            const ev = Number(el.dataset.eventscore) || (Number(currentEditStudent['sem' + s + 'EventScore']) || 0);
+            const prevEl = document.getElementById(`sem${s}CombinedPreview`);
+            if (prevEl) prevEl.textContent = `${val + ev} pts`;
           }
+        });
+
+        if (hasAnyInput) {
+          document.getElementById("editBaseScore").value = sum;
         }
         updateScorePreview();
       }
 
       function updateScorePreview() {
-        const base = Number(document.getElementById('editBaseScore').value) || 0;
+        const base = Number(document.getElementById("editBaseScore").value) || 0;
         const ev = currentEditStudent ? (currentEditStudent.eventScore || 0) : 0;
         const total = base + ev;
-        const previewEl = document.getElementById('editTotalScorePreview');
+        const previewEl = document.getElementById("editTotalScorePreview");
         if (previewEl) previewEl.textContent = `${total} pts`;
       }
 
@@ -4852,11 +5105,17 @@
         e.preventDefault();
         if (!currentEditStudent) return;
         const studentId = currentEditStudent.sid || currentEditStudent.pin;
-        const score = Number(document.getElementById('editBaseScore').value) || 0;
-        const sem1Score = Number(document.getElementById('editSem1Score') ? document.getElementById('editSem1Score').value : 0) || 0;
-        const sem2Score = Number(document.getElementById('editSem2Score') ? document.getElementById('editSem2Score').value : 0) || 0;
-        const sem3Score = Number(document.getElementById('editSem3Score') ? document.getElementById('editSem3Score').value : 0) || 0;
-        const sem4Score = Number(document.getElementById('editSem4Score') ? document.getElementById('editSem4Score').value : 0) || 0;
+        const score = Number(document.getElementById("editBaseScore").value) || 0;
+
+        const payload = { score };
+        for (let s = 1; s <= 8; s++) {
+          const el = document.getElementById(`editSem${s}Score`);
+          if (el) {
+            payload[`sem${s}Score`] = Number(el.value) || 0;
+          } else if (currentEditStudent && currentEditStudent[`sem${s}Score`] !== undefined) {
+            payload[`sem${s}Score`] = Number(currentEditStudent[`sem${s}Score`]) || 0;
+          }
+        }
 
         const endpoints = [
           `/api/faculty/student-score/${encodeURIComponent(studentId)}`,
@@ -4869,13 +5128,13 @@
         for (const url of endpoints) {
           try {
             const res = await fetch(url, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ score, sem1Score, sem2Score, sem3Score, sem4Score })
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
             });
 
-            const contentType = res.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
+            const contentType = res.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
               const data = await res.json();
               if (res.ok) {
                 updatedTotal = (data.student && data.student.totalScore != null)
@@ -4886,22 +5145,457 @@
               }
             }
           } catch (err) {
-            console.error('Error saving student score via', url, err);
+            console.error("Error saving student score via", url, err);
           }
         }
 
         if (success) {
-          alert(`✅ Score updated successfully for ${currentEditStudent.name}! Updated score: ${updatedTotal} pts`);
+          const targetSid = String(currentEditStudent.sid || '').trim();
+          const targetPin = String(currentEditStudent.pin || '').trim();
+          const targetName = String(currentEditStudent.name || '').trim();
+          const newScoreVal = (payload.score != null) ? payload.score : 0;
+
+          const isSameStudent = (st) => {
+            if (!st) return false;
+            const stId = String(st._id || '').trim();
+            const stStudentId = String(st.studentId || '').trim();
+            const stPin = String(st.pinNumber || '').trim();
+            const stUser = String(st.username || '').trim();
+            const stName = String(st.fullName || '').trim();
+
+            if (targetSid) {
+              if (stId && stId === targetSid) return true;
+              if (stStudentId && stStudentId === targetSid) return true;
+              if (stPin && stPin === targetSid) return true;
+              if (stUser && stUser === targetSid) return true;
+            }
+            if (targetPin) {
+              if (stPin && stPin === targetPin) return true;
+              if (stStudentId && stStudentId === targetPin) return true;
+              if (stUser && stUser === targetPin) return true;
+              if (stId && stId === targetPin) return true;
+            }
+            if (targetName && stName && targetName.toLowerCase() === stName.toLowerCase()) {
+              return true;
+            }
+            return false;
+          };
+
+          // Immediately update only the edited student object in local state
+          const updateRecord = (st) => {
+            if (isSameStudent(st)) {
+              st.score = newScoreVal;
+              for (let s = 1; s <= 8; s++) {
+                if (payload[`sem${s}Score`] !== undefined) st[`sem${s}Score`] = payload[`sem${s}Score`];
+              }
+              st.totalScore = updatedTotal;
+            }
+          };
+          if (Array.isArray(allFacultyBranchStudents)) allFacultyBranchStudents.forEach(updateRecord);
+          if (Array.isArray(displayedFacultyBranchStudents)) displayedFacultyBranchStudents.forEach(updateRecord);
+
+          // Immediately re-render visible table rows
+          renderFacultyStudents(displayedFacultyBranchStudents.length ? displayedFacultyBranchStudents : allFacultyBranchStudents);
+
+          alert(`✅ Score updated successfully for ${currentEditStudent.name}! Updated total: ${updatedTotal} pts`);
           closeEditScoreModal();
-          if (typeof loadFacultyBranchStudents === 'function') {
+
+          if (typeof loadFacultyBranchStudents === "function") {
             loadFacultyBranchStudents();
-          } else {
-            window.location.reload();
           }
         } else {
-          alert('❌ Failed to update student score. Please try again.');
+          alert("❌ Failed to update student score. Please try again.");
         }
       }
+
+// ── COORDINATOR BULK MARKS UPLOAD LOGIC ──────────────────
+    let _rawParsedUploadRows = [];
+    let _validatedUploadRecords = [];
+
+    function openCoordinatorUploadMarksModal() {
+      const modal = document.getElementById('coordMarksUploadModal');
+      if (!modal) return;
+      _rawParsedUploadRows = [];
+      _validatedUploadRecords = [];
+      
+      const fileInput = document.getElementById('coordMarksFileInput');
+      if (fileInput) fileInput.value = '';
+      const fnEl = document.getElementById('coordSelectedFileName');
+      if (fnEl) { fnEl.style.display = 'none'; fnEl.textContent = ''; }
+
+      const banner = document.getElementById('coordUploadSummaryBanner');
+      if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+
+      const prevWrap = document.getElementById('coordUploadPreviewWrap');
+      if (prevWrap) prevWrap.style.display = 'none';
+
+      const btn = document.getElementById('btnConfirmCoordMarksUpload');
+      if (btn) {
+        btn.disabled = true;
+        btn.style.background = '#94a3b8';
+        btn.style.cursor = 'not-allowed';
+        btn.textContent = '🚀 Confirm & Upload Marks';
+      }
+
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCoordinatorUploadMarksModal() {
+      const modal = document.getElementById('coordMarksUploadModal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+      _rawParsedUploadRows = [];
+      _validatedUploadRecords = [];
+    }
+
+    function downloadMarksTemplate() {
+      try {
+        const sampleData = [
+          { 'PIN Number': '22A91A0501', 'Student Name': 'Sample Student A', 'Semester': 5, 'Marks': 25 },
+          { 'PIN Number': '22A91A0502', 'Student Name': 'Sample Student B', 'Semester': 5, 'Marks': 30 },
+          { 'PIN Number': '22A91A0503', 'Student Name': 'Sample Student C', 'Semester': 5, 'Marks': 22 }
+        ];
+        const ws = XLSX.utils.json_to_sheet(sampleData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Marks_Template');
+        XLSX.writeFile(wb, 'Student_Semester_Marks_Template.xlsx');
+      } catch (err) {
+        console.error('Error generating template:', err);
+        alert('Could not generate sample template: ' + err.message);
+      }
+    }
+
+    async function handleCoordinatorMarksFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const fnEl = document.getElementById('coordSelectedFileName');
+      if (fnEl) {
+        fnEl.textContent = `📄 Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        fnEl.style.display = 'inline-block';
+      }
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          let rows = [];
+          wb.SheetNames.forEach(sheetName => {
+            const sheet = wb.Sheets[sheetName];
+            const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+            if (Array.isArray(json) && json.length) {
+              rows = rows.concat(json);
+            }
+          });
+
+          if (!rows.length) {
+            alert('The uploaded file appears to be empty.');
+            return;
+          }
+
+          _rawParsedUploadRows = rows;
+          await recalculateMarksPreview();
+        } catch (err) {
+          console.error('Error reading marks file:', err);
+          alert('Failed to read file: ' + err.message);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function recalculateMarksPreview() {
+      if (!_rawParsedUploadRows || !_rawParsedUploadRows.length) return;
+
+      const semSelect = document.getElementById('coordUploadSemSelect')?.value || 'auto';
+      const mode = document.querySelector('input[name="coordUploadMode"]:checked')?.value || 'add';
+
+      // Ensure active semesters map is loaded
+      const semMap = await getActiveSemestersMap();
+
+      // Index current branch students for fast client-side lookup
+      const studentLookup = new Map();
+      (allFacultyBranchStudents || []).forEach(st => {
+        const p = String(st.pinNumber || '').trim().toUpperCase();
+        const id = String(st.studentId || '').trim().toUpperCase();
+        const u = String(st.username || '').trim().toUpperCase();
+        if (p) studentLookup.set(p, st);
+        if (id) studentLookup.set(id, st);
+        if (u) studentLookup.set(u, st);
+      });
+
+      const cleanCol = k => String(k || '').toLowerCase().replace(/[\s_\-\.]/g, '');
+
+      const parsedItems = [];
+      _rawParsedUploadRows.forEach((r, idx) => {
+        let pin = '';
+        let rowSem = null;
+        let score = null;
+        let studentName = '';
+
+        // Unpack column entries
+        for (const [col, val] of Object.entries(r)) {
+          const c = cleanCol(col);
+          const vStr = String(val != null ? val : '').trim();
+
+          if (!pin && (c.includes('pin') || c.includes('studentid') || c.includes('roll') || c.includes('htno') || c === 'id' || c === 'username')) {
+            pin = vStr.toUpperCase();
+          }
+          if (!studentName && (c.includes('name') || c.includes('fullname'))) {
+            studentName = vStr;
+          }
+          if (rowSem === null && (c === 'sem' || c === 'semester' || c === 'semno' || c === 'semesternumber' || c === 'semval')) {
+            const num = Number(String(vStr).replace(/[^0-9]/g, ''));
+            if (!isNaN(num) && num >= 1 && num <= 8) rowSem = num;
+          }
+          if (score === null && (c === 'score' || c === 'marks' || c === 'mark' || c === 'points' || c === 'totalmarks' || c === 'semscore')) {
+            const num = Number(vStr);
+            if (!isNaN(num)) score = num;
+          }
+        }
+
+        // Wide columns check: if file contains "Sem 1", "Sem 2", etc.
+        const wideSems = [];
+        for (let s = 1; s <= 8; s++) {
+          for (const [col, val] of Object.entries(r)) {
+            const c = cleanCol(col);
+            if (c === `sem${s}` || c === `sem${s}score` || c === `sem${s}marks` || c === `${s}stsem` || c === `${s}ndsem` || c === `${s}rdsem` || c === `${s}thsem`) {
+              const num = Number(val);
+              if (!isNaN(num) && val !== '') wideSems.push({ sem: s, score: num });
+            }
+          }
+        }
+
+        if (wideSems.length) {
+          wideSems.forEach(ws => {
+            parsedItems.push({
+              rowNum: idx + 1,
+              pinNumber: pin,
+              studentName: studentName,
+              sem: ws.sem,
+              score: ws.score
+            });
+          });
+        } else {
+          const targetSem = semSelect !== 'auto' ? Number(semSelect) : rowSem;
+          if (pin && score !== null) {
+            parsedItems.push({
+              rowNum: idx + 1,
+              pinNumber: pin,
+              studentName: studentName,
+              sem: targetSem || 1,
+              score: score
+            });
+          }
+        }
+      });
+
+      const validList = [];
+      const previewRows = [];
+      let enabledCount = 0;
+      let disabledCount = 0;
+      let notFoundCount = 0;
+
+      parsedItems.forEach((item, i) => {
+        const st = studentLookup.get(item.pinNumber);
+        let statusHtml = '';
+        let isEnabled = false;
+
+        if (!st) {
+          notFoundCount++;
+          statusHtml = `<span style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:10px;font-weight:700;">⚠️ Not in branch list</span>`;
+        } else {
+          const sBranch = String(st.branch || '').trim().toUpperCase();
+          const sYearNum = (String(st.year || '1').match(/\d+/) || ['1'])[0];
+          const semKey = `${sBranch}_${sYearNum}`;
+          const defaultSems = [ (Number(sYearNum) * 2) - 1, Number(sYearNum) * 2 ];
+          const activeSems = (semMap && semMap[semKey] && semMap[semKey].length)
+            ? semMap[semKey]
+            : defaultSems;
+
+          const semTarget = Number(item.sem);
+          if (activeSems.includes(semTarget)) {
+            isEnabled = true;
+            enabledCount++;
+            statusHtml = `<span style="background:#dcfce7;color:#15803d;padding:2px 8px;border-radius:10px;font-weight:700;">✅ Enabled (Sem ${semTarget})</span>`;
+            validList.push({
+              pinNumber: item.pinNumber,
+              studentId: st.studentId || st._id || item.pinNumber,
+              sem: semTarget,
+              score: item.score
+            });
+          } else {
+            disabledCount++;
+            statusHtml = `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-weight:700;" title="Active Sems for ${sBranch} Yr ${sYearNum}: ${activeSems.join(',')}">⚠️ Skipped (Sem ${semTarget} disabled)</span>`;
+          }
+        }
+
+        if (i < 15) {
+          previewRows.push(`
+            <tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:8px 10px;font-size:11px;">${i + 1}</td>
+              <td style="padding:8px 10px;font-family:monospace;font-weight:600;">${item.pinNumber}</td>
+              <td style="padding:8px 10px;">${st ? (st.fullName || st.username) : (item.studentName || '—')}</td>
+              <td style="padding:8px 10px;">${st ? `${st.branch || '—'} / Yr ${st.year || '—'}` : '—'}</td>
+              <td style="padding:8px 10px;font-weight:700;color:var(--blue-dark);">Sem ${item.sem || '—'}</td>
+              <td style="padding:8px 10px;font-weight:700;color:#16a34a;">+${item.score} pts</td>
+              <td style="padding:8px 10px;">${statusHtml}</td>
+            </tr>
+          `);
+        }
+      });
+
+      _validatedUploadRecords = validList;
+
+      // Update summary banner
+      const banner = document.getElementById('coordUploadSummaryBanner');
+      if (banner) {
+        banner.style.display = 'block';
+        if (enabledCount > 0) {
+          banner.style.background = '#f0fdf4';
+          banner.style.border = '1.5px solid #86efac';
+          banner.style.color = '#166534';
+          banner.innerHTML = `
+            <strong>📊 Analysis Complete:</strong>
+            <span style="margin-left:8px;font-weight:700;">✅ ${enabledCount} record(s) ready to ${mode === 'add' ? 'add' : 'update'}</span>
+            ${disabledCount > 0 ? `<span style="margin-left:12px;color:#b45309;">⚠️ ${disabledCount} record(s) skipped (semester is disabled)</span>` : ''}
+            ${notFoundCount > 0 ? `<span style="margin-left:12px;color:#b91c1c;">⚠️ ${notFoundCount} not matched</span>` : ''}
+          `;
+        } else {
+          banner.style.background = '#fffbeb';
+          banner.style.border = '1.5px solid #fde68a';
+          banner.style.color = '#92400e';
+          banner.innerHTML = `
+            <strong>⚠️ No valid active semester marks found:</strong>
+            ${disabledCount > 0 ? `<span>All ${disabledCount} rows targeted semesters that are currently <strong>disabled</strong> in Coordinator Manage Semesters tab. Only enabled semesters can receive marks.</span>` : `Please check PIN column and Marks column in your file.`}
+          `;
+        }
+      }
+
+      // Update preview table
+      const tbody = document.getElementById('coordUploadPreviewBody');
+      const prevWrap = document.getElementById('coordUploadPreviewWrap');
+      const prevCount = document.getElementById('coordUploadPreviewCount');
+      if (tbody && prevWrap) {
+        prevWrap.style.display = 'block';
+        if (prevCount) prevCount.textContent = `Showing ${Math.min(parsedItems.length, 15)} of ${parsedItems.length} parsed items`;
+        tbody.innerHTML = previewRows.join('');
+      }
+
+      // Update confirm button
+      const btn = document.getElementById('btnConfirmCoordMarksUpload');
+      if (btn) {
+        if (validList.length > 0) {
+          btn.disabled = false;
+          btn.style.background = 'linear-gradient(135deg,#1e3a8a,#2563eb)';
+          btn.style.cursor = 'pointer';
+          btn.textContent = `🚀 Confirm & Upload Marks (${validList.length} Students)`;
+        } else {
+          btn.disabled = true;
+          btn.style.background = '#94a3b8';
+          btn.style.cursor = 'not-allowed';
+          btn.textContent = '🚀 Confirm & Upload Marks';
+        }
+      }
+    }
+
+    async function executeCoordinatorMarksUpload() {
+      if (!_validatedUploadRecords || !_validatedUploadRecords.length) {
+        alert('No valid student records with enabled semesters to upload.');
+        return;
+      }
+
+      const mode = document.querySelector('input[name="coordUploadMode"]:checked')?.value || 'add';
+      const fId = currentFaculty ? (currentFaculty._id || currentFaculty.facultyId || currentFaculty.username) : '';
+
+      const btn = document.getElementById('btnConfirmCoordMarksUpload');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ Uploading marks to database...';
+      }
+
+      try {
+        const res = await fetch('/api/faculty/coordinator-upload-marks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            facultyId: fId,
+            mode: mode,
+            records: _validatedUploadRecords
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          closeCoordinatorUploadMarksModal();
+          alert(`✅ ${data.message || 'Marks uploaded successfully!'}`);
+          if (typeof loadFacultyBranchStudents === 'function') {
+            loadFacultyBranchStudents();
+          }
+        } else {
+          alert(`❌ Upload failed: ${data.message || 'Server error'}`);
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = `🚀 Confirm & Upload Marks (${_validatedUploadRecords.length} Students)`;
+          }
+        }
+      } catch (err) {
+        console.error('Error uploading coordinator marks:', err);
+        alert('Network error while uploading marks. Please try again.');
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = `🚀 Confirm & Upload Marks (${_validatedUploadRecords.length} Students)`;
+        }
+      }
+    }
+
+    function openEditScoreFromBtn(btn) {
+      if (!btn) return;
+      try {
+        let name = btn.dataset.name || '';
+        try { name = decodeURIComponent(name); } catch(e){}
+        let pin = btn.dataset.pin || '';
+        try { pin = decodeURIComponent(pin); } catch(e){}
+        let branch = btn.dataset.branch || '';
+        try { branch = decodeURIComponent(branch); } catch(e){}
+        let year = btn.dataset.year || '';
+        try { year = decodeURIComponent(year); } catch(e){}
+
+        const data = {
+          sid: btn.dataset.sid,
+          name: name,
+          pin: pin,
+          branch: branch,
+          year: year,
+          score: Number(btn.dataset.score) || 0,
+          eventScore: Number(btn.dataset.eventscore) || 0,
+          sem1Score: Number(btn.dataset.sem1) || 0,
+          sem2Score: Number(btn.dataset.sem2) || 0,
+          sem3Score: Number(btn.dataset.sem3) || 0,
+          sem4Score: Number(btn.dataset.sem4) || 0,
+          sem5Score: Number(btn.dataset.sem5) || 0,
+          sem6Score: Number(btn.dataset.sem6) || 0,
+          sem7Score: Number(btn.dataset.sem7) || 0,
+          sem8Score: Number(btn.dataset.sem8) || 0
+        };
+        openEditScoreModal(data);
+      } catch (err) {
+        console.error('Error opening edit score modal:', err);
+      }
+    }
+
+    window.openCoordinatorUploadMarksModal = openCoordinatorUploadMarksModal;
+    window.closeCoordinatorUploadMarksModal = closeCoordinatorUploadMarksModal;
+    window.downloadMarksTemplate = downloadMarksTemplate;
+    window.handleCoordinatorMarksFile = handleCoordinatorMarksFile;
+    window.recalculateMarksPreview = recalculateMarksPreview;
+    window.executeCoordinatorMarksUpload = executeCoordinatorMarksUpload;
+    window.openEditScoreFromBtn = openEditScoreFromBtn;
 
       window.openEditScoreModal = openEditScoreModal;
       window.closeEditScoreModal = closeEditScoreModal;
@@ -4979,8 +5673,67 @@
         renderFacultyStudents(allFacultyBranchStudents);
       }
 
+      // ── ACTIVE SEMESTER HELPERS ─────────────────────────────────
+      async function getActiveSemestersMap() {
+        if (window._cachedActiveSemestersMap && (Date.now() - (window._cachedActiveSemMapTs || 0) < 30000)) {
+          return window._cachedActiveSemestersMap;
+        }
+        const map = {};
+        try {
+          const res = await fetch(`/api/faculty/all-active-semesters?t=${Date.now()}`);
+          if (res.ok) {
+            const list = await res.json();
+            if (Array.isArray(list)) {
+              list.forEach(item => {
+                const b = String(item.branch || '').trim().toUpperCase();
+                const rawY = String(item.year || '').trim();
+                const yNum = (rawY.match(/\d+/) || [rawY])[0];
+                if (b && yNum && Array.isArray(item.activeSemesters) && item.activeSemesters.length > 0) {
+                  const sems = item.activeSemesters.map(Number).sort((a, b) => a - b);
+                  map[`${b}_${yNum}`] = sems;
+                  map[`${b}_${rawY}`] = sems;
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.warn('Error fetching active semesters map:', err);
+        }
+        window._cachedActiveSemestersMap = map;
+        window._cachedActiveSemMapTs = Date.now();
+        return map;
+      }
+
+      async function getStudentActiveSemesters(branch, year) {
+        const b = String(branch || '').trim().toUpperCase();
+        const rawY = String(year || '').trim();
+        const yNum = (rawY.match(/\d+/) || ['1'])[0];
+        const yr = Number(yNum) || 1;
+        const keyNum = `${b}_${yNum}`;
+        const keyRaw = `${b}_${rawY}`;
+
+        const map = await getActiveSemestersMap();
+        if (map[keyNum] && map[keyNum].length > 0) return map[keyNum];
+        if (map[keyRaw] && map[keyRaw].length > 0) return map[keyRaw];
+
+        try {
+          const res = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(b)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+          if (res.ok) {
+            const d = await res.json();
+            if (Array.isArray(d.activeSemesters) && d.activeSemesters.length > 0) {
+              const sems = d.activeSemesters.map(Number).sort((a, b) => a - b);
+              map[keyNum] = sems;
+              map[keyRaw] = sems;
+              return sems;
+            }
+          }
+        } catch (e) {}
+
+        return [(yr * 2) - 1, yr * 2];
+      }
+
       // ── VIEW STUDENT SCORE PROOF MODAL LOGIC ──────────────────
-      function viewStudentProof(d) {
+      async function viewStudentProof(d) {
         console.log('[ViewProof Coordinator] Called with data:', d);
 
         const modal = document.getElementById('studentProofModal');
@@ -4997,13 +5750,7 @@
         const pin = d.pin || '';
         const branch = d.branch || (currentFaculty && (currentFaculty.coordinatorBranch || currentFaculty.department)) || '—';
         const year = d.year || '—';
-        const sem1Score = d.sem1Score || 0;
-        const sem2Score = d.sem2Score || 0;
-        const sem3Score = d.sem3Score || 0;
-        const sem4Score = d.sem4Score || 0;
-        const baseScore = d.score || 0;
         const eventScore = d.eventScore || 0;
-        const totalScore = baseScore + eventScore;
 
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -5014,37 +5761,37 @@
         if (yearEl) yearEl.textContent = `Year: ${year}`;
         if (avatarEl) avatarEl.textContent = displayName.charAt(0).toUpperCase() || 'S';
 
-        const yrStr = String(year || '').toLowerCase().trim();
-        const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
-        const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
-        const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
+        // Load ONLY enabled semesters configured for this student's branch & year
+        const activeSems = await getStudentActiveSemesters(branch, year);
+
+        const semScores = {};
+        for (let s = 1; s <= 8; s++) {
+          semScores[s] = Number(d['sem' + s + 'Score']) || 0;
+        }
+
+        // Base Academic Score = sum of active / enabled semesters
+        let baseScore = 0;
+        activeSems.forEach(s => {
+          baseScore += (semScores[s] || 0);
+        });
+        if (baseScore === 0 && d.score) {
+          baseScore = Number(d.score) || 0;
+        }
+        const totalScore = baseScore + eventScore;
 
         let semCardsHtml = '';
-        if (isYear2) {
-          semCardsHtml = `
-            <div class="proof-card">
-              <div class="proof-card-label">📘 1st Semester</div>
-              <div class="proof-card-value" style="color:#0F4C81;">${sem1Score}</div>
-              <div class="proof-card-desc">Semester 1 Score</div>
+        activeSems.forEach(s => {
+          const baseVal = semScores[s] || 0;
+          const evVal = Number(d['sem' + s + 'EventScore']) || 0;
+          const totVal = Number(d['sem' + s + 'TotalScore']) || (baseVal + evVal);
+          semCardsHtml += `
+            <div class="proof-card" id="facProofCardSem${s}">
+              <div class="proof-card-label">📘 Semester ${s}</div>
+              <div class="proof-card-value" id="facProofSemVal${s}" style="color:#0F4C81;">${totVal}</div>
+              <div class="proof-card-desc" id="facProofSemDesc${s}">Semester ${s} Score</div>
             </div>
-            <div class="proof-card">
-              <div class="proof-card-label">📗 2nd Semester</div>
-              <div class="proof-card-value" style="color:#1565C0;">${sem2Score}</div>
-              <div class="proof-card-desc">Semester 2 Score</div>
-            </div>`;
-        } else if (isYear3 || (!isYear1 && !isYear2)) {
-          semCardsHtml = `
-            <div class="proof-card">
-              <div class="proof-card-label">📙 3rd Semester</div>
-              <div class="proof-card-value" style="color:#0F4C81;">${sem3Score}</div>
-              <div class="proof-card-desc">Semester 3 Score</div>
-            </div>
-            <div class="proof-card">
-              <div class="proof-card-label">📕 4th Semester</div>
-              <div class="proof-card-value" style="color:#1565C0;">${sem4Score}</div>
-              <div class="proof-card-desc">Semester 4 Score</div>
-            </div>`;
-        }
+          `;
+        });
 
         body.innerHTML = `
           <div class="proof-summary-grid">
@@ -5054,47 +5801,6 @@
               <div class="proof-card-desc">Academic + Events + Certs</div>
             </div>
             ${semCardsHtml}
-            <div class="proof-card">
-              <div class="proof-card-label">🎪 Event Score</div>
-              <div class="proof-card-value" style="color:var(--green, #16a34a);">${eventScore}</div>
-              <div class="proof-card-desc">Events Participated</div>
-            </div>
-          </div>
-
-          <div class="proof-section" style="background:#f1f5f9;border-color:#cbd5e1;">
-            <div class="proof-section-header" style="border-bottom-color:#e2e8f0;">
-              <div class="proof-section-title"><span>📘</span> Academic Score Breakdown</div>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:8px 0;">
-              <div style="background:#e3f2fd;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
-                <div style="font-size:28px;font-weight:800;color:#0F4C81;">${baseScore}</div>
-              </div>
-              ${isYear2 ? `
-              <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
-                <div style="font-size:28px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
-              </div>
-              <div style="background:#e8f5e9;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
-                <div style="font-size:28px;font-weight:800;color:#1565C0;">${sem2Score}</div>
-              </div>
-              ` : ''}
-              ${(isYear3 || (!isYear1 && !isYear2)) ? `
-              <div style="background:#fef3c7;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
-                <div style="font-size:28px;font-weight:800;color:#b45309;">${sem3Score}</div>
-              </div>
-              <div style="background:#fee2e2;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
-                <div style="font-size:28px;font-weight:800;color:#b91c1c;">${sem4Score}</div>
-              </div>
-              ` : ''}
-              <div style="background:#f3e5f5;border-radius:12px;padding:14px 18px;">
-                <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
-                <div style="font-size:28px;font-weight:800;color:#6a1b9a;">${eventScore}</div>
-              </div>
-            </div>
           </div>
 
           <div id="proofEventsSection">
@@ -5130,13 +5836,26 @@
           if (events.length === 0) {
             evHtml += `<div class="proof-empty-hint"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
           } else {
-            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Event</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+            // Update semester summary cards with live server proof
+            if (sum && sum.semEventScores) {
+              for (let s = 1; s <= 8; s++) {
+                const liveEv = Number(sum.semEventScores[s]) || 0;
+                const liveBase = Number(sum['sem' + s + 'Score']) || 0;
+                const liveTot = liveBase + liveEv;
+                const valEl = document.getElementById(`facProofSemVal${s}`);
+                const descEl = document.getElementById(`facProofSemDesc${s}`);
+                if (valEl) valEl.textContent = liveTot;
+                if (descEl) descEl.textContent = `Semester ${s} Score`;
+              }
+            }
+
+            evHtml += `<div style="overflow-x:auto;"><table class="proof-table"><thead><tr><th>S.NO</th><th>Event</th><th>Semester</th><th>Category</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
             events.forEach((ev, i) => {
               const d = ev.date ? new Date(ev.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
               const cert = ev.certificateUrl
                 ? `<button onclick="openDocPreviewModal('${encodeURIComponent(ev.certificateUrl)}','${encodeURIComponent(ev.title||'Certificate')}')" class="proof-link-btn">📜 View</button>`
                 : `<span style="color:var(--muted);font-size:11px;">Not uploaded</span>`;
-              evHtml += `<tr><td>${i+1}</td><td><strong>${ev.title||'Event'}</strong><br><span style="font-size:11px;color:var(--muted);">${ev.venue||'Campus'}</span></td><td><span class="badge badge-gold" style="font-size:11px;">${ev.category||'General'}</span></td><td style="font-size:12px;">${d}</td><td><strong style="color:var(--green, #16a34a);font-size:14px;">+${ev.score||0} pts</strong></td><td>${cert}</td></tr>`;
+              evHtml += `<tr><td>${i+1}</td><td><strong>${ev.title||'Event'}</strong><br><span style="font-size:11px;color:var(--muted);">${ev.venue||'Campus'}</span></td><td><span class="badge blue" style="font-size:11px;font-weight:700;">Sem ${ev.semester || 1}</span></td><td><span class="badge badge-gold" style="font-size:11px;">${ev.category||'General'}</span></td><td style="font-size:12px;">${d}</td><td><strong style="color:var(--green, #16a34a);font-size:14px;">+${ev.score||0} pts</strong></td><td>${cert}</td></tr>`;
             });
             evHtml += `</tbody></table></div>`;
           }
@@ -5288,22 +6007,69 @@
         }
       }
 
-      function downloadFacultyStudentsCSV() {
+      async function downloadFacultyStudentsCSV() {
         const source = displayedFacultyBranchStudents.length ? displayedFacultyBranchStudents : allFacultyBranchStudents;
         if (!source.length) {
           alert('No student data to download');
           return;
         }
 
-        const header = ['S.NO', 'Student Name', 'PIN Number', 'Branch', 'Year', 'Total Score'];
+        const semMap = await getActiveSemestersMap();
+
+        // Determine all distinct active semesters enabled for the students in this download
+        const activeSemsSet = new Set();
+        source.forEach(s => {
+          const sBranch = s.branch || (currentFaculty && (currentFaculty.coordinatorBranch || currentFaculty.department)) || 'CSE';
+          const sYear = s.year || '1';
+          const yNum = (String(sYear).match(/\d+/) || ['1'])[0];
+          const keyNum = `${String(sBranch).trim().toUpperCase()}_${yNum}`;
+          const keyRaw = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
+          const sActive = (semMap && (semMap[keyNum] || semMap[keyRaw]) && (semMap[keyNum] || semMap[keyRaw]).length)
+            ? (semMap[keyNum] || semMap[keyRaw])
+            : [ (Number(yNum) * 2) - 1, Number(yNum) * 2 ];
+
+          sActive.forEach(num => activeSemsSet.add(num));
+        });
+
+        const activeSems = Array.from(activeSemsSet).sort((a, b) => a - b);
+        if (!activeSems.length) activeSems.push(1, 2);
+
+        // Header only includes ENABLED semesters
+        const semHeaders = activeSems.map(s => `Sem ${s}`);
+        const header = ['S.NO', 'Student Name', 'PIN Number', 'Branch', 'Year', ...semHeaders, 'Total Score'];
+
         const rows = source.map((s, i) => {
-          const totalScore = (s.score || 0) + (s.eventScore || 0);
+          const sBranch = s.branch || (currentFaculty && (currentFaculty.coordinatorBranch || currentFaculty.department)) || 'CSE';
+          const sYear = s.year || '1';
+          const key = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
+          const sActive = (semMap && semMap[key] && semMap[key].length)
+            ? semMap[key]
+            : [ (Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2) - 1, Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2 ];
+
+          let baseScore = 0;
+          const semValues = activeSems.map(semNum => {
+            if (sActive.includes(semNum)) {
+              const baseVal = Number(s[`sem${semNum}Score`]) || 0;
+              const evVal = Number(s[`sem${semNum}EventScore`]) || 0;
+              const totVal = Number(s[`sem${semNum}TotalScore`]) || (baseVal + evVal);
+              baseScore += baseVal;
+              return totVal;
+            }
+            return '—';
+          });
+
+          if (baseScore === 0 && s.score) {
+            baseScore = Number(s.score) || 0;
+          }
+          const totalScore = baseScore + (s.eventScore || 0);
+
           return [
             i + 1,
             s.fullName || s.username || '',
             s.studentId || s.pinNumber || '',
             s.branch || '',
             s.year || '',
+            ...semValues,
             totalScore
           ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
         });
@@ -10106,9 +10872,112 @@
     </div>
   </div>
 
+<!-- COORDINATOR MARKS UPLOAD MODAL -->
+  <div class="proof-modal-overlay" id="coordMarksUploadModal" style="display:none;" onclick="if(event.target===this)closeCoordinatorUploadMarksModal()">
+    <div class="proof-modal-box" style="max-width:680px;padding:26px;max-height:90vh;overflow-y:auto;">
+      
+      <!-- Modal Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
+        <div>
+          <h3 style="margin:0;color:var(--blue-dark);font-size:18px;display:flex;align-items:center;gap:8px;">
+            📤 Upload Student Semester Marks
+          </h3>
+          <p style="margin:4px 0 0;font-size:12px;color:var(--muted);">
+            Upload marks via Excel (.xlsx, .xls) or CSV. Marks are <strong>only added if the semester is currently enabled</strong> for the student's branch &amp; academic year.
+          </p>
+        </div>
+        <button type="button" onclick="closeCoordinatorUploadMarksModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);">✕</button>
+      </div>
+
+      <!-- File Upload Dropzone -->
+      <div id="coordUploadDropzone" style="border:2px dashed #93c5fd;border-radius:14px;background:#f0f9ff;padding:24px 20px;text-align:center;cursor:pointer;margin-bottom:16px;transition:all 0.2s;"
+        onclick="document.getElementById('coordMarksFileInput').click()">
+        <input type="file" id="coordMarksFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleCoordinatorMarksFile(event)">
+        <div style="font-size:32px;margin-bottom:6px;">📁</div>
+        <strong style="color:#1e40af;font-size:14px;display:block;">Click to choose file, or drag and drop here</strong>
+        <span style="font-size:12px;color:#64748b;display:block;margin-top:2px;">Supports Excel (.xlsx, .xls) and CSV (.csv) files</span>
+        <div id="coordSelectedFileName" style="display:none;margin-top:10px;font-size:13px;font-weight:700;color:#059669;background:#dcfce7;border:1px solid #bbf7d0;padding:4px 12px;border-radius:20px;display:inline-block;"></div>
+      </div>
+
+      <!-- Upload Options: Template & Mode & Semester Override -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:14px 16px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Target Semester</label>
+          <select id="coordUploadSemSelect" onchange="recalculateMarksPreview()" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;outline:none;background:#fff;font-family:'Poppins',sans-serif;">
+            <option value="auto">🔍 Auto-detect from file column (Recommended)</option>
+            <option value="1">Sem 1</option>
+            <option value="2">Sem 2</option>
+            <option value="3">Sem 3</option>
+            <option value="4">Sem 4</option>
+            <option value="5">Sem 5</option>
+            <option value="6">Sem 6</option>
+            <option value="7">Sem 7</option>
+            <option value="8">Sem 8</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;">Score Update Mode</label>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:4px;">
+            <label style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="coordUploadMode" value="add" checked onchange="recalculateMarksPreview()"> ➕ Add to current score
+            </label>
+            <label style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;">
+              <input type="radio" name="coordUploadMode" value="set" onchange="recalculateMarksPreview()"> ✏️ Overwrite score
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <span style="font-size:12px;color:var(--muted);">Need an Excel sample sheet?</span>
+        <button type="button" onclick="downloadMarksTemplate()" style="padding:6px 14px;border:1px solid #cbd5e1;background:#fff;color:#1e40af;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
+          📥 Download Sample Template (.xlsx)
+        </button>
+      </div>
+
+      <!-- Preview Summary Banner -->
+      <div id="coordUploadSummaryBanner" style="display:none;margin-bottom:14px;padding:12px 16px;border-radius:10px;font-size:13px;"></div>
+
+      <!-- Preview Table Container -->
+      <div id="coordUploadPreviewWrap" style="display:none;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="font-size:12px;color:var(--text);text-transform:uppercase;">Preview (First 10 Records):</strong>
+          <span id="coordUploadPreviewCount" style="font-size:12px;color:var(--muted);"></span>
+        </div>
+        <div style="max-height:220px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:10px;">
+          <table style="width:100%;border-collapse:collapse;font-size:12px;text-align:left;">
+            <thead>
+              <tr style="background:#f1f5f9;border-bottom:1px solid #cbd5e1;position:sticky;top:0;">
+                <th style="padding:8px 10px;">#</th>
+                <th style="padding:8px 10px;">PIN / ID</th>
+                <th style="padding:8px 10px;">Student Name</th>
+                <th style="padding:8px 10px;">Branch &amp; Year</th>
+                <th style="padding:8px 10px;">Semester</th>
+                <th style="padding:8px 10px;">Marks</th>
+                <th style="padding:8px 10px;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="coordUploadPreviewBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Modal Actions -->
+      <div style="display:flex;justify-content:flex-end;gap:12px;">
+        <button type="button" onclick="closeCoordinatorUploadMarksModal()" style="padding:10px 18px;border:1.5px solid #cbd5e1;border-radius:10px;background:none;font-weight:600;cursor:pointer;font-family:'Poppins',sans-serif;">
+          Cancel
+        </button>
+        <button type="button" id="btnConfirmCoordMarksUpload" onclick="executeCoordinatorMarksUpload()" disabled style="padding:10px 22px;border:none;border-radius:10px;background:#94a3b8;color:white;font-weight:700;cursor:not-allowed;font-family:'Poppins',sans-serif;box-shadow:0 4px 14px rgba(37,99,235,0.25);">
+          🚀 Confirm &amp; Upload Marks
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- EDIT STUDENT SCORE MODAL FOR COORDINATOR PORTAL -->
   <div class="proof-modal-overlay" id="editScoreModal" style="display:none;" onclick="if(event.target===this)closeEditScoreModal()">
-    <div class="proof-modal-box" style="max-width:500px;padding:28px;">
+    <div class="proof-modal-box" style="max-width:540px;padding:28px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1.5px solid #e2e8f0;padding-bottom:12px;">
         <h3 style="margin:0;color:var(--blue-dark);font-size:18px;">✏️ Edit Student Score</h3>
         <button onclick="closeEditScoreModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);">✕</button>
@@ -10116,37 +10985,19 @@
 
       <div style="margin-bottom:16px;background:#eff6ff;padding:12px 16px;border-radius:12px;border:1px solid #bfdbfe;">
         <strong id="editScoreStudentName" style="color:#1e3a8a;font-size:15px;display:block;">Student Name</strong>
-        <span id="editScoreStudentInfo" style="font-size:12px;color:#3b82f6;">PIN: — • Academic Score Update</span>
+        <span id="editScoreStudentInfo" style="font-size:12px;color:#3b82f6;">PIN: — • Branch: — • Year: —</span>
       </div>
 
       <form id="editScoreForm" onsubmit="saveStudentScore(event)">
         <input type="hidden" id="editStudentId">
         
         <div style="margin-bottom:14px;">
-          <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Base Academic Score</label>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;">Base Academic Score (Sum of Active Semesters)</label>
           <input type="number" id="editBaseScore" min="0" required style="width:100%;padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:14px;outline:none;" oninput="updateScorePreview()">
         </div>
 
-        <div id="sem12Group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">1st Sem Score</label>
-            <input type="number" id="editSem1Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">2nd Sem Score</label>
-            <input type="number" id="editSem2Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
-          </div>
-        </div>
-
-        <div id="sem34Group" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">3rd Sem Score</label>
-            <input type="number" id="editSem3Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
-          </div>
-          <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;">4th Sem Score</label>
-            <input type="number" id="editSem4Score" min="0" style="width:100%;padding:8px 12px;border:1.5px solid #cbd5e1;border-radius:10px;font-family:'Poppins',sans-serif;font-size:13px;outline:none;" oninput="updateSemScoreSum()">
-          </div>
+        <div id="dynamicSemInputsContainer" style="margin-bottom:16px;">
+          <!-- Dynamically populated based on active semesters enabled by the coordinator -->
         </div>
 
         <div style="background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:20px;">
@@ -10167,6 +11018,108 @@
       </form>
     </div>
   </div>
+
+
+  <script>
+    // ── COORDINATOR SEMESTER MANAGEMENT ──────────────────────
+    async function initCoordinatorSemesters() {
+      if (!currentFaculty) currentFaculty = JSON.parse(localStorage.getItem('facultyData')) || JSON.parse(localStorage.getItem('user'));
+      if (!currentFaculty) return;
+      const branchSelect = document.getElementById('coordSemBranchSelect');
+      if (!branchSelect) return;
+
+      let branches = [];
+      if (Array.isArray(currentFaculty.coordinatorBranches) && currentFaculty.coordinatorBranches.length) {
+        branches = currentFaculty.coordinatorBranches;
+      } else if (currentFaculty.coordinatorBranch) {
+        branches = currentFaculty.coordinatorBranch.split(',').map(b => b.trim()).filter(Boolean);
+      } else if (currentFaculty.department) {
+        branches = [currentFaculty.department.trim()];
+      }
+      if (!branches.length) branches = ['CSE'];
+
+      branchSelect.innerHTML = branches.map(b => `<option value="${b}">${b}</option>`).join('');
+      await onCoordBranchYearChange();
+    }
+
+    async function onCoordBranchYearChange() {
+      const branchSelect = document.getElementById('coordSemBranchSelect');
+      const yearSelect = document.getElementById('coordSemYearSelect');
+      if (!branchSelect || !yearSelect) return;
+
+      const branch = branchSelect.value;
+      const year = yearSelect.value;
+      if (!branch || !year) return;
+
+      try {
+        const res = await fetch(`/api/faculty/coordinator-semesters?branch=${encodeURIComponent(branch)}&year=${encodeURIComponent(year)}`);
+        const data = await res.json();
+        const active = Array.isArray(data.activeSemesters) ? data.activeSemesters : [];
+
+        for (let s = 1; s <= 8; s++) {
+          const chk = document.getElementById(`coordSemCheck${s}`);
+          if (chk) chk.checked = active.includes(s);
+        }
+      } catch(e) {
+        console.error('Error loading coordinator semester settings:', e);
+      }
+    }
+
+    function setCoordSemesterPreset(type) {
+      const yearSelect = document.getElementById('coordSemYearSelect');
+      const yNum = Number(yearSelect ? yearSelect.value : 1) || 1;
+      const yearSems = [ (yNum * 2) - 1, yNum * 2 ];
+
+      for (let s = 1; s <= 8; s++) {
+        const chk = document.getElementById(`coordSemCheck${s}`);
+        if (!chk) continue;
+        if (type === 'odd') chk.checked = (s % 2 === 1);
+        else if (type === 'even') chk.checked = (s % 2 === 0);
+        else if (type === 'allYear') chk.checked = yearSems.includes(s);
+      }
+    }
+
+    async function saveCoordinatorSemesters() {
+      const branchSelect = document.getElementById('coordSemBranchSelect');
+      const yearSelect = document.getElementById('coordSemYearSelect');
+      if (!branchSelect || !yearSelect) return;
+
+      const branch = branchSelect.value;
+      const year = yearSelect.value;
+      if (!branch || !year) return;
+
+      const activeSemesters = [];
+      for (let s = 1; s <= 8; s++) {
+        const chk = document.getElementById(`coordSemCheck${s}`);
+        if (chk && chk.checked) activeSemesters.push(s);
+      }
+
+      try {
+        const res = await fetch('/api/faculty/coordinator-semesters', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            branch,
+            year,
+            activeSemesters,
+            facultyId: currentFaculty._id || currentFaculty.facultyId || ''
+          })
+        });
+        const d = await res.json();
+        if (res.ok) {
+          window._coordActiveSemsCache = {};
+          window._cachedActiveSemestersMap = null;
+          window._cachedActiveSemMapTs = 0;
+          showPopup('✅', 'Semesters Saved', d.message || 'Semester configuration saved successfully!');
+        } else {
+          showPopup('❌', 'Error', d.message || 'Failed to save semesters');
+        }
+      } catch(err) {
+        console.error('Error saving semesters:', err);
+        showPopup('❌', 'Error', 'Network error saving semester settings');
+      }
+    }
+  </script>
 </body>
 
 </html>

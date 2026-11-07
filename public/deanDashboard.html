@@ -1629,7 +1629,7 @@
         renderAnalysisYearButtons(currentDean);
 
         let allowedDeanStudents = [];
-        const res = await fetch('/api/admin/students');
+        const res = await fetch(`/api/admin/students?t=${Date.now()}`);
         if (res.ok) {
           const raw = await res.json();
           allStudentsList = raw.filter(s => isStudentAllowedForDean(s, currentDean));
@@ -1890,7 +1890,7 @@
         const [resF, resC, resStud, resEv] = await Promise.all([
           fetch('/api/admin/faculty').catch(() => null),
           fetch('/api/admin/coordinators').catch(() => null),
-          fetch('/api/admin/students').catch(() => null),
+          fetch(`/api/admin/students?t=${Date.now()}`).catch(() => null),
           fetch('/api/admin/events').catch(() => null)
         ]);
 
@@ -2139,6 +2139,10 @@
                 data-sem2="${s.sem2Score || 0}"
                 data-sem3="${s.sem3Score || 0}"
                 data-sem4="${s.sem4Score || 0}"
+                data-sem5="${s.sem5Score || 0}"
+                data-sem6="${s.sem6Score || 0}"
+                data-sem7="${s.sem7Score || 0}"
+                data-sem8="${s.sem8Score || 0}"
                 title="View score breakdown">
                 👁️ View Proof
               </button>
@@ -2160,7 +2164,11 @@
             sem1Score: Number(this.dataset.sem1) || 0,
             sem2Score: Number(this.dataset.sem2) || 0,
             sem3Score: Number(this.dataset.sem3) || 0,
-            sem4Score: Number(this.dataset.sem4) || 0
+            sem4Score: Number(this.dataset.sem4) || 0,
+            sem5Score: Number(this.dataset.sem5) || 0,
+            sem6Score: Number(this.dataset.sem6) || 0,
+            sem7Score: Number(this.dataset.sem7) || 0,
+            sem8Score: Number(this.dataset.sem8) || 0
           });
         });
       });
@@ -2200,18 +2208,69 @@
       renderStudentsTable(displayedStudents);
     }
 
-    function downloadStudentsCSV() {
+    async function downloadStudentsCSV() {
       const source = displayedStudents.length ? displayedStudents : allStudentsList;
       if (!source.length) return;
-      const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', 'Score'];
-      const rows = source.map((s, i) => [
-        i + 1,
-        s.fullName || s.username || '',
-        s.studentId || s.pinNumber || '',
-        s.branch || '',
-        s.year || '',
-        (s.score || 0) + (s.eventScore || 0)
-      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+
+      const semMap = await getActiveSemestersMap();
+
+      // Find all distinct active semesters enabled for the students being exported
+      const activeSemsSet = new Set();
+      source.forEach(s => {
+        const sBranch = s.branch || '';
+        const sYear = s.year || '';
+        const yNum = (String(sYear).match(/\d+/) || ['1'])[0];
+        const keyNum = `${String(sBranch).trim().toUpperCase()}_${yNum}`;
+        const keyRaw = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
+        const sActive = (semMap && (semMap[keyNum] || semMap[keyRaw]) && (semMap[keyNum] || semMap[keyRaw]).length)
+          ? (semMap[keyNum] || semMap[keyRaw])
+          : [ (Number(yNum) * 2) - 1, Number(yNum) * 2 ];
+
+        sActive.forEach(num => activeSemsSet.add(num));
+      });
+
+      const activeSems = Array.from(activeSemsSet).sort((a, b) => a - b);
+      if (!activeSems.length) activeSems.push(1, 2);
+
+      // Header includes ONLY the enabled semesters
+      const semHeaders = activeSems.map(s => `Sem ${s}`);
+      const header = ['S.NO', 'Student Name', 'Student ID', 'Branch', 'Year', ...semHeaders, 'Total Score'];
+
+      const rows = source.map((s, i) => {
+        const sBranch = s.branch || '';
+        const sYear = s.year || '';
+        const key = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
+        const sActive = (semMap && semMap[key] && semMap[key].length)
+          ? semMap[key]
+          : [ (Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2) - 1, Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2 ];
+
+        let baseScore = 0;
+        const semValues = activeSems.map(semNum => {
+          if (sActive.includes(semNum)) {
+            const baseVal = Number(s[`sem${semNum}Score`]) || 0;
+            const evVal = Number(s[`sem${semNum}EventScore`]) || 0;
+            const totVal = Number(s[`sem${semNum}TotalScore`]) || (baseVal + evVal);
+            baseScore += baseVal;
+            return totVal;
+          }
+          return '—';
+        });
+
+        if (baseScore === 0 && s.score) {
+          baseScore = Number(s.score) || 0;
+        }
+        const totalScore = baseScore + (s.eventScore || 0);
+
+        return [
+          i + 1,
+          s.fullName || s.username || '',
+          s.studentId || s.pinNumber || '',
+          s.branch || '',
+          s.year || '',
+          ...semValues,
+          totalScore
+        ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      });
 
       const csv = [header.join(','), ...rows].join('\n');
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -2788,8 +2847,67 @@
       window.location.href = `/api/admin/dean/export-excel/${deanId}`;
     }
 
+    // ── ACTIVE SEMESTERS HELPERS FOR DEAN ──────────────────────
+    async function getActiveSemestersMap() {
+      if (window._cachedActiveSemestersMap && (Date.now() - (window._cachedActiveSemMapTs || 0) < 30000)) {
+        return window._cachedActiveSemestersMap;
+      }
+      const map = {};
+      try {
+        const res = await fetch(`/api/faculty/all-active-semesters?t=${Date.now()}`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list)) {
+            list.forEach(item => {
+              const b = String(item.branch || '').trim().toUpperCase();
+              const rawY = String(item.year || '').trim();
+              const yNum = (rawY.match(/\d+/) || [rawY])[0];
+              if (b && yNum && Array.isArray(item.activeSemesters) && item.activeSemesters.length > 0) {
+                const sems = item.activeSemesters.map(Number).sort((a, b) => a - b);
+                map[`${b}_${yNum}`] = sems;
+                map[`${b}_${rawY}`] = sems;
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching active semesters map for Dean:', err);
+      }
+      window._cachedActiveSemestersMap = map;
+      window._cachedActiveSemMapTs = Date.now();
+      return map;
+    }
+
+    async function getStudentActiveSemesters(branch, year) {
+      const b = String(branch || '').trim().toUpperCase();
+      const rawY = String(year || '').trim();
+      const yNum = (rawY.match(/\d+/) || ['1'])[0];
+      const yr = Number(yNum) || 1;
+      const keyNum = `${b}_${yNum}`;
+      const keyRaw = `${b}_${rawY}`;
+
+      const map = await getActiveSemestersMap();
+      if (map[keyNum] && map[keyNum].length > 0) return map[keyNum];
+      if (map[keyRaw] && map[keyRaw].length > 0) return map[keyRaw];
+
+      try {
+        const res = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(b)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+        if (res.ok) {
+          const d = await res.json();
+          if (Array.isArray(d.activeSemesters) && d.activeSemesters.length > 0) {
+            const sems = d.activeSemesters.map(Number).sort((a, b) => a - b);
+            map[keyNum] = sems;
+            map[keyRaw] = sems;
+            return sems;
+          }
+        }
+      } catch (e) {}
+
+      return [(yr * 2) - 1, yr * 2];
+    }
+
     // ── DEAN: VIEW STUDENT SCORE PROOF MODAL ──────────────────
-    function deanViewStudentProof(d) {
+    async function deanViewStudentProof(d) {
       const modal = document.getElementById('deanProofModal');
       const body  = document.getElementById('deanProofModalBody');
       if (!modal) return;
@@ -2798,13 +2916,7 @@
       const pin         = d.pin || d.sid || '';
       const branch      = d.branch || '—';
       const year        = d.year  || '—';
-      const sem1Score   = d.sem1Score   || 0;
-      const sem2Score   = d.sem2Score   || 0;
-      const sem3Score   = d.sem3Score   || 0;
-      const sem4Score   = d.sem4Score   || 0;
-      const baseScore   = d.score       || 0;
       const eventScore  = d.eventScore  || 0;
-      const totalScore  = baseScore + eventScore;
 
       document.getElementById('deanProofAvatar').textContent    = displayName.charAt(0).toUpperCase() || 'S';
       document.getElementById('deanProofName').textContent      = displayName;
@@ -2815,37 +2927,37 @@
       modal.classList.add('active');
       document.body.style.overflow = 'hidden';
 
-      const yrStr = String(year || '').toLowerCase().trim();
-      const isYear1 = yrStr === '1' || yrStr.includes('1st') || yrStr === 'year 1';
-      const isYear2 = yrStr === '2' || yrStr.includes('2nd') || yrStr === 'year 2';
-      const isYear3 = yrStr === '3' || yrStr.includes('3rd') || yrStr === 'year 3';
+      // Load ONLY enabled semesters configured for this student's branch & year
+      const activeSems = await getStudentActiveSemesters(branch, year);
+
+      const semScores = {};
+      for (let s = 1; s <= 8; s++) {
+        semScores[s] = Number(d['sem' + s + 'Score']) || 0;
+      }
+
+      // Base Academic Score = sum of active / enabled semesters
+      let baseScore = 0;
+      activeSems.forEach(s => {
+        baseScore += (semScores[s] || 0);
+      });
+      if (baseScore === 0 && d.score) {
+        baseScore = Number(d.score) || 0;
+      }
+      const totalScore = baseScore + eventScore;
 
       let semCardsHtml = '';
-      if (isYear2) {
-        semCardsHtml = `
-          <div class="dp-card">
-            <div class="dp-label">📘 1st Semester</div>
-            <div class="dp-value" style="color:#0F4C81;">${sem1Score}</div>
-            <div class="dp-desc">Semester 1 Score</div>
+      activeSems.forEach(s => {
+        const baseVal = semScores[s] || 0;
+        const evVal = Number(d['sem' + s + 'EventScore']) || 0;
+        const totVal = Number(d['sem' + s + 'TotalScore']) || (baseVal + evVal);
+        semCardsHtml += `
+          <div class="dp-card" id="deanProofCardSem${s}">
+            <div class="dp-label">📘 Semester ${s}</div>
+            <div class="dp-value" id="deanProofSemVal${s}" style="color:#0F4C81;">${totVal}</div>
+            <div class="dp-desc" id="deanProofSemDesc${s}">Semester ${s} Score</div>
           </div>
-          <div class="dp-card">
-            <div class="dp-label">📗 2nd Semester</div>
-            <div class="dp-value" style="color:#1565C0;">${sem2Score}</div>
-            <div class="dp-desc">Semester 2 Score</div>
-          </div>`;
-      } else if (isYear3 || (!isYear1 && !isYear2)) {
-        semCardsHtml = `
-          <div class="dp-card">
-            <div class="dp-label">📙 3rd Semester</div>
-            <div class="dp-value" style="color:#0F4C81;">${sem3Score}</div>
-            <div class="dp-desc">Semester 3 Score</div>
-          </div>
-          <div class="dp-card">
-            <div class="dp-label">📕 4th Semester</div>
-            <div class="dp-value" style="color:#1565C0;">${sem4Score}</div>
-            <div class="dp-desc">Semester 4 Score</div>
-          </div>`;
-      }
+        `;
+      });
 
       body.innerHTML = `
         <div class="dp-summary-grid">
@@ -2855,47 +2967,6 @@
             <div class="dp-desc">Academic + Events + Certs</div>
           </div>
           ${semCardsHtml}
-          <div class="dp-card">
-            <div class="dp-label">🎪 Event Score</div>
-            <div class="dp-value" style="color:#2e7d32;">${eventScore}</div>
-            <div class="dp-desc">Events Participated</div>
-          </div>
-        </div>
-
-        <div class="dp-section" style="background:#f1f5f9;border-color:#cbd5e1;">
-          <div class="dp-section-header">
-            <div class="dp-section-title">📘 Academic Score Breakdown</div>
-          </div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:8px 0;">
-            <div style="background:#e3f2fd;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#0F4C81;text-transform:uppercase;margin-bottom:4px;">Base Score</div>
-              <div style="font-size:26px;font-weight:800;color:#0F4C81;">${baseScore}</div>
-            </div>
-            ${isYear2 ? `
-            <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#2e7d32;text-transform:uppercase;margin-bottom:4px;">1st Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#2e7d32;">${sem1Score}</div>
-            </div>
-            <div style="background:#e8f5e9;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#1565C0;text-transform:uppercase;margin-bottom:4px;">2nd Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#1565C0;">${sem2Score}</div>
-            </div>
-            ` : ''}
-            ${(isYear3 || (!isYear1 && !isYear2)) ? `
-            <div style="background:#fef3c7;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;margin-bottom:4px;">3rd Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#b45309;">${sem3Score}</div>
-            </div>
-            <div style="background:#fee2e2;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#b91c1c;text-transform:uppercase;margin-bottom:4px;">4th Semester</div>
-              <div style="font-size:26px;font-weight:800;color:#b91c1c;">${sem4Score}</div>
-            </div>
-            ` : ''}
-            <div style="background:#f3e5f5;border-radius:10px;padding:12px 16px;">
-              <div style="font-size:11px;font-weight:700;color:#6a1b9a;text-transform:uppercase;margin-bottom:4px;">Event Score</div>
-              <div style="font-size:26px;font-weight:800;color:#6a1b9a;">${eventScore}</div>
-            </div>
-          </div>
         </div>
 
         <div id="deanProofEventsSection">
@@ -2927,10 +2998,23 @@
               </span>
             </div>`;
 
+        // Update semester cards with live server proof
+        if (sum && sum.semEventScores) {
+          for (let s = 1; s <= 8; s++) {
+            const liveEv = Number(sum.semEventScores[s]) || 0;
+            const liveBase = Number(sum['sem' + s + 'Score']) || 0;
+            const liveTot = liveBase + liveEv;
+            const valEl = document.getElementById(`deanProofSemVal${s}`);
+            const descEl = document.getElementById(`deanProofSemDesc${s}`);
+            if (valEl) valEl.textContent = liveTot;
+            if (descEl) descEl.textContent = `Semester ${s} Score`;
+          }
+        }
+
         if (events.length === 0) {
           html += `<div style="text-align:center;padding:22px;color:#6B7280;font-size:13px;"><div style="font-size:22px;margin-bottom:6px;">📭</div>No event attendance records found.</div>`;
         } else {
-          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>S.NO</th><th>Event</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
+          html += `<div style="overflow-x:auto;"><table class="dp-table"><thead><tr><th>S.NO</th><th>Event</th><th>Semester</th><th>Date</th><th>Score</th><th>Certificate</th></tr></thead><tbody>`;
           events.forEach((ev, i) => {
             const evDate = ev.date ? new Date(ev.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
             const certBtn = ev.certificateUrl
@@ -2939,6 +3023,7 @@
             html += `<tr>
               <td>${i + 1}</td>
               <td><strong>${ev.title || 'Event'}</strong><br><span style="font-size:11px;color:#6B7280;">${ev.venue || 'Campus'}</span></td>
+              <td><span class="badge blue" style="font-size:11px;font-weight:700;">Sem ${ev.semester || 1}</span></td>
               <td style="font-size:12px;">${evDate}</td>
               <td><strong style="color:#2e7d32;font-size:14px;">+${ev.score || 0} pts</strong></td>
               <td>${certBtn}</td>

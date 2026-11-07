@@ -215,6 +215,13 @@
       </select>
     </div>
 
+    <div class="form-group" id="semesterGroup">
+      <label>Select Semester (to credit event score) *</label>
+      <select id="semester" required>
+        <option value="">Select branch & year first</option>
+      </select>
+    </div>
+
     <button type="submit" class="submit-btn">
       ✅ Submit Registration
     </button>
@@ -260,6 +267,37 @@
     if (student.branch) document.getElementById('branch').value = student.branch;
     if (student.year) document.getElementById('year').value = student.year;
 
+    // Load active semesters for student branch & year
+    document.getElementById('branch').addEventListener('change', loadActiveSemestersForStudent);
+    document.getElementById('year').addEventListener('change', loadActiveSemestersForStudent);
+    await loadActiveSemestersForStudent();
+
+    async function loadActiveSemestersForStudent() {
+      const branch = document.getElementById('branch').value;
+      const year = document.getElementById('year').value;
+      const semSelect = document.getElementById('semester');
+      if (!semSelect) return;
+      if (!branch || !year) {
+        semSelect.innerHTML = '<option value="">Select branch & year first</option>';
+        return;
+      }
+      const yNum = (String(year).match(/\d+/) || ['1'])[0];
+      semSelect.innerHTML = '<option value="">Loading active semesters...</option>';
+      try {
+        const res = await fetch(`/api/faculty/active-semesters?branch=${encodeURIComponent(branch)}&year=${encodeURIComponent(yNum)}&t=${Date.now()}`);
+        const data = await res.json();
+        const list = Array.isArray(data.activeSemesters) && data.activeSemesters.length
+          ? data.activeSemesters
+          : [ (Number(yNum) * 2) - 1, Number(yNum) * 2 ];
+
+        semSelect.innerHTML = list.map(s => `<option value="${s}">Semester ${s} (Sem ${s})</option>`).join('');
+      } catch(e) {
+        const yr = Number(yNum) || 1;
+        const defaultSems = [ (yr * 2) - 1, yr * 2 ];
+        semSelect.innerHTML = defaultSems.map(s => `<option value="${s}">Semester ${s} (Sem ${s})</option>`).join('');
+      }
+    }
+
     // Load event details
     const eventId = localStorage.getItem('selectedEventId');
     if (eventId) {
@@ -290,9 +328,10 @@
     const pinNumber = document.getElementById("pinNumber").value;
     const branch = document.getElementById("branch").value;
     const year = document.getElementById("year").value;
+    const semester = Number(document.getElementById("semester")?.value) || 1;
     const eventId = localStorage.getItem("selectedEventId");
 
-    console.log('Submitting registration:', { studentName, pinNumber, branch, year, eventId });
+    console.log('Submitting registration:', { studentName, pinNumber, branch, year, semester, eventId });
 
     if (!eventId) {
       alert("❌ No event selected. Please go back to student dashboard.");
@@ -316,6 +355,7 @@
           pinNumber,
           branch,
           year,
+          semester,
           eventId
         })
       });

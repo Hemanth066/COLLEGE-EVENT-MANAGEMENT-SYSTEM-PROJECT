@@ -220,7 +220,53 @@ router.get("/students/:departmentHeadId", async (req, res) => {
       .select("-password")
       .sort({ pinNumber: 1, studentId: 1, username: 1, fullName: 1 });
 
-    res.json(students);
+    // Aggregate event scores by PIN and semester so each student has exact per-semester event scores
+    const Registration = require('../models/Registration');
+    const regScores = await Registration.aggregate([
+      {
+        $match: {
+          $or: [{ attended: true }, { score: { $gt: 0 } }]
+        }
+      },
+      {
+        $group: {
+          _id: { pin: { $toUpper: { $trim: { input: "$pinNumber" } } }, semester: "$semester" },
+          totalScore: { $sum: "$score" }
+        }
+      }
+    ]);
+
+    const regMap = new Map();
+    const studentTotalEventMap = new Map();
+    regScores.forEach(r => {
+      if (r._id && r._id.pin) {
+        const pinKey = String(r._id.pin).trim().toUpperCase();
+        const sem = Number(r._id.semester) || 1;
+        regMap.set(pinKey + '_' + sem, r.totalScore || 0);
+        studentTotalEventMap.set(pinKey, (studentTotalEventMap.get(pinKey) || 0) + (r.totalScore || 0));
+      }
+    });
+
+    const enrichedStudents = students.map(st => {
+      const sObj = st.toObject();
+      const p1 = String(st.pinNumber || '').trim().toUpperCase();
+      const p2 = String(st.studentId || '').trim().toUpperCase();
+      const p3 = String(st.username || '').trim().toUpperCase();
+
+      for (let sem = 1; sem <= 8; sem++) {
+        const evScore = regMap.get(p1 + '_' + sem) || regMap.get(p2 + '_' + sem) || regMap.get(p3 + '_' + sem) || 0;
+        const baseScore = Number(sObj['sem' + sem + 'Score']) || 0;
+        sObj['sem' + sem + 'EventScore'] = evScore;
+        sObj['sem' + sem + 'TotalScore'] = baseScore + evScore;
+      }
+      const calcEventScore = studentTotalEventMap.get(p1) || studentTotalEventMap.get(p2) || studentTotalEventMap.get(p3) || 0;
+      if (calcEventScore > 0 || !sObj.eventScore) {
+        sObj.eventScore = calcEventScore;
+      }
+      return sObj;
+    });
+
+    res.json(enrichedStudents);
   } catch (e) {
     res.status(500).json({ message: "Server error" });
   }
@@ -230,7 +276,7 @@ router.get("/students/:departmentHeadId", async (req, res) => {
 router.put("/student-score/:studentId", async (req, res) => {
   try {
     const { studentId } = req.params;
-    const { score, sem1Score, sem2Score, sem3Score, sem4Score } = req.body;
+    const { score } = req.body;
 
     const trimmed = decodeURIComponent(studentId).trim();
     let student = null;
@@ -239,7 +285,7 @@ router.put("/student-score/:studentId", async (req, res) => {
       student = await Student.findById(trimmed);
     }
     if (!student) {
-      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i');
+      const pinRegex = new RegExp(`^${trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`, "i");
       student = await Student.findOne({
         $or: [
           { pinNumber: pinRegex },
@@ -253,24 +299,19 @@ router.put("/student-score/:studentId", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
-    if (score !== undefined && score !== null && !isNaN(score)) {
-      student.score = Number(score);
-    }
-    if (sem1Score !== undefined && sem1Score !== null && !isNaN(sem1Score)) {
-      student.sem1Score = Number(sem1Score);
-    }
-    if (sem2Score !== undefined && sem2Score !== null && !isNaN(sem2Score)) {
-      student.sem2Score = Number(sem2Score);
-    }
-    if (sem3Score !== undefined && sem3Score !== null && !isNaN(sem3Score)) {
-      student.sem3Score = Number(sem3Score);
-    }
-    if (sem4Score !== undefined && sem4Score !== null && !isNaN(sem4Score)) {
-      student.sem4Score = Number(sem4Score);
+    let hasAnySemScore = false;
+    for (let s = 1; s <= 8; s++) {
+      const k = `sem${s}Score`;
+      if (req.body[k] !== undefined && req.body[k] !== null && !isNaN(req.body[k])) {
+        student[k] = Number(req.body[k]);
+        hasAnySemScore = true;
+      }
     }
 
-    if (sem1Score !== undefined || sem2Score !== undefined || sem3Score !== undefined || sem4Score !== undefined) {
-      student.score = (Number(student.sem1Score) || 0) + (Number(student.sem2Score) || 0) + (Number(student.sem3Score) || 0) + (Number(student.sem4Score) || 0);
+    if (hasAnySemScore) {
+      student.score = [1, 2, 3, 4, 5, 6, 7, 8].reduce((acc, s) => acc + (Number(student[`sem${s}Score`]) || 0), 0);
+    } else if (score !== undefined && score !== null && !isNaN(score)) {
+      student.score = Number(score);
     }
 
     await student.save();
@@ -286,17 +327,20 @@ router.put("/student-score/:studentId", async (req, res) => {
         sem2Score: student.sem2Score,
         sem3Score: student.sem3Score,
         sem4Score: student.sem4Score,
+        sem5Score: student.sem5Score,
+        sem6Score: student.sem6Score,
+        sem7Score: student.sem7Score,
+        sem8Score: student.sem8Score,
         eventScore: student.eventScore,
         totalScore: (student.score || 0) + (student.eventScore || 0)
       }
     });
   } catch (err) {
     console.error("Error updating student score:", err);
-    res.status(500).json({ message: "Server error: " + err.message });
+    res.status(500).json({ message: "Server Error" });
   }
 });
 
-// ── STUDENT SCORE PROOF & BREAKDOWN ──────────────────────────────
 router.get("/student-score-proof/:pinOrId", async (req, res) => {
   try {
     const { pinOrId } = req.params;
@@ -329,14 +373,19 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
     const Registration = require("../models/Registration");
     const OtherCertUpload = require("../models/OtherCertUpload");
 
-    // 1. Attended college event registrations
+    const pinConditions = [
+      { pinNumber: pinRegex },
+      { pinNumber: student.pinNumber },
+      { pinNumber: student.studentId },
+      { studentId: pinRegex }
+    ].filter(Boolean);
+
+    // 1. Attended / scored college event registrations
     const registrations = await Registration.find({
-      $or: [
-        { pinNumber: pinRegex },
-        { pinNumber: student.pinNumber },
-        { pinNumber: student.studentId }
-      ].filter(Boolean),
-      attended: true
+      $and: [
+        { $or: pinConditions },
+        { $or: [{ attended: true }, { score: { $gt: 0 } }] }
+      ]
     })
       .populate("eventId")
       .sort({ _id: -1 });
@@ -352,15 +401,28 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
       .populate("certificateId")
       .sort({ uploadedAt: -1 });
 
-    // Calculate score details
+    // Calculate score details for all 8 semesters
     const sem1Score = Number(student.sem1Score) || 0;
     const sem2Score = Number(student.sem2Score) || 0;
     const sem3Score = Number(student.sem3Score) || 0;
     const sem4Score = Number(student.sem4Score) || 0;
+    const sem5Score = Number(student.sem5Score) || 0;
+    const sem6Score = Number(student.sem6Score) || 0;
+    const sem7Score = Number(student.sem7Score) || 0;
+    const sem8Score = Number(student.sem8Score) || 0;
     const baseScore = Number(student.score) || 0;
-    const baseAcademicScore = (sem1Score || sem2Score || sem3Score || sem4Score) ? (sem1Score + sem2Score + sem3Score + sem4Score) : baseScore;
+    const semSum = sem1Score + sem2Score + sem3Score + sem4Score + sem5Score + sem6Score + sem7Score + sem8Score;
+    const baseAcademicScore = semSum > 0 ? semSum : baseScore;
 
     const totalEventScore = registrations.reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+
+    // Calculate per-semester event scores
+    const semEventScores = {};
+    for (let s = 1; s <= 8; s++) {
+      semEventScores[s] = registrations
+        .filter(r => (Number(r.semester) || 1) === s)
+        .reduce((sum, r) => sum + (Number(r.score) || 0), 0);
+    }
 
     const approvedOtherCerts = otherUploads.filter(u => u.status === 'approved');
     const totalOtherCertsScore = approvedOtherCerts.reduce((sum, u) => sum + (Number(u.marksAwarded) || 0), 0);
@@ -377,6 +439,7 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
         date: ev.date || null,
         time: ev.time || null,
         venue: ev.venue || 'Campus',
+        semester: Number(r.semester) || 1,
         score: Number(r.score) || 0,
         attended: r.attended,
         certificateUrl: r.certificateUrl || null,
@@ -413,7 +476,30 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
         sem2Score,
         sem3Score,
         sem4Score,
-        eventScore: student.eventScore || 0
+        sem5Score,
+        sem6Score,
+        sem7Score,
+        sem8Score,
+        semEventScores,
+        sem1EventScore: semEventScores[1] || 0,
+        sem2EventScore: semEventScores[2] || 0,
+        sem3EventScore: semEventScores[3] || 0,
+        sem4EventScore: semEventScores[4] || 0,
+        sem5EventScore: semEventScores[5] || 0,
+        sem6EventScore: semEventScores[6] || 0,
+        sem7EventScore: semEventScores[7] || 0,
+        sem8EventScore: semEventScores[8] || 0,
+        sem1TotalScore: sem1Score + (semEventScores[1] || 0),
+        sem2TotalScore: sem2Score + (semEventScores[2] || 0),
+        sem3TotalScore: sem3Score + (semEventScores[3] || 0),
+        sem4TotalScore: sem4Score + (semEventScores[4] || 0),
+        sem5TotalScore: sem5Score + (semEventScores[5] || 0),
+        sem6TotalScore: sem6Score + (semEventScores[6] || 0),
+        sem7TotalScore: sem7Score + (semEventScores[7] || 0),
+        sem8TotalScore: sem8Score + (semEventScores[8] || 0),
+        baseAcademicScore,
+        eventScore: student.eventScore || totalEventScore || 0,
+        grandTotalScore
       },
       summary: {
         baseScore,
@@ -421,6 +507,27 @@ router.get("/student-score-proof/:pinOrId", async (req, res) => {
         sem2Score,
         sem3Score,
         sem4Score,
+        sem5Score,
+        sem6Score,
+        sem7Score,
+        sem8Score,
+        semEventScores,
+        sem1EventScore: semEventScores[1] || 0,
+        sem2EventScore: semEventScores[2] || 0,
+        sem3EventScore: semEventScores[3] || 0,
+        sem4EventScore: semEventScores[4] || 0,
+        sem5EventScore: semEventScores[5] || 0,
+        sem6EventScore: semEventScores[6] || 0,
+        sem7EventScore: semEventScores[7] || 0,
+        sem8EventScore: semEventScores[8] || 0,
+        sem1TotalScore: sem1Score + (semEventScores[1] || 0),
+        sem2TotalScore: sem2Score + (semEventScores[2] || 0),
+        sem3TotalScore: sem3Score + (semEventScores[3] || 0),
+        sem4TotalScore: sem4Score + (semEventScores[4] || 0),
+        sem5TotalScore: sem5Score + (semEventScores[5] || 0),
+        sem6TotalScore: sem6Score + (semEventScores[6] || 0),
+        sem7TotalScore: sem7Score + (semEventScores[7] || 0),
+        sem8TotalScore: sem8Score + (semEventScores[8] || 0),
         baseAcademicScore,
         totalEventScore,
         totalOtherCertsScore,
@@ -482,8 +589,6 @@ router.get("/events/:departmentHeadId", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-module.exports = router;
 
 // ── REGISTRATIONS FOR AN EVENT ─────────────────────────
 router.get("/event-registrations/:eventId", async (req, res) => {
@@ -685,6 +790,26 @@ router.get("/export-excel/:departmentHeadId", async (req, res) => {
   } catch (e) {
     console.error('Error exporting Excel:', e);
     res.status(500).json({ message: "Export failed: " + e.message });
+  }
+});
+
+// Bulk lookup for all active semester settings across all branches and years
+router.get("/all-active-semesters", async (_req, res) => {
+  try {
+    const SemesterSetting = require("../models/SemesterSetting");
+    const list = await SemesterSetting.find().lean();
+    const normalized = (list || []).map(item => {
+      const match = String(item.year || '1').match(/\d+/);
+      const yNum = match ? match[0] : '1';
+      return {
+        ...item,
+        year: yNum,
+        rawYear: item.year
+      };
+    });
+    res.json(normalized);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 

@@ -12,12 +12,16 @@ const studentSchema = new mongoose.Schema({
   branch: String,
   year: String,
   profileImage: { type: String, default: 'https://ui-avatars.com/api/?name=Student&background=fbbf24&color=0a2540&size=200' },
-  score:      { type: Number, default: 0 },  // base score from Excel / admin
-  sem1Score:  { type: Number, default: 0 },  // 1st Sem score from Excel
-  sem2Score:  { type: Number, default: 0 },  // 2nd Sem score from Excel
-  sem3Score:  { type: Number, default: 0 },  // 3rd Sem score from Excel
-  sem4Score:  { type: Number, default: 0 },  // 4th Sem score from Excel
-  eventScore: { type: Number, default: 0 },   // sum of all event registration scores
+  score:      { type: Number, default: 0 },  // base score from Excel / admin (sum of all sem scores)
+  sem1Score:  { type: Number, default: 0 },  // 1st Sem score
+  sem2Score:  { type: Number, default: 0 },  // 2nd Sem score
+  sem3Score:  { type: Number, default: 0 },  // 3rd Sem score
+  sem4Score:  { type: Number, default: 0 },  // 4th Sem score
+  sem5Score:  { type: Number, default: 0 },  // 5th Sem score
+  sem6Score:  { type: Number, default: 0 },  // 6th Sem score
+  sem7Score:  { type: Number, default: 0 },  // 7th Sem score
+  sem8Score:  { type: Number, default: 0 },  // 8th Sem score
+  eventScore: { type: Number, default: 0 },  // sum of all event registration scores
   isLoggedIn: { type: Boolean, default: false },
   sessionId: { type: String, default: null }
 });
@@ -34,4 +38,3 @@ studentSchema.methods.comparePassword = async function(candidatePassword) {
 };
 
 module.exports = mongoose.model("Student", studentSchema);
-
