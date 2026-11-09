@@ -5692,6 +5692,12 @@
                   const sems = item.activeSemesters.map(Number).sort((a, b) => a - b);
                   map[`${b}_${yNum}`] = sems;
                   map[`${b}_${rawY}`] = sems;
+                  map[`${b}_${yNum}st`] = sems;
+                  map[`${b}_${yNum}nd`] = sems;
+                  map[`${b}_${yNum}rd`] = sems;
+                  map[`${b}_${yNum}th`] = sems;
+                  map[`${b}_Year ${yNum}`] = sems;
+                  map[`${b}_Year_${yNum}`] = sems;
                 }
               });
             }
@@ -6041,27 +6047,34 @@
         const rows = source.map((s, i) => {
           const sBranch = s.branch || (currentFaculty && (currentFaculty.coordinatorBranch || currentFaculty.department)) || 'CSE';
           const sYear = s.year || '1';
-          const key = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
-          const sActive = (semMap && semMap[key] && semMap[key].length)
-            ? semMap[key]
-            : [ (Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2) - 1, Number(String(sYear).replace(/[^0-9]/g, '') || 1) * 2 ];
+          const yNum = Number((String(sYear).match(/\d+/) || ['1'])[0]) || 1;
+          const keyNum = `${String(sBranch).trim().toUpperCase()}_${yNum}`;
+          const keyRaw = `${String(sBranch).trim().toUpperCase()}_${String(sYear).trim()}`;
+          const sActive = (semMap && (semMap[keyNum] || semMap[keyRaw]) && (semMap[keyNum] || semMap[keyRaw]).length)
+            ? (semMap[keyNum] || semMap[keyRaw])
+            : [ (yNum * 2) - 1, yNum * 2 ];
 
-          let baseScore = 0;
           const semValues = activeSems.map(semNum => {
-            if (sActive.includes(semNum)) {
-              const baseVal = Number(s[`sem${semNum}Score`]) || 0;
-              const evVal = Number(s[`sem${semNum}EventScore`]) || 0;
-              const totVal = Number(s[`sem${semNum}TotalScore`]) || (baseVal + evVal);
-              baseScore += baseVal;
+            const baseVal = Number(s[`sem${semNum}Score`]) || 0;
+            const evVal = Number(s[`sem${semNum}EventScore`]) || 0;
+            const totVal = (s[`sem${semNum}TotalScore`] !== undefined && s[`sem${semNum}TotalScore`] !== null && s[`sem${semNum}TotalScore`] !== '')
+              ? Number(s[`sem${semNum}TotalScore`])
+              : (baseVal + evVal);
+
+            // Display student marks if semester is active for this year, OR a current/past semester (semNum <= yNum * 2), OR if student has marks
+            if (sActive.includes(semNum) || semNum <= (yNum * 2) || totVal > 0) {
               return totVal;
             }
-            return '—';
+            return '-';
           });
 
-          if (baseScore === 0 && s.score) {
-            baseScore = Number(s.score) || 0;
-          }
-          const totalScore = baseScore + (s.eventScore || 0);
+          // Accurate Total Score: sum of all semester scores and event scores (matching web dashboard)
+          const semSum = [1, 2, 3, 4, 5, 6, 7, 8].reduce((acc, sem) => {
+            const b = Number(s[`sem${sem}Score`]) || 0;
+            const e = Number(s[`sem${sem}EventScore`]) || 0;
+            return acc + b + e;
+          }, 0);
+          const totalScore = semSum > 0 ? semSum : ((Number(s.score) || 0) + (Number(s.eventScore) || 0));
 
           return [
             i + 1,
@@ -6075,7 +6088,7 @@
         });
 
         const csv = [header.join(','), ...rows].join('\n');
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         const dept = currentFaculty?.department || currentFaculty?.coordinatorBranch || 'branch';
